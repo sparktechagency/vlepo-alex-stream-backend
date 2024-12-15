@@ -25,19 +25,19 @@ const loginUserFromDB = async (payload: ILoginData) => {
     throw new ApiError(StatusCodes.BAD_REQUEST, "User doesn't exist!");
   }
 
-  //check verified and status
-  if (!isExistUser.verified) {
+  //check blocked status
+  if (isExistUser.isDeleted) {
     throw new ApiError(
       StatusCodes.BAD_REQUEST,
-      'Please verify your account, then try to login again'
+      'Account is deleted!'
     );
   }
 
   //check user status
-  if (isExistUser.status === 'delete') {
+  if (isExistUser.status === USER_STATUS.BLOCKED) {
     throw new ApiError(
       StatusCodes.BAD_REQUEST,
-      'You don’t have permission to access this content.It looks like your account has been deactivated.'
+      'You don’t have permission to access this content.It looks like your account has been bloocked.'
     );
   }
 
@@ -76,11 +76,16 @@ const forgetPasswordToDB = async (email: string) => {
   emailHelper.sendEmail(forgetPassword);
 
   //save to DB
-  const authentication = {
-    oneTimeCode: otp,
-    expireAt: new Date(Date.now() + 3 * 60000),
-  };
-  await User.findOneAndUpdate({ email }, { $set: { authentication } });
+  const expireAt = new Date(Date.now() + 5 * 60 * 1000); // validaty 5 min
+
+  await User.findOneAndUpdate({ email }, 
+    {
+      $set: {
+        'otpVerification.otp': otp, // Update OTP value
+        'otpVerification.expireAt': expireAt, // Set expiration time
+      },
+    },
+  );
 };
 
 //verify email
