@@ -1,5 +1,4 @@
 import express from 'express';
-import { USER_ROLES } from '../../../enums/user';
 import auth from '../../middlewares/auth';
 import fileUploadHandler from '../../middlewares/fileUploadHandler';
 import validateRequest from '../../middlewares/validateRequest';
@@ -9,7 +8,7 @@ const router = express.Router();
 
 router.get(
   '/profile',
-  auth(USER_ROLES.ADMIN, USER_ROLES.USER),
+  auth(USER_ROLE.CREATOR, USER_ROLE.USER, USER_ROLE.SUPER_ADMIN),
   UserController.getUserProfile
 );
 
@@ -20,7 +19,7 @@ router
     UserController.createUser
   )
   .patch(
-    auth(USER_ROLES.ADMIN, USER_ROLES.USER),
+    auth(USER_ROLE.CREATOR, USER_ROLE.USER, USER_ROLE.SUPER_ADMIN),
     fileUploadHandler(),
     UserController.updateProfile
   );

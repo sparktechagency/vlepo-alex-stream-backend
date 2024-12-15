@@ -27,27 +27,27 @@ const userSchema = new Schema<IUser>(
     status: {
       type: String,
       enum: Object.values(USER_STATUS),
-      default:USER_STATUS.ACTIVE
+      default: USER_STATUS.ACTIVE
     },
-    savedEvents: [{ 
-      type: Schema.Types.ObjectId, 
-      ref: 'Event', 
-      default: [] 
+    savedEvents: [{
+      type: Schema.Types.ObjectId,
+      ref: 'Event',
+      default: []
     }],
-    eventHistory: [{ 
-      type: Schema.Types.ObjectId, 
-      ref: 'Event', 
-      default: [] 
+    eventHistory: [{
+      type: Schema.Types.ObjectId,
+      ref: 'Event',
+      default: []
     }],
-    followers: [{ 
-      type: Schema.Types.ObjectId, 
-      ref: 'User', 
-      default: [] 
+    followers: [{
+      type: Schema.Types.ObjectId,
+      ref: 'User',
+      default: []
     }],
-    followings: [{ 
-      type: Schema.Types.ObjectId, 
-      ref: 'User', 
-      default: [] 
+    followings: [{
+      type: Schema.Types.ObjectId,
+      ref: 'User',
+      default: []
     }],
     isDeleted: { type: Boolean, default: false },
     otpVerification: { type: otpVerificationSchema, required: false },
@@ -57,12 +57,13 @@ const userSchema = new Schema<IUser>(
 
 
 
-//exist user check
+// find user by _id
 userSchema.statics.isExistUserById = async (id: string) => {
   const isExist = await User.findById(id);
   return isExist;
 };
 
+// find user by email
 userSchema.statics.isExistUserByEmail = async (email: string) => {
   const isExist = await User.findOne({ email });
   return isExist;
@@ -76,9 +77,10 @@ userSchema.statics.isMatchPassword = async (
   return await bcrypt.compare(password, hashPassword);
 };
 
-//check user
+
 userSchema.pre('save', async function (next) {
-  //check user
+  console.log("\nuser model this check:", this);
+  // check already exist user
   const isExist = await User.findOne({ email: this.email });
   if (isExist) {
     throw new ApiError(StatusCodes.BAD_REQUEST, 'Email already exist!');
