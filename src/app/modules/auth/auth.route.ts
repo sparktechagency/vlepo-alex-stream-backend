@@ -1,9 +1,9 @@
 import express from 'express';
-import { USER_ROLES } from '../../../enums/user';
 import auth from '../../middlewares/auth';
 import validateRequest from '../../middlewares/validateRequest';
 import { AuthController } from './auth.controller';
 import { AuthValidation } from './auth.validation';
+import { USER_ROLE } from '../user/user.constants';
 const router = express.Router();
 
 router.post(
@@ -32,7 +32,7 @@ router.post(
 
 router.post(
   '/change-password',
-  auth(USER_ROLES.ADMIN, USER_ROLES.USER),
+  auth(USER_ROLE.SUPER_ADMIN, USER_ROLE.USER, USER_ROLE.CREATOR),
   validateRequest(AuthValidation.createChangePasswordZodSchema),
   AuthController.changePassword
 );

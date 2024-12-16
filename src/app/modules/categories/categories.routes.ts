@@ -1,7 +1,7 @@
 import { Router } from "express";
 import validateRequest from "../../middlewares/validateRequest";
-import { USER_ROLES } from "../../../enums/user";
 import auth from "../../middlewares/auth";
+import { USER_ROLE } from "../user/user.constants";
 
 const router = Router();
 
@@ -18,7 +18,7 @@ router.post(
 
 router.put(
   "/",
-  auth(USER_ROLES.ADMIN),
+  auth(USER_ROLE.CREATOR),
   // validateRequest(),
   // updateCategory,
 );

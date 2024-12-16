@@ -4,6 +4,7 @@ import { model, Schema } from 'mongoose';
 import config from '../../../config';
 import ApiError from '../../../errors/ApiError';
 import { IOtpVerification, IUser, UserModal } from './user.interface';
+import { USER_ROLE, USER_STATUS } from './user.constants';
 
 
 // Otp Verification Schema
@@ -55,6 +56,8 @@ const userSchema = new Schema<IUser>(
   { timestamps: true }
 );
 
+userSchema.index({role: 1})
+
 
 
 // find user by _id
@@ -79,7 +82,6 @@ userSchema.statics.isMatchPassword = async (
 
 
 userSchema.pre('save', async function (next) {
-  console.log("\nuser model this check:", this);
   // check already exist user
   const isExist = await User.findOne({ email: this.email });
   if (isExist) {

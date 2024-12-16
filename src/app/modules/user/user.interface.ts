@@ -1,4 +1,5 @@
 import { Model, ObjectId } from 'mongoose';
+import { USER_ROLE, USER_STATUS } from './user.constants';
 
 export interface IOtpVerification extends Document {
   expireAt: Date; 
@@ -10,6 +11,7 @@ export interface IUser extends Document {
   email: string;
   photo?: string;
   password: string;
+  confirmPassword: string;
   role?: USER_ROLE;
   status?: USER_STATUS;
   savedEvents?: ObjectId[];

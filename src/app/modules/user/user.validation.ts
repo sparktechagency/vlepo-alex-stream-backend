@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { USER_ROLE, USER_STATUS } from './user.constants';
 
 const otpVerificationSchema = z.object({
   otp: z.string().nullable(),
@@ -11,6 +12,7 @@ const createUserZodSchema = z.object({
     email: z.string().email("Invalid email format").min(1, "Email is required"),
     photo: z.string().url().optional().default("https://i.ibb.co/z5YHLV9/profile.png"),
     password: z.string().min(8, "Password must be at least 8 characters"),
+    confirmPassword: z.string().min(8, "Password must be at least 8 characters"),
     role: z.enum([USER_ROLE.SUPER_ADMIN, USER_ROLE.USER, USER_ROLE.CREATOR]).default(USER_ROLE.USER),
     status: z.enum([USER_STATUS.ACTIVE, USER_STATUS.BLOCKED]).default(USER_STATUS.ACTIVE),
     savedEvents: z.array(z.string().uuid()).default([]),

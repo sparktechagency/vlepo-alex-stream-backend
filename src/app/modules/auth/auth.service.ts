@@ -88,6 +88,8 @@ const forgetPasswordToDB = async (email: string) => {
   );
 };
 
+// day end
+
 //verify email
 const verifyEmailToDB = async (payload: IVerifyEmail) => {
   const { email, oneTimeCode } = payload;

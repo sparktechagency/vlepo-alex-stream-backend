@@ -9,6 +9,10 @@ import { IUser } from './user.interface';
 import { User } from './user.model';
 
 const createUserToDB = async (payload: Partial<IUser>): Promise<IUser> => {
+  if(payload.password !== payload?.confirmPassword){
+    throw new ApiError(StatusCodes.BAD_GATEWAY, "Your password does't match!")
+  }
+  
   const createUser = await User.create(payload);
   if (!createUser) {
     throw new ApiError(StatusCodes.BAD_REQUEST, 'Failed to create user');

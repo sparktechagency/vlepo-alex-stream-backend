@@ -23,10 +23,12 @@ app.use('/api/v1', router);
 
 //live response
 app.get('/', (req: Request, res: Response) => {
+  console.log('Request received at root route');
   res.send(
     '<h1 style="text-align:center; color:#A55FEF; font-family:Verdana;">Hey, How can I assist you today!</h1>'
   );
 });
+
 
 //global error handle
 app.use(globalErrorHandler);
