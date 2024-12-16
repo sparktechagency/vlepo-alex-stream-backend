@@ -86,7 +86,7 @@ const forgetPasswordToDB = async (email: string) => {
   emailHelper.sendEmail(forgetPassword);
 
   //save to DB
-  const expireAt = new Date(Date.now() + 50 * 60 * 1000); // validaty 5 min todo: change 50 to 5
+  const expireAt = new Date(Date.now() + 10 * 60 * 1000); // validaty 10 min 
 
   await User.findOneAndUpdate({ email },
     {
@@ -153,8 +153,9 @@ const verifyEmailToDB = async (payload: IVerifyEmail) => {
       {
         otpVerification: {
           otp: "",
-          expireAt: new Date(Date.now() + 50 * 60000), // 5 min todo: 50 => 5
-          token: createToken
+          expireAt: new Date(Date.now() + 10 * 60000), // 10 min todo
+          token: createToken,
+          isResetPassword: true
         }
       },
       { new: true }
@@ -165,55 +166,32 @@ const verifyEmailToDB = async (payload: IVerifyEmail) => {
     data = createToken;
   }
 
-
-  // if (!isExistUser.verified) {
-  //   await User.findOneAndUpdate(
-  //     { _id: isExistUser._id },
-  //     { verified: true, authentication: { oneTimeCode: null, expireAt: null } }
-  //   );
-  //   message = 'Email verify successfully';
-  // } else {
-  //   await User.findOneAndUpdate(
-  //     { _id: isExistUser._id },
-  //     {
-  //       authentication: {
-  //         isResetPassword: true,
-  //         oneTimeCode: null,
-  //         expireAt: null,
-  //       },
-  //     }
-  //   );    
-  // }
-
   return { data, message };
 };
 
 //forget password
 const resetPasswordToDB = async (
-  token: string,
+  token: string, // only token without Bearer
   payload: IAuthResetPassword
 ) => {
   const { newPassword, confirmPassword } = payload;
   //isExist token
-  const isExistToken = await ResetToken.isExistToken(token);
-  if (!isExistToken) {
+  const user = await User.findOne({ "otpVerification.token": token }).select("+otpVerification");
+
+  if (!user) {
     throw new ApiError(StatusCodes.UNAUTHORIZED, 'You are not authorized');
   }
 
-  //user permission check
-  const isExistUser = await User.findById(isExistToken.user).select(
-    '+authentication'
-  );
-  if (!isExistUser?.authentication?.isResetPassword) {
+  if (!user?.otpVerification?.isResetPassword) {
     throw new ApiError(
       StatusCodes.UNAUTHORIZED,
       "You don't have permission to change the password. Please click again to 'Forgot Password'"
     );
   }
 
-  //validity check
-  const isValid = await ResetToken.isExpireToken(token);
-  if (!isValid) {
+  // validity check
+  const isValid = new Date() >= user.otpVerification?.expireAt; console.log(isValid);
+  if (isValid) {
     throw new ApiError(
       StatusCodes.BAD_REQUEST,
       'Token expired, Please click again to the forget password'
@@ -221,6 +199,7 @@ const resetPasswordToDB = async (
   }
 
   //check password
+
   if (newPassword !== confirmPassword) {
     throw new ApiError(
       StatusCodes.BAD_REQUEST,
@@ -235,15 +214,23 @@ const resetPasswordToDB = async (
 
   const updateData = {
     password: hashPassword,
-    authentication: {
+    otpVerification: {
       isResetPassword: false,
+      token: "",
+      expireAt: new Date()
     },
   };
 
-  await User.findOneAndUpdate({ _id: isExistToken.user }, updateData, {
-    new: true,
-  });
+  const result = await User.findOneAndUpdate(
+    { _id: user._id },
+    updateData,
+    { new: true }
+  );
+  console.log(result);
+
+  return result;
 };
+
 
 const changePasswordToDB = async (
   user: JwtPayload,
@@ -289,6 +276,7 @@ const changePasswordToDB = async (
   };
   await User.findOneAndUpdate({ _id: user.id }, updateData, { new: true });
 };
+
 
 export const AuthService = {
   loginUserFromDB,

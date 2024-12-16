@@ -11,7 +11,8 @@ import { USER_ROLE, USER_STATUS } from './user.constants';
 const otpVerificationSchema = new Schema<IOtpVerification>({
   otp: { type: String, default: "" },
   expireAt: { type: Date, default: new Date() },
-  token: {type: String, default: ""}
+  token: {type: String, default: ""},
+  isResetPassword: {type: Boolean, default: false}
 });
 
 

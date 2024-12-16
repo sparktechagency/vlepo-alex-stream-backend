@@ -41,8 +41,9 @@ const forgetPassword = catchAsync(async (req: Request, res: Response) => {
 });
 
 const resetPassword = catchAsync(async (req: Request, res: Response) => {
-  const token = req.headers.authorization;
+  const token = req.headers.authorization; // This token for otp change which store user schema otp verification
   const { ...resetData } = req.body;
+  
   const result = await AuthService.resetPasswordToDB(token!, resetData);
 
   sendResponse(res, {

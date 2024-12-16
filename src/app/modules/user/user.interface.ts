@@ -5,6 +5,7 @@ export interface IOtpVerification {
   expireAt: Date;
   otp: string;
   token:string;
+  isResetPassword: boolean;
 }
 
 export interface IUser extends Document {
