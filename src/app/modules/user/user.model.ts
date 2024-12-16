@@ -51,12 +51,12 @@ const userSchema = new Schema<IUser>(
       default: []
     }],
     isDeleted: { type: Boolean, default: false },
-    otpVerification: { type: otpVerificationSchema, required: false },
+    otpVerification: { type: otpVerificationSchema, required: false, select: false },
   },
   { timestamps: true }
 );
 
-userSchema.index({role: 1})
+userSchema.index({ role: 1 })
 
 
 
