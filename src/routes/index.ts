@@ -1,7 +1,7 @@
 import express from 'express';
 import { AuthRoutes } from '../app/modules/auth/auth.route';
 import { UserRoutes } from '../app/modules/user/user.route';
-import { EventRoutes } from '../app/modules/events/events.routes';
+import { EventRoutes } from '../app/modules/events/event.routes';
 import { CategoriRoutes } from '../app/modules/categories/categories.routes';
 const router = express.Router();
 

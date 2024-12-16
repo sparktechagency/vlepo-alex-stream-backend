@@ -17,4 +17,9 @@ router.get("/",
     categoriController.getAllCategory
 )
 
+router.delete("/:id", 
+    auth(USER_ROLE.CREATOR, USER_ROLE.SUPER_ADMIN),
+    categoriController.deleteCategory
+)
+
 export const CategoriRoutes = router;
