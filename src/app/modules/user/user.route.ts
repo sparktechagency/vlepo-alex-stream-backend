@@ -19,10 +19,10 @@ router
     validateRequest(UserValidation.createUserZodSchema),
     UserController.createUser
   )
-  .patch(
-    auth(USER_ROLE.CREATOR, USER_ROLE.USER, USER_ROLE.SUPER_ADMIN),
-    fileUploadHandler(),
-    UserController.updateProfile
-  );
+  // .patch(
+  //   auth(USER_ROLE.CREATOR, USER_ROLE.USER, USER_ROLE.SUPER_ADMIN),
+  //   fileUploadHandler(),
+  //   UserController.updateProfile
+  // );
 
 export const UserRoutes = router;

@@ -6,19 +6,15 @@ import ApiError from '../../../errors/ApiError';
 import { emailHelper } from '../../../helpers/emailHelper';
 import { jwtHelper } from '../../../helpers/jwtHelper';
 import { emailTemplate } from '../../../shared/emailTemplate';
-import {
-  IAuthResetPassword,
-  IChangePassword,
-  ILoginData,
-  IVerifyEmail,
-} from '../../../types/auth';
 import cryptoToken from '../../../util/cryptoToken';
 import generateOTP from '../../../util/generateOTP';
 import { ResetToken } from '../resetToken/resetToken.model';
 import { User } from '../user/user.model';
+import { USER_STATUS } from '../user/user.constants';
+import { IAuthResetPassword, IChangePassword, IVerifyEmail, TLoginUser } from './atuh.interface';
 
 //login
-const loginUserFromDB = async (payload: ILoginData) => {
+const loginUserFromDB = async (payload: TLoginUser) => {
   const { email, password } = payload;
   const isExistUser = await User.findOne({ email }).select('+password');
   if (!isExistUser) {
@@ -224,7 +220,7 @@ const changePasswordToDB = async (
     currentPassword &&
     !(await User.isMatchPassword(currentPassword, isExistUser.password))
   ) {
-    throw new ApiError(StatusCodes.BAD_REQUEST, 'Password is incorrect');
+    throw new ApiError(StatusCodes.BAD_REQUEST, 'Current password is incorrect');
   }
 
   //newPassword and current password
@@ -255,9 +251,9 @@ const changePasswordToDB = async (
 };
 
 export const AuthService = {
-  verifyEmailToDB,
   loginUserFromDB,
-  forgetPasswordToDB,
-  resetPasswordToDB,
   changePasswordToDB,
+  forgetPasswordToDB,
+  verifyEmailToDB,
+  resetPasswordToDB,
 };

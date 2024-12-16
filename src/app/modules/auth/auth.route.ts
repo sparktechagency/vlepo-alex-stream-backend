@@ -10,7 +10,7 @@ router.post(
   '/login',
   validateRequest(AuthValidation.createLoginZodSchema),
   AuthController.loginUser
-);
+);    
 
 router.post(
   '/forget-password',

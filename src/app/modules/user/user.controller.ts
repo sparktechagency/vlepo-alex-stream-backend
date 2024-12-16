@@ -31,27 +31,31 @@ const getUserProfile = catchAsync(async (req: Request, res: Response) => {
 });
 
 //update profile
-const updateProfile = catchAsync(
-  async (req: Request, res: Response, next: NextFunction) => {
-    const user = req.user;
-    let photo;
-    if (req.files && 'image' in req.files && req.files.image[0]) {
-      photo = `/images/${req.files.image[0].filename}`;
-    }
+// const updateProfile = catchAsync(
+//   async (req: Request, res: Response, next: NextFunction) => {
+//     const user = req.user;
+//     let photo;
+//     if (req.files && 'image' in req.files && req.files.image[0]) {
+//       photo = `/images/${req.files.image[0].filename}`;
+//     }
 
-    const data = {
-      photo,
-      ...req.body,
-    };
-    const result = await UserService.updateProfileToDB(user, data);
+//     const data = {
+//       photo,
+//       ...req.body,
+//     };
+//     const result = await UserService.updateProfileToDB(user, data);
 
-    sendResponse(res, {
-      success: true,
-      statusCode: StatusCodes.OK,
-      message: 'Profile updated successfully',
-      data: result,
-    });
-  }
-);
+//     sendResponse(res, {
+//       success: true,
+//       statusCode: StatusCodes.OK,
+//       message: 'Profile updated successfully',
+//       data: result,
+//     });
+//   }
+// );
 
-export const UserController = { createUser, getUserProfile, updateProfile };
+export const UserController = { 
+  createUser, 
+  getUserProfile, 
+  // updateProfile 
+};
