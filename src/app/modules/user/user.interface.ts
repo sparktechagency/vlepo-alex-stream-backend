@@ -1,9 +1,10 @@
-import { Model, ObjectId } from 'mongoose';
+import { Document, Model, ObjectId } from 'mongoose';
 import { USER_ROLE, USER_STATUS } from './user.constants';
 
-export interface IOtpVerification extends Document {
-  expireAt: Date; 
-  otp: string;     
+export interface IOtpVerification {
+  expireAt: Date;
+  otp: string;
+  token:string;
 }
 
 export interface IUser extends Document {
@@ -15,13 +16,13 @@ export interface IUser extends Document {
   role?: USER_ROLE;
   status?: USER_STATUS;
   savedEvents?: ObjectId[];
-  eventHistory?: ObjectId[];   
-  followers?: ObjectId[];      
-  followings?: ObjectId[];     
+  eventHistory?: ObjectId[];
+  followers?: ObjectId[];
+  followings?: ObjectId[];
   isDeleted?: boolean;
   otpVerification?: IOtpVerification;
   createdAt?: Date;
-  updatedAt?:Date;
+  updatedAt?: Date;
 };
 
 export type UserModal = {

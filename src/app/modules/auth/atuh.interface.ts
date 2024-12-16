@@ -5,7 +5,7 @@ export type TLoginUser = {
 
   export type IVerifyEmail = {
     email: string;
-    oneTimeCode: number;
+    oneTimeCode: string;
   };
   
   export type IAuthResetPassword = {

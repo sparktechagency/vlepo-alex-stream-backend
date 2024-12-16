@@ -19,7 +19,7 @@ const createAccount = (values: ICreateAccount) => {
   return data;
 };
 
-const resetPassword = (values: IResetPassword) => {
+const resetPassword = (values: IResetPassword) => { // todo: change <img
   const data = {
     to: values.email,
     subject: 'Reset your password',
