@@ -1,27 +1,20 @@
 import { Router } from "express";
-import validateRequest from "../../middlewares/validateRequest";
 import auth from "../../middlewares/auth";
 import { USER_ROLE } from "../user/user.constants";
+import validateRequest from "../../middlewares/validateRequest";
+import { categoriesValidationSchema } from "./categories.validation";
+import { categoriController } from "./categories.controller";
 
 const router = Router();
 
-router.get(
-  '/',
-  //getAllCategories  todo
-);
+router.post("/create", 
+    auth(USER_ROLE.CREATOR),
+    validateRequest(categoriesValidationSchema.categoryCreateValidationSchema),
+    categoriController.createCategory
+)
 
-router.post(
-  '/',
-  // validateRequest();
-  //createCategory  todo
-);
-
-router.put(
-  "/",
-  auth(USER_ROLE.CREATOR),
-  // validateRequest(),
-  // updateCategory,
-);
-
+router.get("/", 
+    categoriController.getAllCategory
+)
 
 export const CategoriRoutes = router;

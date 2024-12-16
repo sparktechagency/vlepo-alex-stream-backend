@@ -221,14 +221,13 @@ const resetPasswordToDB = async (
     },
   };
 
-  const result = await User.findOneAndUpdate(
+  await User.findOneAndUpdate(
     { _id: user._id },
     updateData,
     { new: true }
   );
-  console.log(result);
 
-  return result;
+  return null;
 };
 
 
