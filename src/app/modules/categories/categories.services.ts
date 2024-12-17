@@ -20,6 +20,24 @@ const getSingleCategoryById = async (id: string) => {
     return category;
 }
 
+const updateSingleCategoryById = async (id: string, payload: ICategory) => {
+    console.log(payload);
+    if(Object.keys(payload).length === 0){
+        throw new ApiError(StatusCodes.UNPROCESSABLE_ENTITY, "The provided info is empty and cannot be processed.");
+    }
+
+    const category = await Category.findByIdAndUpdate(id,
+        payload,
+        {new: true}
+    );
+
+    if (!category) {
+        throw new ApiError(StatusCodes.NOT_FOUND, "Category not found!");
+    }
+
+    return category;
+}
+
 const deleteCategory = async (id: string) => {
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
@@ -39,5 +57,6 @@ export const categoriServices = {
     createCategoryIntoDB,
     getAllCategoriesIntoDB,
     getSingleCategoryById,
+    updateSingleCategoryById,
     deleteCategory,
 }

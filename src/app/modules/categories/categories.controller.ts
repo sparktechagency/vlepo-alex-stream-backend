@@ -39,6 +39,18 @@ const getSingleCategory = catchAsync(async(req: Request, res: Response) => {
     });
 })
 
+const updateSingleCategory = catchAsync(async(req: Request, res: Response) => {
+    const {categoryId} = req.params;
+    const result = await categoriServices.updateSingleCategoryById(categoryId, req.body);
+
+    sendResponse(res, {
+        success: true,
+        statusCode: StatusCodes.OK,
+        message: 'Updated single category!',
+        data: result,
+    });
+})
+
 const deleteCategory = catchAsync(async (req: Request, res: Response) => {
     const {id} = req.params;
 
@@ -57,5 +69,6 @@ export const categoriController = {
     createCategory,
     getAllCategory,
     getSingleCategory,
+    updateSingleCategory,
     deleteCategory,
 }
