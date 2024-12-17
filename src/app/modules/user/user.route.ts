@@ -37,4 +37,10 @@ router
     UserController.savedUserEvents
   )
 
+  router.patch("/toggle-follow",
+    validateRequest(UserValidation.toggleFollowZodSchema),
+    auth(USER_ROLE.USER),
+    UserController.toggleFollow
+  )
+
 export const UserRoutes = router;

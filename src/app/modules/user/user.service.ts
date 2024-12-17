@@ -8,6 +8,8 @@ import unlinkFile from '../../../shared/unlinkFile';
 import { IUser } from './user.interface';
 import { User } from './user.model';
 import { Event } from '../events/events.model';
+import { ObjectId } from 'mongoose';
+import { USER_ROLE } from './user.constants';
 
 const createUserToDB = async (payload: Partial<IUser>): Promise<IUser> => {
   if (payload.password !== payload?.confirmPassword) {
@@ -97,10 +99,48 @@ const savedUserEvents = async (userId: string, eventId: string) => {
   return { savedEvents: result?.savedEvents };
 }
 
+
+//followerId: req.user => who want to follow => req.user
+const toggleFollow = async (followerId: ObjectId, userId: ObjectId) => {
+  const creator = await User.findById(userId); // jake follow korte chai
+
+  if (!creator) {
+    throw new ApiError(StatusCodes.NOT_FOUND, "This person not available!")
+  }
+  
+  if(creator.role === USER_ROLE.USER || creator.role === USER_ROLE.SUPER_ADMIN){
+    throw new ApiError(StatusCodes.NOT_FOUND, "You can't follow him!")
+  }
+
+  const user = await User.findById(followerId); // je follow korbe
+
+  const isFollowing = user?.followings?.includes(userId);
+  const isFollowers = creator?.followers?.includes(followerId);
+
+  const updateFollowingQuery = isFollowing
+    ? { $pull: { followings: userId } } // save into the creator 
+    : { $addToSet: { followings: userId } }; // save into the creator
+
+  const updateFollowing = await User.findByIdAndUpdate(followerId, updateFollowingQuery, { new: true });
+
+  if(!updateFollowing){
+    throw new ApiError(StatusCodes.BAD_GATEWAY, "Something went wrong!")
+  }
+
+  const updateFollowersQuery = isFollowers
+    ? { $pull: { followers: followerId } } // save into the creator 
+    : { $addToSet: { followers: followerId } }; // save into the creator
+
+    await User.findByIdAndUpdate(userId, updateFollowersQuery, { new: true });
+
+  return { followings: updateFollowing?.followings };
+}
+
 export const UserService = {
   createUserToDB,
   getUserProfileFromDB,
   userFavouriteCategoryUpdate,
   savedUserEvents,
+  toggleFollow,
   // updateProfileToDB,
 };

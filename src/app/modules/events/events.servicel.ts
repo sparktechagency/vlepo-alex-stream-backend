@@ -55,7 +55,7 @@ const findSaveEvent = async (userId: string) => {
     const savedEvents = await Event.find(
         { _id: { $in: user?.savedEvents } }
     )
-
+    
     return savedEvents;
 }
 

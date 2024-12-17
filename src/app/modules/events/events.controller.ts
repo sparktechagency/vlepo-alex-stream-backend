@@ -55,9 +55,11 @@ const findSaveEvent = catchAsync(async (req: Request, res: Response) => {
 });
 
 
+
 export const eventController = {
     createEvents,
     getSingleEventByEventId,
     getAllEvents,
     findSaveEvent,
+    
 }
