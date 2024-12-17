@@ -10,6 +10,7 @@ import { User } from './user.model';
 import { Event } from '../events/events.model';
 import { ObjectId } from 'mongoose';
 import { USER_ROLE } from './user.constants';
+import { QueryBuilder } from '../../builder/QueryBuilder';
 
 const createUserToDB = async (payload: Partial<IUser>): Promise<IUser> => {
   if (payload.password !== payload?.confirmPassword) {
@@ -107,8 +108,8 @@ const toggleFollow = async (followerId: ObjectId, userId: ObjectId) => {
   if (!creator) {
     throw new ApiError(StatusCodes.NOT_FOUND, "This person not available!")
   }
-  
-  if(creator.role === USER_ROLE.USER || creator.role === USER_ROLE.SUPER_ADMIN){
+
+  if (creator.role === USER_ROLE.USER || creator.role === USER_ROLE.SUPER_ADMIN) {
     throw new ApiError(StatusCodes.NOT_FOUND, "You can't follow him!")
   }
 
@@ -123,7 +124,7 @@ const toggleFollow = async (followerId: ObjectId, userId: ObjectId) => {
 
   const updateFollowing = await User.findByIdAndUpdate(followerId, updateFollowingQuery, { new: true });
 
-  if(!updateFollowing){
+  if (!updateFollowing) {
     throw new ApiError(StatusCodes.BAD_GATEWAY, "Something went wrong!")
   }
 
@@ -131,9 +132,30 @@ const toggleFollow = async (followerId: ObjectId, userId: ObjectId) => {
     ? { $pull: { followers: followerId } } // save into the creator 
     : { $addToSet: { followers: followerId } }; // save into the creator
 
-    await User.findByIdAndUpdate(userId, updateFollowersQuery, { new: true });
+  await User.findByIdAndUpdate(userId, updateFollowersQuery, { new: true });
 
   return { followings: updateFollowing?.followings };
+}
+
+const getFollowingUserProfile = async (query: Record<string, unknown>, userId: string) => {
+  const logedInUser = await User.findById(userId);
+   console.log({logedInUser})
+
+  const followingIds = logedInUser?.followings; 
+  
+  console.log(followingIds);
+
+  const users = new QueryBuilder(User.find(
+    { _id: { $in: followingIds } }
+  ), query)
+    .fields()
+    .paginate()
+    .sort()
+
+  const result = await users.modelQuery
+  .select("name photo")
+
+  return result;
 }
 
 export const UserService = {
@@ -142,5 +164,6 @@ export const UserService = {
   userFavouriteCategoryUpdate,
   savedUserEvents,
   toggleFollow,
+  getFollowingUserProfile,
   // updateProfileToDB,
 };

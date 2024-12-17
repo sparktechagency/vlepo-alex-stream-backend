@@ -30,9 +30,9 @@ const getUserProfile = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-const userFavouriteCategoryUpdate = catchAsync(async(req: Request, res: Response) => {
-  const {id} = req.user;
-  const {categoryId} = req.body;
+const userFavouriteCategoryUpdate = catchAsync(async (req: Request, res: Response) => {
+  const { id } = req.user;
+  const { categoryId } = req.body;
 
   const result = await UserService.userFavouriteCategoryUpdate(id, categoryId);
 
@@ -44,9 +44,9 @@ const userFavouriteCategoryUpdate = catchAsync(async(req: Request, res: Response
   });
 });
 
-const savedUserEvents = catchAsync(async(req: Request, res: Response) => {
-  const {id} = req.user;
-  const {eventId} = req.body;
+const savedUserEvents = catchAsync(async (req: Request, res: Response) => {
+  const { id } = req.user;
+  const { eventId } = req.body;
 
   const result = await UserService.savedUserEvents(id, eventId);
 
@@ -60,18 +60,32 @@ const savedUserEvents = catchAsync(async(req: Request, res: Response) => {
 
 
 const toggleFollow = catchAsync(async (req: Request, res: Response) => {
-  const {id} = req.user;
-  const {userId} = req.body;
+  const { id } = req.user;
+  const { userId } = req.body;
 
   const result = await UserService.toggleFollow(id, userId);
 
   sendResponse(res, {
-      success: true,
-      statusCode: StatusCodes.OK,
-      message: 'You are following him!',
-      data: result,
+    success: true,
+    statusCode: StatusCodes.OK,
+    message: 'You are following him!',
+    data: result,
   });
 });
+
+const getFollowingUserProfile = catchAsync(async (req: Request, res: Response) => {
+  const { id } = req.user;
+
+  const result = await UserService.getFollowingUserProfile(req.query, id);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: StatusCodes.OK,
+    message: 'Retrive followed user!',
+    data: result,
+  });
+});
+
 
 //update profile
 // const updateProfile = catchAsync(
@@ -97,11 +111,12 @@ const toggleFollow = catchAsync(async (req: Request, res: Response) => {
 //   }
 // );
 
-export const UserController = { 
-  createUser, 
-  getUserProfile, 
+export const UserController = {
+  createUser,
+  getUserProfile,
   userFavouriteCategoryUpdate,
   savedUserEvents,
   toggleFollow,
+  getFollowingUserProfile,
   // updateProfile 
 };
