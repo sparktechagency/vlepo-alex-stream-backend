@@ -8,13 +8,18 @@ import unlinkFile from '../../../shared/unlinkFile';
 import { IUser } from './user.interface';
 import { User } from './user.model';
 import { Event } from '../events/events.model';
-import { ObjectId } from 'mongoose';
+import mongoose, { ObjectId } from 'mongoose';
 import { USER_ROLE } from './user.constants';
 import { QueryBuilder } from '../../builder/QueryBuilder';
 
-const createUserToDB = async (payload: Partial<IUser>): Promise<IUser> => {
+const createUserToDB = async (payload: Partial<IUser>): Promise<null> => {
   if (payload.password !== payload?.confirmPassword) {
     throw new ApiError(StatusCodes.BAD_GATEWAY, "Your password does't match!")
+  }
+
+  const isEmailExit = await User.findOne({ email: payload.email });
+  if (isEmailExit) {
+    throw new ApiError(StatusCodes.BAD_REQUEST, "Email already exist")
   }
 
   const createUser = await User.create(payload);
@@ -22,7 +27,7 @@ const createUserToDB = async (payload: Partial<IUser>): Promise<IUser> => {
     throw new ApiError(StatusCodes.BAD_REQUEST, 'Failed to create user');
   }
 
-  return createUser;
+  return null;
 };
 
 const getUserProfileFromDB = async (
@@ -102,15 +107,15 @@ const savedUserEvents = async (userId: string, eventId: string) => {
 
 
 //followerId: req.user => who want to follow => req.user
-const toggleFollow = async (followerId: ObjectId, userId: ObjectId) => {
+const toggleFollow = async (followerId: ObjectId, userId: string) => {
+  if (!mongoose.Types.ObjectId.isValid(userId)) {
+    throw new ApiError(StatusCodes.BAD_REQUEST, "Invalid creator id")
+  }
+
   const creator = await User.findById(userId); // jake follow korte chai
 
   if (!creator) {
     throw new ApiError(StatusCodes.NOT_FOUND, "This person not available!")
-  }
-
-  if (creator.role === USER_ROLE.USER || creator.role === USER_ROLE.SUPER_ADMIN) {
-    throw new ApiError(StatusCodes.NOT_FOUND, "You can't follow him!")
   }
 
   const user = await User.findById(followerId); // je follow korbe
@@ -139,10 +144,10 @@ const toggleFollow = async (followerId: ObjectId, userId: ObjectId) => {
 
 const getFollowingUserProfile = async (query: Record<string, unknown>, userId: string) => {
   const logedInUser = await User.findById(userId);
-   console.log({logedInUser})
+  console.log({ logedInUser })
 
-  const followingIds = logedInUser?.followings; 
-  
+  const followingIds = logedInUser?.followings;
+
   console.log(followingIds);
 
   const users = new QueryBuilder(User.find(
@@ -153,7 +158,7 @@ const getFollowingUserProfile = async (query: Record<string, unknown>, userId: s
     .sort()
 
   const result = await users.modelQuery
-  .select("name photo")
+    .select("name photo")
 
   return result;
 }

@@ -41,18 +41,18 @@ const saveEventZodSchema = z.object({
   })
 })
 
-const toggleFollowZodSchema = z.object({
-  body: z.object({
-    userId: z.string().regex(/^[0-9a-fA-F]{24}$/, {
-      message: "Accepted ObjectId format only!"
-    }),
-  })
-})
+// const toggleFollowZodSchema = z.object({
+//   body: z.object({
+//     userId: z.string().regex(/^[0-9a-fA-F]{24}$/, {
+//       message: "Accepted ObjectId format only!"
+//     }),
+//   })
+// })
 
 
 export const UserValidation = {
   createUserZodSchema,
   updateFavouriteCategoryZodSchema,
   saveEventZodSchema,
-  toggleFollowZodSchema,
+  // toggleFollowZodSchema,
 };

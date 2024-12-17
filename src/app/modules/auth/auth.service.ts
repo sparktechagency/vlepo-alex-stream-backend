@@ -46,13 +46,19 @@ const loginUserFromDB = async (payload: TLoginUser) => {
   }
 
   //create token
-  const createToken = jwtHelper.createToken(
+  const accessToken = jwtHelper.createToken(
     { id: isExistUser._id, role: isExistUser.role, email: isExistUser.email },
     config.jwt.jwt_secret as Secret,
     config.jwt.jwt_expire_in as string
   );
 
-  return { createToken };
+  const refreshToken = jwtHelper.createToken(
+    { id: isExistUser._id, role: isExistUser.role, email: isExistUser.email },
+    config.jwt.jwt_refresh as Secret,
+    config.jwt.jwt_refresh_expire_in as string
+  );
+
+  return { accessToken,refreshToken };
 };
 
 //forget password

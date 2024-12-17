@@ -38,7 +38,7 @@ router
   )
 
   router.patch("/toggle-follow",
-    validateRequest(UserValidation.toggleFollowZodSchema),
+    // validateRequest(UserValidation.toggleFollowZodSchema),
     auth(USER_ROLE.USER),
     UserController.toggleFollow
   )
