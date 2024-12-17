@@ -4,6 +4,7 @@ import { StatusCodes } from 'http-status-codes';
 import globalErrorHandler from './app/middlewares/globalErrorHandler';
 import router from './routes';
 import { Morgan } from './shared/morgen';
+import { EVENTS_STATUS } from './app/modules/events/events.constants';
 const app = express();
 
 //morgan
