@@ -17,6 +17,10 @@ router.get("/",
     categoriController.getAllCategory
 )
 
+router.get("/:categoryId", 
+    categoriController.getSingleCategory
+)
+
 router.delete("/:id", 
     auth(USER_ROLE.CREATOR, USER_ROLE.SUPER_ADMIN),
     categoriController.deleteCategory

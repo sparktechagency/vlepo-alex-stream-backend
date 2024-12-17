@@ -27,6 +27,18 @@ const getAllCategory = catchAsync(async (req: Request, res: Response) => {
     });
 });
 
+const getSingleCategory = catchAsync(async(req: Request, res: Response) => {
+    const {categoryId} = req.params;
+    const result = await categoriServices.getSingleCategoryById(categoryId);
+
+    sendResponse(res, {
+        success: true,
+        statusCode: StatusCodes.OK,
+        message: 'Retrive single category!',
+        data: result,
+    });
+})
+
 const deleteCategory = catchAsync(async (req: Request, res: Response) => {
     const {id} = req.params;
 
@@ -44,5 +56,6 @@ const deleteCategory = catchAsync(async (req: Request, res: Response) => {
 export const categoriController = {
     createCategory,
     getAllCategory,
+    getSingleCategory,
     deleteCategory,
 }

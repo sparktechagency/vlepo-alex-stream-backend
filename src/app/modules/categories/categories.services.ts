@@ -4,26 +4,31 @@ import { ICategory } from "./categories.interface";
 import Category from "./categories.model";
 import mongoose from "mongoose";
 
-const createCategoryIntoDB = async(payload: ICategory) => {
+const createCategoryIntoDB = async (payload: ICategory) => {
     const result = await Category.create(payload);
 
     return result;
 }
 
-const getAllCategoriesIntoDB = async() => {
+const getAllCategoriesIntoDB = async () => {
     const categories = await Category.find();
     return categories;
 }
 
-const deleteCategory = async(id: string) => {   
+const getSingleCategoryById = async (id: string) => {
+    const category = await Category.findById(id);
+    return category;
+}
+
+const deleteCategory = async (id: string) => {
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
         throw new ApiError(StatusCodes.FORBIDDEN, "ObjectId is not valid!");
     }
 
     const result = await Category.findByIdAndDelete(id);
-    
-    if(!result) {
+
+    if (!result) {
         throw new ApiError(StatusCodes.FORBIDDEN, "Category not found!");
     }
 
@@ -33,5 +38,6 @@ const deleteCategory = async(id: string) => {
 export const categoriServices = {
     createCategoryIntoDB,
     getAllCategoriesIntoDB,
+    getSingleCategoryById,
     deleteCategory,
 }
