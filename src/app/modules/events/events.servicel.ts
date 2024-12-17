@@ -8,7 +8,7 @@ import { USER_STATUS } from "../user/user.constants";
 
 const createEventsIntoDB = async (payload: IEvent) => {
     const { userId, categoryId } = payload;
-    
+
     const category = await Category.findById(categoryId);
     if (!category) {
         throw new ApiError(StatusCodes.NOT_FOUND, "Category not available!")
@@ -24,9 +24,15 @@ const createEventsIntoDB = async (payload: IEvent) => {
     return result;
 }
 
+const getSingleEventByEventId = async (id: string) => {
+    const event = await Event.findById(id);
+    return event;
+}
+
 
 
 
 export const eventServices = {
     createEventsIntoDB,
+    getSingleEventByEventId,
 }

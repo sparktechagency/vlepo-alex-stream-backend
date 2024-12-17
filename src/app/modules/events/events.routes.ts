@@ -11,6 +11,10 @@ router.post("/create-events",
     validateRequest(eventValidationSchema.eventCreateValidationSchema),
     auth(USER_ROLE.CREATOR, USER_ROLE.SUPER_ADMIN),
     eventController.createEvents
+);
+
+router.get("/single-event/:eventId",
+    eventController.getSingleEventByEventId
 )
 
 
