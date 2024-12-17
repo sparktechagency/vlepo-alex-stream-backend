@@ -5,6 +5,8 @@ import { IEvent } from "./events.interface";
 import { Event } from "./events.model"
 import { User } from "../user/user.model";
 import { USER_STATUS } from "../user/user.constants";
+import { QueryBuilder } from "../../builder/QueryBuilder";
+import { EventSearchableFields } from "./events.constants";
 
 const createEventsIntoDB = async (payload: IEvent) => {
     const { userId, categoryId } = payload;
@@ -30,9 +32,27 @@ const getSingleEventByEventId = async (id: string) => {
 }
 
 
+const getAllEvents = async (query: Record<string, unknown>) => {
+    const events = new QueryBuilder(Event.find(), query)
+        .fields()
+        .paginate()
+        .sort()
+        .filter()
+        .search(EventSearchableFields)
+
+    const result = await events.modelQuery
+        .populate('categoryId')
+        .populate("userId")
+        .populate("attendees")
+
+    return result;
+}
+
+
 
 
 export const eventServices = {
     createEventsIntoDB,
     getSingleEventByEventId,
+    getAllEvents,
 }

@@ -15,7 +15,12 @@ router.post("/create-events",
 
 router.get("/single-event/:eventId",
     eventController.getSingleEventByEventId
-)
+);
+
+router.get("/",
+    auth(USER_ROLE.CREATOR, USER_ROLE.SUPER_ADMIN, USER_ROLE.USER),
+    eventController.getAllEvents
+);
 
 
 

@@ -10,4 +10,11 @@ export enum EVENTS_TYPE {
 }
 
 
+export const EventSearchableFields = [
+    'eventName',
+    'description',
+    "eventType",
+    // "ticketPrice",
+]; 
+
 
