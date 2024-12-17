@@ -7,9 +7,10 @@ import unlinkFile from '../../../shared/unlinkFile';
 // import generateOTP from '../../../util/generateOTP';
 import { IUser } from './user.interface';
 import { User } from './user.model';
+import { Event } from '../events/events.model';
 
 const createUserToDB = async (payload: Partial<IUser>): Promise<IUser> => {
-  if(payload.password !== payload?.confirmPassword){
+  if (payload.password !== payload?.confirmPassword) {
     throw new ApiError(StatusCodes.BAD_GATEWAY, "Your password does't match!")
   }
 
@@ -59,26 +60,47 @@ const getUserProfileFromDB = async (
 // todo: following update
 // todo: category update
 
-const userFavouriteCategoryUpdate = async(id:string, categoryId: string) => {
+const userFavouriteCategoryUpdate = async (id: string, categoryId: string) => {
   const result = await User.findByIdAndUpdate(
-    id, 
+    id,
     {
-      $addToSet: {selectedCategory: categoryId}
+      $addToSet: { selectedCategory: categoryId }
     },
-    {new: true}
+    { new: true }
   );
-  console.log(result);
 
-  if(!result){
+  if (!result) {
     throw new ApiError(StatusCodes.NOT_FOUND, "User not found!");
   }
 
   return result;
 }
 
+const savedUserEvents = async (userId: string, eventId: string) => {
+  const isUser = await User.findById(userId);
+  if (!isUser) {
+    throw new ApiError(StatusCodes.NOT_FOUND, "User not found!");
+  }
+
+  const isEvent = await Event.findById(eventId);
+  if (!isEvent) {
+    throw new ApiError(StatusCodes.NOT_FOUND, "Event not found!");
+  }
+
+  const result = await User.findByIdAndUpdate(userId,
+    {
+      $addToSet: { savedEvents: eventId }
+    },
+    { new: true }
+  );
+
+  return { savedEvents: result?.savedEvents };
+}
+
 export const UserService = {
   createUserToDB,
   getUserProfileFromDB,
   userFavouriteCategoryUpdate,
+  savedUserEvents,
   // updateProfileToDB,
 };

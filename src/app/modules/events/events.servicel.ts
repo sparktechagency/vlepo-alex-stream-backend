@@ -48,6 +48,17 @@ const getAllEvents = async (query: Record<string, unknown>) => {
     return result;
 }
 
+const findSaveEvent = async (userId: string) => {
+    const user = await User.findById(userId);
+
+    console.log(user?.savedEvents);
+    const savedEvents = await Event.find(
+        { _id: { $in: user?.savedEvents } }
+    )
+
+    return savedEvents;
+}
+
 
 
 
@@ -55,4 +66,5 @@ export const eventServices = {
     createEventsIntoDB,
     getSingleEventByEventId,
     getAllEvents,
+    findSaveEvent,
 }

@@ -29,6 +29,12 @@ router
     validateRequest(UserValidation.updateFavouriteCategoryZodSchema),
     auth(USER_ROLE.USER),
     UserController.userFavouriteCategoryUpdate
+  );
+
+  router.patch("/save-event",
+    validateRequest(UserValidation.saveEventZodSchema),
+    auth(USER_ROLE.USER),
+    UserController.savedUserEvents
   )
 
 export const UserRoutes = router;

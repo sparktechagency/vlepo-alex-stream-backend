@@ -15,7 +15,7 @@ export interface IEvent extends Document {
   soldSeat: number; 
   startTime: Date; 
   endTime: Date; 
-  attendees: ObjectId[]; 
+  attendees?: ObjectId[]; 
   status: EVENTS_STATUS; 
   createdAt?: Date; 
   updatedAt?: Date; 

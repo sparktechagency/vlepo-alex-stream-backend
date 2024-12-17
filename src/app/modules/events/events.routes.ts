@@ -22,6 +22,11 @@ router.get("/",
     eventController.getAllEvents
 );
 
+router.get("/save-event",
+    auth(USER_ROLE.USER),
+    eventController.findSaveEvent
+);
+
 
 
 
