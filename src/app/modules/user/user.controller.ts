@@ -30,6 +30,20 @@ const getUserProfile = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const userFavouriteCategoryUpdate = catchAsync(async(req: Request, res: Response) => {
+  const {id} = req.user;
+  const {categoryId} = req.body;
+
+  const result = await UserService.userFavouriteCategoryUpdate(id, categoryId);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: StatusCodes.OK,
+    message: 'Favourite category added successfully',
+    data: result,
+  });
+})
+
 //update profile
 // const updateProfile = catchAsync(
 //   async (req: Request, res: Response, next: NextFunction) => {
@@ -57,5 +71,6 @@ const getUserProfile = catchAsync(async (req: Request, res: Response) => {
 export const UserController = { 
   createUser, 
   getUserProfile, 
+  userFavouriteCategoryUpdate,
   // updateProfile 
 };

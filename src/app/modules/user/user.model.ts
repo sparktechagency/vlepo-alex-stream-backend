@@ -52,6 +52,11 @@ const userSchema = new Schema<IUser>(
       ref: 'User',
       default: []
     }],
+    selectedCategory: [{
+      type: Schema.Types.ObjectId,
+      ref: 'Category',
+      default: []
+    }],
     isDeleted: { type: Boolean, default: false },
     otpVerification: { type: otpVerificationSchema, required: false, select: false },
   },

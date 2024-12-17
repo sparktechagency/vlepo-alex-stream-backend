@@ -25,4 +25,10 @@ router
   //   UserController.updateProfile
   // );
 
+  router.patch("/favourite-category",
+    validateRequest(UserValidation.updateFavouriteCategoryZodSchema),
+    auth(USER_ROLE.USER),
+    UserController.userFavouriteCategoryUpdate
+  )
+
 export const UserRoutes = router;

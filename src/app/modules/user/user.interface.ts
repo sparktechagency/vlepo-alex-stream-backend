@@ -20,6 +20,7 @@ export interface IUser extends Document {
   eventHistory?: ObjectId[];
   followers?: ObjectId[];
   followings?: ObjectId[];
+  selectedCategory?: ObjectId[];
   isDeleted?: boolean;
   otpVerification?: IOtpVerification;
   createdAt?: Date;

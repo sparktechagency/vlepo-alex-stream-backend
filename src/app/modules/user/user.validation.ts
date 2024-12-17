@@ -19,12 +19,22 @@ const createUserZodSchema = z.object({
     eventHistory: z.array(z.string().uuid()).default([]),
     followers: z.array(z.string().uuid()).default([]),
     followings: z.array(z.string().uuid()).default([]),
+    selectedCategory: z.array(z.string().uuid()).default([]),
     isDeleted: z.boolean().default(false),
     otpVerification: otpVerificationSchema.optional(),
   })
 });
 
+const updateFavouriteCategoryZodSchema = z.object({
+  body: z.object({
+    categoryId: z.string().regex(/^[0-9a-fA-F]{24}$/, {
+      message: "Accepted ObjectId format only!"
+    }),
+  })
+})
+
 
 export const UserValidation = {
   createUserZodSchema,
+  updateFavouriteCategoryZodSchema,
 };

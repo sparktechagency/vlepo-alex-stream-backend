@@ -55,8 +55,30 @@ const getUserProfileFromDB = async (
 //   return updateDoc;
 // };
 
+// todo: followers update
+// todo: following update
+// todo: category update
+
+const userFavouriteCategoryUpdate = async(id:string, categoryId: string) => {
+  const result = await User.findByIdAndUpdate(
+    id, 
+    {
+      $addToSet: {selectedCategory: categoryId}
+    },
+    {new: true}
+  );
+  console.log(result);
+
+  if(!result){
+    throw new ApiError(StatusCodes.NOT_FOUND, "User not found!");
+  }
+
+  return result;
+}
+
 export const UserService = {
   createUserToDB,
   getUserProfileFromDB,
+  userFavouriteCategoryUpdate,
   // updateProfileToDB,
 };
