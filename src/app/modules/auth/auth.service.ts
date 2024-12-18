@@ -58,7 +58,7 @@ const loginUserFromDB = async (payload: TLoginUser) => {
     config.jwt.jwt_refresh_expire_in as string
   );
 
-  return { accessToken,refreshToken };
+  return { accessToken, refreshToken };
 };
 
 //forget password
@@ -283,10 +283,18 @@ const changePasswordToDB = async (
 };
 
 
+const refreshToken = async (token: string) => {
+  const verify = jwtHelper.verifyToken(token, config.jwt.jwt_refresh as string);
+  console.log({verify});
+
+}
+
+
 export const AuthService = {
   loginUserFromDB,
   changePasswordToDB,
   forgetPasswordToDB,
   verifyEmailToDB,
   resetPasswordToDB,
+  refreshToken,
 };

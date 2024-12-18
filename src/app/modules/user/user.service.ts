@@ -107,8 +107,8 @@ const savedUserEvents = async (userId: string, eventId: string) => {
 
 
 //followerId: req.user => who want to follow => req.user
-const toggleFollow = async (followerId: ObjectId, userId: string) => {
-  if (!mongoose.Types.ObjectId.isValid(userId)) {
+const toggleFollow = async (followerId: ObjectId, userId: string | ObjectId) => {
+  if (!mongoose.Types.ObjectId.isValid(userId as string)) {
     throw new ApiError(StatusCodes.BAD_REQUEST, "Invalid creator id")
   }
 
@@ -120,7 +120,7 @@ const toggleFollow = async (followerId: ObjectId, userId: string) => {
 
   const user = await User.findById(followerId); // je follow korbe
 
-  const isFollowing = user?.followings?.includes(userId);
+  const isFollowing = user?.followings?.includes(userId as ObjectId);
   const isFollowers = creator?.followers?.includes(followerId);
 
   const updateFollowingQuery = isFollowing
