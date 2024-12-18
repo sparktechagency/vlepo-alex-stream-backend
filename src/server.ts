@@ -4,13 +4,14 @@ import { Server } from 'socket.io';
 import app from './app';
 import config from './config';
 import { socketHelper } from './helpers/socketHelper';
-import { errorLogger, logger } from './shared/logger';
+import { errorLogger, logger } from './shared/logger'; 
 
 //uncaught exception
 process.on('uncaughtException', error => {
   errorLogger.error('UnhandleException Detected', error);
   process.exit(1);
 });
+
 
 let server: any;
 async function main() {

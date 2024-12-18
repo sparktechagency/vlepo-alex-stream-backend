@@ -41,6 +41,19 @@ const getAllEvents = catchAsync(async (req: Request, res: Response) => {
     });
 });
 
+const getAllEventsOfCreator = catchAsync(async (req: Request, res: Response) => {
+    const {creatorId} = req.params;
+
+    const result = await eventServices.getAllEventsOfCreator(req.query, creatorId);
+
+    sendResponse(res, {
+        success: true,
+        statusCode: StatusCodes.OK,
+        message: 'User events retrived successfully!',
+        data: result,
+    });
+});
+
 const findSaveEvent = catchAsync(async (req: Request, res: Response) => {
     const {id} = req.user;
 
@@ -60,6 +73,7 @@ export const eventController = {
     createEvents,
     getSingleEventByEventId,
     getAllEvents,
+    getAllEventsOfCreator,
     findSaveEvent,
     
 }

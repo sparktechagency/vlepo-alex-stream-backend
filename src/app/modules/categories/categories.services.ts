@@ -16,7 +16,8 @@ const getAllCategoriesIntoDB = async () => {
 }
 
 const getSingleCategoryById = async (id: string) => {
-    const category = await Category.findById(id);
+
+    const category = await Category.findById(id); // todo: if no categoy find what is return? any error or null
     return category;
 }
 

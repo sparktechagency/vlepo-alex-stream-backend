@@ -10,6 +10,7 @@ import { EventSearchableFields } from "./events.constants";
 
 const createEventsIntoDB = async (payload: IEvent) => {
     const { userId, categoryId } = payload;
+    // todo: upload image
 
     const category = await Category.findById(categoryId);
     if (!category) {
@@ -48,6 +49,23 @@ const getAllEvents = async (query: Record<string, unknown>) => {
     return result;
 }
 
+const getAllEventsOfCreator = async (query: Record<string, unknown>, creatorId: string) => {
+    console.log({creatorId});
+    const events = new QueryBuilder(Event.find({ userId: creatorId }), query)
+        .fields()
+        .paginate()
+        .sort()
+        .filter()
+        .search(EventSearchableFields)
+
+    const result = await events.modelQuery
+        // .populate('categoryId')
+        .populate("userId")
+        .populate("attendees")
+
+    return result;
+}
+
 const findSaveEvent = async (userId: string) => {
     const user = await User.findById(userId);
 
@@ -55,7 +73,7 @@ const findSaveEvent = async (userId: string) => {
     const savedEvents = await Event.find(
         { _id: { $in: user?.savedEvents } }
     )
-    
+
     return savedEvents;
 }
 
@@ -66,5 +84,6 @@ export const eventServices = {
     createEventsIntoDB,
     getSingleEventByEventId,
     getAllEvents,
+    getAllEventsOfCreator,
     findSaveEvent,
 }
