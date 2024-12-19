@@ -4,7 +4,7 @@ import { USER_ROLE, USER_STATUS } from './user.constants';
 export interface IOtpVerification {
   expireAt: Date;
   otp: string;
-  token:string;
+  token: string;
   isResetPassword: boolean;
 }
 
@@ -30,5 +30,7 @@ export interface IUser extends Document {
 export type UserModal = {
   isExistUserById(id: string): any;
   isExistUserByEmail(email: string): any;
+  isUserPermission(id: string): any;
   isMatchPassword(password: string, hashPassword: string): boolean;
-} & Model<IUser>; 
+} & Model<IUser>;
+

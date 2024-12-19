@@ -11,8 +11,8 @@ import { USER_ROLE, USER_STATUS } from './user.constants';
 const otpVerificationSchema = new Schema<IOtpVerification>({
   otp: { type: String, default: "" },
   expireAt: { type: Date, default: new Date() },
-  token: {type: String, default: ""},
-  isResetPassword: {type: Boolean, default: false}
+  token: { type: String, default: "" },
+  isResetPassword: { type: Boolean, default: false }
 });
 
 
@@ -72,6 +72,26 @@ userSchema.statics.isExistUserById = async (id: string) => {
   const isExist = await User.findById(id);
   return isExist;
 };
+
+
+// check user permission for action
+userSchema.statics.isUserPermission = async (id: string) => {
+  const user = await User.findById(id);
+
+  if (!user) {
+    throw new ApiError(StatusCodes.NOT_FOUND, "User is not found!")
+  }
+
+  if (user?.isDeleted) {
+    throw new ApiError(StatusCodes.BAD_REQUEST, "User is deleted!")
+  }
+
+  if (user?.status === USER_STATUS.BLOCKED) {
+    throw new ApiError(StatusCodes.BAD_REQUEST, "User is blocked!")
+  }
+
+  return user;
+}
 
 // find user by email
 userSchema.statics.isExistUserByEmail = async (email: string) => {

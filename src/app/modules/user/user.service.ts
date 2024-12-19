@@ -1,15 +1,9 @@
 import { StatusCodes } from 'http-status-codes';
 import { JwtPayload } from 'jsonwebtoken';
 import ApiError from '../../../errors/ApiError';
-// import { emailHelper } from '../../../helpers/emailHelper';
-// import { emailTemplate } from '../../../shared/emailTemplate';
-import unlinkFile from '../../../shared/unlinkFile';
-// import generateOTP from '../../../util/generateOTP';
 import { IUser } from './user.interface';
 import { User } from './user.model';
 import { Event } from '../events/events.model';
-import mongoose, { ObjectId } from 'mongoose';
-import { USER_ROLE } from './user.constants';
 import { QueryBuilder } from '../../builder/QueryBuilder';
 
 const createUserToDB = async (payload: Partial<IUser>): Promise<null> => {
@@ -106,42 +100,6 @@ const savedUserEvents = async (userId: string, eventId: string) => {
 }
 
 
-//followerId: req.user => who want to follow => req.user
-const toggleFollow = async (followerId: ObjectId, userId: string | ObjectId) => {
-  if (!mongoose.Types.ObjectId.isValid(userId as string)) {
-    throw new ApiError(StatusCodes.BAD_REQUEST, "Invalid creator id")
-  }
-
-  const creator = await User.findById(userId); // jake follow korte chai
-
-  if (!creator) {
-    throw new ApiError(StatusCodes.NOT_FOUND, "This person not available!")
-  }
-
-  const user = await User.findById(followerId); // je follow korbe
-
-  const isFollowing = user?.followings?.includes(userId as ObjectId);
-  const isFollowers = creator?.followers?.includes(followerId);
-
-  const updateFollowingQuery = isFollowing
-    ? { $pull: { followings: userId } } // save into the creator 
-    : { $addToSet: { followings: userId } }; // save into the creator
-
-  const updateFollowing = await User.findByIdAndUpdate(followerId, updateFollowingQuery, { new: true });
-
-  if (!updateFollowing) {
-    throw new ApiError(StatusCodes.BAD_GATEWAY, "Something went wrong!")
-  }
-
-  const updateFollowersQuery = isFollowers
-    ? { $pull: { followers: followerId } } // save into the creator 
-    : { $addToSet: { followers: followerId } }; // save into the creator
-
-  await User.findByIdAndUpdate(userId, updateFollowersQuery, { new: true });
-
-  return { followings: updateFollowing?.followings };
-}
-
 const getFollowingUserProfile = async (query: Record<string, unknown>, userId: string) => {
   const logedInUser = await User.findById(userId);
   console.log({ logedInUser })
@@ -168,7 +126,7 @@ export const UserService = {
   getUserProfileFromDB,
   userFavouriteCategoryUpdate,
   savedUserEvents,
-  toggleFollow,
+  // toggleFollow,
   getFollowingUserProfile,
   // updateProfileToDB,
 };

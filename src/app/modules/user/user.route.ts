@@ -37,11 +37,6 @@ router
     UserController.savedUserEvents
   )
 
-  router.patch("/toggle-follow",
-    // validateRequest(UserValidation.toggleFollowZodSchema),
-    auth(USER_ROLE.USER),
-    UserController.toggleFollow
-  )
 
   router.get("/following-user", // creator: normal user follow them
     auth(USER_ROLE.USER),
