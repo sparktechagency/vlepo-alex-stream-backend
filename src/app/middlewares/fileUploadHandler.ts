@@ -100,6 +100,8 @@ const fileUploadHandler = () => {
     { name: 'media', maxCount: 3 },
     { name: 'doc', maxCount: 3 },
   ]);
+  console.log(upload);
+  
   return upload;
 };
 

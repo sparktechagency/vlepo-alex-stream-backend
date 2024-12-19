@@ -48,7 +48,7 @@ const getUserProfileFromDB = async (
 
 //   //unlink file here
 //   if (payload.photo) {
-//     unlinkFile(isExistUser.photo);
+    // unlinkFile (isExistUser.photo);
 //   }
 
 //   const updateDoc = await User.findOneAndUpdate({ _id: id }, payload, {
@@ -100,33 +100,10 @@ const savedUserEvents = async (userId: string, eventId: string) => {
 }
 
 
-const getFollowingUserProfile = async (query: Record<string, unknown>, userId: string) => {
-  const logedInUser = await User.findById(userId);
-  console.log({ logedInUser })
-
-  const followingIds = logedInUser?.followings;
-
-  console.log(followingIds);
-
-  const users = new QueryBuilder(User.find(
-    { _id: { $in: followingIds } }
-  ), query)
-    .fields()
-    .paginate()
-    .sort()
-
-  const result = await users.modelQuery
-    .select("name photo")
-
-  return result;
-}
-
 export const UserService = {
   createUserToDB,
   getUserProfileFromDB,
   userFavouriteCategoryUpdate,
   savedUserEvents,
-  // toggleFollow,
-  getFollowingUserProfile,
   // updateProfileToDB,
 };

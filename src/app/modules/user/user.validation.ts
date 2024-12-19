@@ -17,8 +17,6 @@ const createUserZodSchema = z.object({
     status: z.enum([USER_STATUS.ACTIVE, USER_STATUS.BLOCKED]).default(USER_STATUS.ACTIVE),
     savedEvents: z.array(z.string().uuid()).default([]),
     eventHistory: z.array(z.string().uuid()).default([]),
-    followers: z.array(z.string().uuid()).default([]),
-    followings: z.array(z.string().uuid()).default([]),
     selectedCategory: z.array(z.string().uuid()).default([]),
     isDeleted: z.boolean().default(false),
     otpVerification: otpVerificationSchema.optional(),

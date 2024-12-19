@@ -38,9 +38,4 @@ router
   )
 
 
-  router.get("/following-user", // creator: normal user follow them
-    auth(USER_ROLE.USER),
-    UserController.getFollowingUserProfile
-  )
-
 export const UserRoutes = router;

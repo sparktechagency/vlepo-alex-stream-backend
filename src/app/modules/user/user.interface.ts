@@ -18,8 +18,6 @@ export interface IUser extends Document {
   status?: USER_STATUS;
   savedEvents?: ObjectId[];
   eventHistory?: ObjectId[];
-  followers?: ObjectId[];
-  followings?: ObjectId[];
   selectedCategory?: ObjectId[];
   isDeleted?: boolean;
   otpVerification?: IOtpVerification;

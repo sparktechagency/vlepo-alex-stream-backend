@@ -59,20 +59,6 @@ const savedUserEvents = catchAsync(async (req: Request, res: Response) => {
 });
 
 
-const getFollowingUserProfile = catchAsync(async (req: Request, res: Response) => {
-  const { id } = req.user;
-
-  const result = await UserService.getFollowingUserProfile(req.query, id);
-
-  sendResponse(res, {
-    success: true,
-    statusCode: StatusCodes.OK,
-    message: 'Retrive followed user!',
-    data: result,
-  });
-});
-
-
 //update profile
 // const updateProfile = catchAsync(
 //   async (req: Request, res: Response, next: NextFunction) => {
@@ -102,6 +88,5 @@ export const UserController = {
   getUserProfile,
   userFavouriteCategoryUpdate,
   savedUserEvents,
-  getFollowingUserProfile,
   // updateProfile 
 };

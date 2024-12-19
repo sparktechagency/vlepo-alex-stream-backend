@@ -42,16 +42,6 @@ const userSchema = new Schema<IUser>(
       ref: 'Event',
       default: []
     }],
-    followers: [{
-      type: Schema.Types.ObjectId,
-      ref: 'User',
-      default: []
-    }],
-    followings: [{
-      type: Schema.Types.ObjectId,
-      ref: 'User',
-      default: []
-    }],
     selectedCategory: [{
       type: Schema.Types.ObjectId,
       ref: 'Category',
