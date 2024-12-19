@@ -284,9 +284,40 @@ const changePasswordToDB = async (
 
 
 const refreshToken = async (token: string) => {
-  const verify = jwtHelper.verifyToken(token, config.jwt.jwt_refresh as string);
-  console.log({verify});
 
+  const decoded = jwtHelper.verifyToken(token, config.jwt.jwt_refresh as string);
+  
+  const { id, iat } = decoded; 
+
+  // checking if the user is exist
+  const user = await User.findById(id);
+
+  if (!user) {
+    throw new ApiError(StatusCodes.NOT_FOUND, 'This user is not found !');
+  }
+
+  // // checking if the user is already deleted
+  const isDeleted = user?.isDeleted;
+
+  if (isDeleted) {
+    throw new ApiError(StatusCodes.FORBIDDEN, 'This user is deleted !');
+  }
+
+  // // checking if the user is blocked
+  const userStatus = user?.status;
+
+  if (userStatus === USER_STATUS.BLOCKED) {
+    throw new ApiError(StatusCodes.FORBIDDEN, 'This user is blocked!');
+  }
+
+
+  const accessToken = jwtHelper.createToken(
+    { id: user._id, role: user.role, email: user.email },
+    config.jwt.jwt_secret as Secret,
+    config.jwt.jwt_expire_in as string
+  );
+
+  return {accessToken};
 }
 
 

@@ -4,12 +4,16 @@ import { StatusCodes } from 'http-status-codes';
 import globalErrorHandler from './app/middlewares/globalErrorHandler';
 import router from './routes';
 import { Morgan } from './shared/morgen';
-import { EVENTS_STATUS } from './app/modules/events/events.constants';
+import cookieParser from 'cookie-parser';
+
 const app = express();
 
 //morgan
 app.use(Morgan.successHandler);
 app.use(Morgan.errorHandler);
+
+// for access cookie
+app.use(cookieParser())
 
 //body parser
 app.use(cors());

@@ -23,6 +23,7 @@ const auth =
           token,
           config.jwt.jwt_secret as Secret
         );
+        
         //set user to header
         req.user = verifyUser;
 
