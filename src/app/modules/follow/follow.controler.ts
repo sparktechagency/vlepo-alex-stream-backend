@@ -31,9 +31,22 @@ const getFollowers = catchAsync(async (req: Request, res: Response) => {
     });
 });
 
+const getFollowing = catchAsync(async (req: Request, res: Response) => {
+    const { userId } = req.params;
+    const query = req.query;
+
+    const result = await FollowServices.getFollowing(query, userId);
+    sendResponse(res, {
+        success: true,
+        statusCode: StatusCodes.OK,
+        message: 'Following retrived successfully!',
+        data: result,
+    });
+});
+
 
 export const FollowsController = {
     toggleFollow,
     getFollowers,
-    // updateProfile 
+    getFollowing
 };

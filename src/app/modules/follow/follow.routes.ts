@@ -10,8 +10,14 @@ router.post("/toggle-follow/:followingId", // todo: followingId may be creator, 
     FollowsController.toggleFollow
 )
 
-router.get("/get-followers/:userId", 
+router.get("/get-followers/:userId",
+    auth(USER_ROLE.SUPER_ADMIN, USER_ROLE.CREATOR, USER_ROLE.USER), 
     FollowsController.getFollowers
+)
+
+router.get("/get-following/:userId",
+    auth(USER_ROLE.SUPER_ADMIN, USER_ROLE.CREATOR, USER_ROLE.USER),
+    FollowsController.getFollowing
 )
 
 export const FollowRoutes = router;

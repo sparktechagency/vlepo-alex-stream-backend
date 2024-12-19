@@ -49,7 +49,7 @@ const getFollowers = async (query: Record<string, unknown>, userId: string) => {
         throw new Error("Invalid User or Creator ID!");
     }
 
-    const followers = new QueryBuilder(Follow.find(), query)
+    const followers = new QueryBuilder(Follow.find({ followingId: userId }), query)
         .fields()
         .paginate()
         .sort()
@@ -64,7 +64,34 @@ const getFollowers = async (query: Record<string, unknown>, userId: string) => {
 
     const followersData = {
         followers: result,
-        followersCount
+        totalFollower: followersCount
+    }
+
+    return followersData;
+};
+
+
+const getFollowing = async (query: Record<string, unknown>, userId: string) => {
+    if (!mongoose.isValidObjectId(userId)) {
+        throw new Error("Invalid User or Creator ID!");
+    }
+
+    const followings = new QueryBuilder(Follow.find({ userId: userId }), query)
+        .fields()
+        .paginate()
+        .sort()
+        .filter()
+
+    const result = await followings.modelQuery
+        .populate("userId", "name email photo")
+
+    // total follower
+    const followingCount = await Follow
+        .countDocuments({ userId })
+
+    const followersData = {
+        followings: result,
+        totalFollowing: followingCount
     }
 
     return followersData;
@@ -75,4 +102,5 @@ const getFollowers = async (query: Record<string, unknown>, userId: string) => {
 export const FollowServices = {
     toggleFollow,
     getFollowers,
+    getFollowing
 };
