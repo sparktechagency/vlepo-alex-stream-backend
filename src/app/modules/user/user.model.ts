@@ -15,7 +15,7 @@ const otpVerificationSchema = new Schema<IOtpVerification>({
   isResetPassword: { type: Boolean, default: false }
 });
 
-
+// todo: change userSchema following and follower
 const userSchema = new Schema<IUser>(
   {
     name: { type: String, required: true },

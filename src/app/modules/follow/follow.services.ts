@@ -4,6 +4,7 @@ import { Follow } from "./follow.model";
 import { User } from "../user/user.model";
 import { USER_ROLE, USER_STATUS } from "../user/user.constants";
 import mongoose from "mongoose";
+import { QueryBuilder } from "../../builder/QueryBuilder";
 
 //followerId: req.user => who want to follow => req.user
 const toggleFollow = async (followerId: string, creatorId: string) => {
@@ -43,7 +44,35 @@ const toggleFollow = async (followerId: string, creatorId: string) => {
 }
 
 
+const getFollowers = async (query: Record<string, unknown>, userId: string) => {
+    if (!mongoose.isValidObjectId(userId)) {
+        throw new Error("Invalid User or Creator ID!");
+    }
+
+    const followers = new QueryBuilder(Follow.find(), query)
+        .fields()
+        .paginate()
+        .sort()
+        .filter()
+
+    const result = await followers.modelQuery
+        .populate("userId", "name email photo")
+
+    // total follower
+    const followersCount = await Follow
+        .countDocuments({ followingId: userId })
+
+    const followersData = {
+        followers: result,
+        followersCount
+    }
+
+    return followersData;
+};
+
+
 
 export const FollowServices = {
     toggleFollow,
+    getFollowers,
 };
