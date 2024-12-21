@@ -41,6 +41,12 @@ const updateFavouriteCategoryZodSchema = z.object({
   })
 })
 
+const userChangeStatusZodSchema = z.object({
+  body: z.object({
+    status: z.enum([USER_STATUS.ACTIVE, USER_STATUS.BLOCKED], { required_error: `Value will be ${USER_STATUS.ACTIVE} or ${USER_STATUS.BLOCKED}` })
+  })
+})
+
 const saveEventZodSchema = z.object({
   body: z.object({
     eventId: z.string().regex(/^[0-9a-fA-F]{24}$/, {
@@ -54,5 +60,6 @@ export const UserValidation = {
   createUserZodSchema,
   updateFavouriteCategoryZodSchema,
   saveEventZodSchema,
+  userChangeStatusZodSchema,
   // updateProfileZodSchema,
 };

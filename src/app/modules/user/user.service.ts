@@ -86,7 +86,7 @@ const deleteCurrentUser = async (userId: string) => {
   return null;
 }
 
-// todo: add profile photo upload functionality
+
 const updateMyProfile = async (id: string, payload: Partial<IUser>) => {
   const isExistUser = await User.isUserPermission(id);
 
@@ -120,6 +120,19 @@ const updateMyProfile = async (id: string, payload: Partial<IUser>) => {
 };
 
 
+const updateUserStatus = async (id: string, payload: Partial<IUser>) => {
+
+  const result = await User.findByIdAndUpdate(id,
+    payload,
+    { new: true }
+  );
+
+  if (!result) {
+    throw new ApiError(StatusCodes.BAD_REQUEST, "Permission denied or user not found!");
+  }
+
+  return result;
+};
 
 
 export const UserService = {
@@ -129,4 +142,5 @@ export const UserService = {
   savedUserEvents,
   deleteCurrentUser,
   updateMyProfile,
+  updateUserStatus,
 };

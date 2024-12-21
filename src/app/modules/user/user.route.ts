@@ -8,7 +8,7 @@ import { USER_ROLE } from './user.constants';
 const router = express.Router();
 
 router.get(
-  '/profile',
+  '/my-profile',
   auth(USER_ROLE.CREATOR, USER_ROLE.USER, USER_ROLE.SUPER_ADMIN),
   UserController.getUserProfile
 );
@@ -43,6 +43,11 @@ router.patch("/update-myprofile",
   UserController.updateMyProfile
 )
 
+router.patch("/update-user-status/:userId",
+  auth(USER_ROLE.SUPER_ADMIN),
+  validateRequest(UserValidation.userChangeStatusZodSchema),
+  UserController.updateUserStatus
+)
 
 
 export const UserRoutes = router;

@@ -3,8 +3,10 @@ import ApiError from "../../../errors/ApiError";
 import { ICategory } from "./categories.interface";
 import Category from "./categories.model";
 import mongoose from "mongoose";
+import unlinkFile from "../../../shared/unlinkFile";
 
 const createCategoryIntoDB = async (payload: ICategory) => {
+    // todo: when category error for some resons but photo create
     const result = await Category.create(payload);
 
     return result;
@@ -22,9 +24,13 @@ const getSingleCategoryById = async (id: string) => {
 }
 
 const updateSingleCategoryById = async (id: string, payload: ICategory) => {
-    console.log(payload);
-    if(Object.keys(payload).length === 0){
-        throw new ApiError(StatusCodes.UNPROCESSABLE_ENTITY, "The provided info is empty and cannot be processed.");
+    const existCategory = await Category.findById(id);
+    if(!existCategory){
+        throw new ApiError(StatusCodes.BAD_REQUEST, "Category not found!")
+    }
+
+    if(existCategory.image){
+        unlinkFile(existCategory?.image);
     }
 
     const category = await Category.findByIdAndUpdate(id,
@@ -49,6 +55,10 @@ const deleteCategory = async (id: string) => {
 
     if (!result) {
         throw new ApiError(StatusCodes.FORBIDDEN, "Category not found!");
+    }
+
+    if(result.image){
+        unlinkFile(result.image)
     }
 
     return null;

@@ -6,11 +6,11 @@ const categorySchema = new Schema<ICategory>({
     image: { 
         type: String, 
         validate: {
-            validator: function(v: string) {
-                // URL Validation (checks if it's a valid URL)
-                return /^(https?:\/\/[^\s]+)$/.test(v);
+            validator: function (v: string) {
+                // Validate if the path starts with /images/ and ends with .png, .jpeg, or .jpg
+                return /^\/images\/[\w-]+\.(png|jpeg|jpg)$/i.test(v);
             },
-            message: props => `${props.value} is not a valid URL!`
+            message: props => `${props.value} is not a valid image path! Only .png, .jpeg, or .jpg files in '/images/' directory are allowed.`
         },
         // default: "https://i.ibb.co/z5YHLV9/profile.png"
         required: true
