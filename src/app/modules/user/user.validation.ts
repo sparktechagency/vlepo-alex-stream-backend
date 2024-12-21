@@ -23,6 +23,15 @@ const createUserZodSchema = z.object({
   })
 });
 
+// const updateProfileZodSchema = z.object({
+//   body: z.object({
+//     name: z.string().min(1, "Name is required").optional(),
+//     email: z.string().email("Invalid email format").optional(),
+//     photo: z.string().url().optional(),
+//     bio: z.string({message: "Bio is required!"}),
+//     address: z.string().optional(),
+//   })
+// })
 
 const updateFavouriteCategoryZodSchema = z.object({
   body: z.object({
@@ -40,18 +49,10 @@ const saveEventZodSchema = z.object({
   })
 })
 
-// const toggleFollowZodSchema = z.object({
-//   body: z.object({
-//     userId: z.string().regex(/^[0-9a-fA-F]{24}$/, {
-//       message: "Accepted ObjectId format only!"
-//     }),
-//   })
-// })
-
 
 export const UserValidation = {
   createUserZodSchema,
   updateFavouriteCategoryZodSchema,
   saveEventZodSchema,
-  // toggleFollowZodSchema,
+  // updateProfileZodSchema,
 };

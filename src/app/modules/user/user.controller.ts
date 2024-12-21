@@ -74,43 +74,31 @@ const deleteCurrentUser = catchAsync(async (req: Request, res: Response) => {
 
 const updateMyProfile = catchAsync(async (req: Request, res: Response) => {
   const { id } = req.user;
-  
-  const result = await UserService.updateMyProfile(id, req.body);
+  let payload;
+  if (req.body.data) {
+    payload = JSON.parse(req?.body?.data);
+  }
+
+  let photo;
+  if (req.files && 'image' in req.files && req.files.image[0]) {
+    photo = `/images/${req.files.image[0].filename}`;
+  }
+
+  const data = {
+    photo,
+    ...payload,
+  };
+
+  const result = await UserService.updateMyProfile(id, data);
 
   sendResponse(res, {
     success: true,
     statusCode: StatusCodes.OK,
-    message: 'User deleted successfully!',
+    message: 'Profile updated successfully',
     data: result,
   });
 });
 
-
-
-
-//update profile
-// const updateProfile = catchAsync(
-//   async (req: Request, res: Response, next: NextFunction) => {
-//     const user = req.user;
-//     let photo;
-//     if (req.files && 'image' in req.files && req.files.image[0]) {
-//       photo = `/images/${req.files.image[0].filename}`;
-//     }
-
-//     const data = {
-//       photo,
-//       ...req.body,
-//     };
-//     const result = await UserService.updateProfileToDB(user, data);
-
-//     sendResponse(res, {
-//       success: true,
-//       statusCode: StatusCodes.OK,
-//       message: 'Profile updated successfully',
-//       data: result,
-//     });
-//   }
-// );
 
 export const UserController = {
   createUser,
@@ -119,5 +107,4 @@ export const UserController = {
   savedUserEvents,
   deleteCurrentUser,
   updateMyProfile,
-  // updateProfile 
 };

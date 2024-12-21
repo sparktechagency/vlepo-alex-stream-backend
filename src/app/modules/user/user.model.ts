@@ -21,7 +21,7 @@ const userSchema = new Schema<IUser>(
     name: { type: String, required: true },
     email: { type: String, required: true, unique: true },
     phone: { type: String, default: "" },
-    bio: { type: String, default: "" },
+    bio: { type: String, default: "", },
     address: { type: String, default: "" },
     photo: { type: String, default: "https://i.ibb.co/z5YHLV9/profile.png" },
     password: { type: String, required: true },

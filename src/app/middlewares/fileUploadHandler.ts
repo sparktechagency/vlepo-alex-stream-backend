@@ -19,8 +19,9 @@ const fileUploadHandler = () => {
     }
   };
 
-  //create filename
+  //create filename and save path
   const storage = multer.diskStorage({
+    // destination: set the path where file save
     destination: (req, file, cb) => {
       let uploadDir;
       switch (file.fieldname) {
@@ -39,6 +40,7 @@ const fileUploadHandler = () => {
       createDir(uploadDir);
       cb(null, uploadDir);
     },
+    // filename: set the file name
     filename: (req, file, cb) => {
       const fileExt = path.extname(file.originalname);
       const fileName =
@@ -100,7 +102,6 @@ const fileUploadHandler = () => {
     { name: 'media', maxCount: 3 },
     { name: 'doc', maxCount: 3 },
   ]);
-  console.log(upload);
   
   return upload;
 };

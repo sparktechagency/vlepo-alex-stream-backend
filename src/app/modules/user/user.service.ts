@@ -6,6 +6,7 @@ import { User } from './user.model';
 import { Event } from '../events/events.model';
 import { QueryBuilder } from '../../builder/QueryBuilder';
 import { USER_STATUS } from './user.constants';
+import unlinkFile from '../../../shared/unlinkFile';
 
 const createUserToDB = async (payload: Partial<IUser>): Promise<null> => {
   if (payload.password !== payload?.confirmPassword) {
@@ -87,7 +88,20 @@ const deleteCurrentUser = async (userId: string) => {
 
 // todo: add profile photo upload functionality
 const updateMyProfile = async (id: string, payload: Partial<IUser>) => {
-  
+  const isExistUser = await User.isUserPermission(id);
+
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (payload.email) {
+    if (!emailRegex.test(payload.email)) {
+      throw new ApiError(StatusCodes.BAD_REQUEST, "Invalid email format.")
+    }
+  }
+
+  //unlink file here
+  if (payload.photo) {
+    unlinkFile(isExistUser?.photo);
+  }
+
   const result = await User.findOneAndUpdate(
     {
       _id: id,                      // Match by ID
@@ -107,30 +121,6 @@ const updateMyProfile = async (id: string, payload: Partial<IUser>) => {
 
 
 
-// const updateProfileToDB = async (
-//   user: JwtPayload,
-//   payload: Partial<IUser>
-// ): Promise<Partial<IUser | null>> => {
-//   const { id } = user;
-//   const isExistUser = await User.isExistUserById(id);
-//   if (!isExistUser) {
-//     throw new ApiError(StatusCodes.BAD_REQUEST, "User doesn't exist!");
-//   }
-
-//   //unlink file here
-//   if (payload.photo) {
-// unlinkFile (isExistUser.photo);
-//   }
-
-//   const updateDoc = await User.findOneAndUpdate({ _id: id }, payload, {
-//     new: true,
-//   });
-
-//   return updateDoc;
-// };
-
-
-
 
 export const UserService = {
   createUserToDB,
@@ -139,5 +129,4 @@ export const UserService = {
   savedUserEvents,
   deleteCurrentUser,
   updateMyProfile,
-  // updateProfileToDB,
 };

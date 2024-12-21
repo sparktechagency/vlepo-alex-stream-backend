@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { NextFunction, Request, Response } from 'express';
 import auth from '../../middlewares/auth';
 import fileUploadHandler from '../../middlewares/fileUploadHandler';
 import validateRequest from '../../middlewares/validateRequest';
@@ -20,33 +20,47 @@ router
     UserController.createUser
   )
 
-  // .patch(
-  //   auth(USER_ROLE.CREATOR, USER_ROLE.USER, USER_ROLE.SUPER_ADMIN),
-  //   fileUploadHandler(),
-  //   UserController.updateProfile
-  // );
+router.patch("/favourite-category",
+  validateRequest(UserValidation.updateFavouriteCategoryZodSchema),
+  auth(USER_ROLE.USER),
+  UserController.userFavouriteCategoryUpdate
+);
 
-  router.patch("/favourite-category",
-    validateRequest(UserValidation.updateFavouriteCategoryZodSchema),
-    auth(USER_ROLE.USER),
-    UserController.userFavouriteCategoryUpdate
-  );
+router.patch("/save-event",
+  validateRequest(UserValidation.saveEventZodSchema),
+  auth(USER_ROLE.USER),
+  UserController.savedUserEvents
+)
 
-  router.patch("/save-event",
-    validateRequest(UserValidation.saveEventZodSchema),
-    auth(USER_ROLE.USER),
-    UserController.savedUserEvents
-  )
+router.delete("/delete-me",
+  auth(USER_ROLE.USER, USER_ROLE.CREATOR), // TODO: CAN SUPER_ADMIN DELETE HIM?
+  UserController.deleteCurrentUser
+)
 
-  router.delete("/delete-me",
-    auth(USER_ROLE.USER, USER_ROLE.CREATOR), // TODO: CAN SUPER_ADMIN DELETE HIM?
-    UserController.deleteCurrentUser
-  )
+router.patch("/update-myprofile",
+  auth(USER_ROLE.USER, USER_ROLE.CREATOR, USER_ROLE.SUPER_ADMIN),
+  fileUploadHandler(),
+  UserController.updateMyProfile
+)
 
-  router.patch("/update-myprofile",
-    auth(USER_ROLE.USER, USER_ROLE.CREATOR, USER_ROLE.SUPER_ADMIN), // TODO: CAN SUPER_ADMIN DELETE HIM?
-    UserController.updateMyProfile
-  )
 
 
 export const UserRoutes = router;
+
+
+// (req: Request, res: Response, next: NextFunction) => {
+  //   let photo = '';
+  //   if (req.files && 'image' in req.files && req.files.image[0]) {
+  //     photo = `/images/${req.files.image[0].filename}`;
+  //   }
+
+  //   const body = JSON.parse(req.body.data);
+  //   const formatedDataForZod = {
+  //     ...body,
+  //     photo
+  //   }
+  //   req.body = formatedDataForZod;
+  //   console.log(req.body)
+  //   next();
+  // },
+  // validateRequest(UserValidation.updateProfileZodSchema),
