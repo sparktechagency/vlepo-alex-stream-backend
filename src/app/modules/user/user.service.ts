@@ -5,6 +5,7 @@ import { IUser } from './user.interface';
 import { User } from './user.model';
 import { Event } from '../events/events.model';
 import { QueryBuilder } from '../../builder/QueryBuilder';
+import { USER_STATUS } from './user.constants';
 
 const createUserToDB = async (payload: Partial<IUser>): Promise<null> => {
   if (payload.password !== payload?.confirmPassword) {
@@ -36,32 +37,8 @@ const getUserProfileFromDB = async (
   return isExistUser;
 };
 
-// const updateProfileToDB = async (
-//   user: JwtPayload,
-//   payload: Partial<IUser>
-// ): Promise<Partial<IUser | null>> => {
-//   const { id } = user;
-//   const isExistUser = await User.isExistUserById(id);
-//   if (!isExistUser) {
-//     throw new ApiError(StatusCodes.BAD_REQUEST, "User doesn't exist!");
-//   }
 
-//   //unlink file here
-//   if (payload.photo) {
-    // unlinkFile (isExistUser.photo);
-//   }
-
-//   const updateDoc = await User.findOneAndUpdate({ _id: id }, payload, {
-//     new: true,
-//   });
-
-//   return updateDoc;
-// };
-
-// todo: followers update
-// todo: following update
-// todo: category update
-
+// selectedCategory update
 const userFavouriteCategoryUpdate = async (id: string, categoryId: string) => {
   const result = await User.findByIdAndUpdate(
     id,
@@ -99,14 +76,60 @@ const savedUserEvents = async (userId: string, eventId: string) => {
   return { savedEvents: result?.savedEvents };
 };
 
-const deleteCurrentUser = async(userId:string) => {
-  await User.findByIdAndUpdate(userId, 
-    {isDeleted: true},
-    {new: true}
+const deleteCurrentUser = async (userId: string) => {
+  await User.findByIdAndUpdate(userId,
+    { isDeleted: true },
+    { new: true }
   );
-  
+
   return null;
 }
+
+// todo: add profile photo upload functionality
+const updateMyProfile = async (id: string, payload: Partial<IUser>) => {
+  
+  const result = await User.findOneAndUpdate(
+    {
+      _id: id,                      // Match by ID
+      isDeleted: false,             // User should not be deleted
+      status: { $ne: USER_STATUS.BLOCKED }, // User should not be blocked
+    },
+    payload,                        // Update payload
+    { new: true }                // Return updated document
+  );
+
+  if (!result) {
+    throw new ApiError(StatusCodes.BAD_REQUEST, "Permission denied or user not found!");
+  }
+
+  return result;
+};
+
+
+
+// const updateProfileToDB = async (
+//   user: JwtPayload,
+//   payload: Partial<IUser>
+// ): Promise<Partial<IUser | null>> => {
+//   const { id } = user;
+//   const isExistUser = await User.isExistUserById(id);
+//   if (!isExistUser) {
+//     throw new ApiError(StatusCodes.BAD_REQUEST, "User doesn't exist!");
+//   }
+
+//   //unlink file here
+//   if (payload.photo) {
+// unlinkFile (isExistUser.photo);
+//   }
+
+//   const updateDoc = await User.findOneAndUpdate({ _id: id }, payload, {
+//     new: true,
+//   });
+
+//   return updateDoc;
+// };
+
+
 
 
 export const UserService = {
@@ -115,5 +138,6 @@ export const UserService = {
   userFavouriteCategoryUpdate,
   savedUserEvents,
   deleteCurrentUser,
+  updateMyProfile,
   // updateProfileToDB,
 };

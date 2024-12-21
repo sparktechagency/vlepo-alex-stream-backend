@@ -11,15 +11,18 @@ export interface IOtpVerification {
 export interface IUser extends Document {
   name: string;
   email: string;
+  phone?: string;
+  address?: string;
+  bio?: string;
   photo?: string;
   password: string;
   confirmPassword: string;
-  role?: USER_ROLE;
-  status?: USER_STATUS;
+  role: USER_ROLE;
+  status: USER_STATUS;
   savedEvents?: ObjectId[];
   eventHistory?: ObjectId[];
   selectedCategory?: ObjectId[];
-  isDeleted?: boolean;
+  isDeleted: boolean;
   otpVerification?: IOtpVerification;
   createdAt?: Date;
   updatedAt?: Date;

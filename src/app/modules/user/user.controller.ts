@@ -72,6 +72,21 @@ const deleteCurrentUser = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const updateMyProfile = catchAsync(async (req: Request, res: Response) => {
+  const { id } = req.user;
+  
+  const result = await UserService.updateMyProfile(id, req.body);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: StatusCodes.OK,
+    message: 'User deleted successfully!',
+    data: result,
+  });
+});
+
+
+
 
 //update profile
 // const updateProfile = catchAsync(
@@ -103,5 +118,6 @@ export const UserController = {
   userFavouriteCategoryUpdate,
   savedUserEvents,
   deleteCurrentUser,
+  updateMyProfile,
   // updateProfile 
 };

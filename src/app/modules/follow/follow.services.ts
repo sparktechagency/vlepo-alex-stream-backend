@@ -2,7 +2,7 @@ import { StatusCodes } from "http-status-codes";
 import ApiError from "../../../errors/ApiError";
 import { Follow } from "./follow.model";
 import { User } from "../user/user.model";
-import { USER_ROLE, USER_STATUS } from "../user/user.constants";
+import { USER_ROLE } from "../user/user.constants";
 import mongoose from "mongoose";
 import { QueryBuilder } from "../../builder/QueryBuilder";
 

@@ -39,8 +39,13 @@ router
   )
 
   router.delete("/delete-me",
-    auth(USER_ROLE.USER, USER_ROLE.CREATOR),
+    auth(USER_ROLE.USER, USER_ROLE.CREATOR), // TODO: CAN SUPER_ADMIN DELETE HIM?
     UserController.deleteCurrentUser
+  )
+
+  router.patch("/update-myprofile",
+    auth(USER_ROLE.USER, USER_ROLE.CREATOR, USER_ROLE.SUPER_ADMIN), // TODO: CAN SUPER_ADMIN DELETE HIM?
+    UserController.updateMyProfile
   )
 
 

@@ -23,6 +23,7 @@ const createUserZodSchema = z.object({
   })
 });
 
+
 const updateFavouriteCategoryZodSchema = z.object({
   body: z.object({
     categoryId: z.string().regex(/^[0-9a-fA-F]{24}$/, {

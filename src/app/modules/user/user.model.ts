@@ -20,6 +20,9 @@ const userSchema = new Schema<IUser>(
   {
     name: { type: String, required: true },
     email: { type: String, required: true, unique: true },
+    phone: { type: String, default: "" },
+    bio: { type: String, default: "" },
+    address: { type: String, default: "" },
     photo: { type: String, default: "https://i.ibb.co/z5YHLV9/profile.png" },
     password: { type: String, required: true },
     role: {
@@ -54,6 +57,7 @@ const userSchema = new Schema<IUser>(
 );
 
 userSchema.index({ role: 1 })
+userSchema.index({ _id: 1, isDeleted: 1, status: 1 });
 
 
 
@@ -65,23 +69,34 @@ userSchema.statics.isExistUserById = async (id: string) => {
 
 
 // check user permission for action
-userSchema.statics.isUserPermission = async (id: string) => {
-  const user = await User.findById(id);
+// userSchema.statics.isUserPermission = async (id: string) => {
+//   const user = await User.findById(id);
+
+//   if (!user) {
+//     throw new ApiError(StatusCodes.NOT_FOUND, "User is not found!")
+//   }
+
+//   if (user?.isDeleted) {
+//     throw new ApiError(StatusCodes.BAD_REQUEST, "User is deleted!")
+//   }
+
+//   if (user?.status === USER_STATUS.BLOCKED) {
+//     throw new ApiError(StatusCodes.BAD_REQUEST, "User is blocked!")
+//   }
+
+//   return user;
+// }
+
+// check user permission for action
+userSchema.statics.isUserPermission = async function (id: string) {
+  const user = await this.findOne({ _id: id, isDeleted: false, status: { $ne: USER_STATUS.BLOCKED } });
 
   if (!user) {
-    throw new ApiError(StatusCodes.NOT_FOUND, "User is not found!")
-  }
-
-  if (user?.isDeleted) {
-    throw new ApiError(StatusCodes.BAD_REQUEST, "User is deleted!")
-  }
-
-  if (user?.status === USER_STATUS.BLOCKED) {
-    throw new ApiError(StatusCodes.BAD_REQUEST, "User is blocked!")
+    throw new ApiError(StatusCodes.BAD_REQUEST, 'Permission denied or User not found!');
   }
 
   return user;
-}
+};
 
 // find user by email
 userSchema.statics.isExistUserByEmail = async (email: string) => {
