@@ -97,6 +97,15 @@ const savedUserEvents = async (userId: string, eventId: string) => {
   );
 
   return { savedEvents: result?.savedEvents };
+};
+
+const deleteCurrentUser = async(userId:string) => {
+  await User.findByIdAndUpdate(userId, 
+    {isDeleted: true},
+    {new: true}
+  );
+  
+  return null;
 }
 
 
@@ -105,5 +114,6 @@ export const UserService = {
   getUserProfileFromDB,
   userFavouriteCategoryUpdate,
   savedUserEvents,
+  deleteCurrentUser,
   // updateProfileToDB,
 };

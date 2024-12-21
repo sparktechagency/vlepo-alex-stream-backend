@@ -59,6 +59,20 @@ const savedUserEvents = catchAsync(async (req: Request, res: Response) => {
 });
 
 
+const deleteCurrentUser = catchAsync(async (req: Request, res: Response) => {
+  const { id } = req.user;
+
+  const result = await UserService.deleteCurrentUser(id);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: StatusCodes.OK,
+    message: 'User deleted successfully!',
+    data: result,
+  });
+});
+
+
 //update profile
 // const updateProfile = catchAsync(
 //   async (req: Request, res: Response, next: NextFunction) => {
@@ -88,5 +102,6 @@ export const UserController = {
   getUserProfile,
   userFavouriteCategoryUpdate,
   savedUserEvents,
+  deleteCurrentUser,
   // updateProfile 
 };
