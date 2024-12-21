@@ -10,9 +10,14 @@ router.post("/",
     recentSearchController.createRecentSearch,
 )
 
-router.get("/:userId",
+router.get("/",
     auth(USER_ROLE.CREATOR, USER_ROLE.CREATOR, USER_ROLE.USER),
     recentSearchController.getAllRecentSearchByUserId,
+)
+
+router.delete("/",
+    auth(USER_ROLE.CREATOR, USER_ROLE.CREATOR, USER_ROLE.USER),
+    recentSearchController.deleteAllRecentSearch,
 )
 
 export const RecentSearchRoutes = router;

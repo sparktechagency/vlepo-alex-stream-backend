@@ -30,9 +30,9 @@ const createRecentSearch = catchAsync(async (req: Request, res: Response) => {
 });
 
 const getAllRecentSearchByUserId = catchAsync(async (req: Request, res: Response) => {
-    const {userId} = req.params;
+    const {id} = req.user;
 
-    const result = await recentSearchServices.getAllRecentSearchByUserId(userId);
+    const result = await recentSearchServices.getAllRecentSearchByUserId(id);
 
 
     sendResponse(res, {
@@ -44,7 +44,23 @@ const getAllRecentSearchByUserId = catchAsync(async (req: Request, res: Response
 });
 
 
+const deleteAllRecentSearch = catchAsync(async (req: Request, res: Response) => {
+    const {id} = req.user;
+
+    const result = await recentSearchServices.deleteAllRecentSearch(id);
+
+
+    sendResponse(res, {
+        success: true,
+        statusCode: StatusCodes.OK,
+        message: 'Delete all recent search!',
+        data: result,
+    });
+});
+
+
 export const recentSearchController = {
     createRecentSearch,
-    getAllRecentSearchByUserId
+    getAllRecentSearchByUserId,
+    deleteAllRecentSearch,
 }

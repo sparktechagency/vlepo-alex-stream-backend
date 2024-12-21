@@ -45,8 +45,14 @@ const getAllRecentSearchByUserId = async (userId: string) => {
     return (recentSearch as any)?.searches || [];
 };
 
+const deleteAllRecentSearch = async (userId: string) => {
+    const result = await RecentSearch.deleteOne({ userId });
+    return result;
+}
+
 
 export const recentSearchServices = {
     createRecentSearch,
     getAllRecentSearchByUserId,
+    deleteAllRecentSearch,
 }
