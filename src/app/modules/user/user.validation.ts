@@ -15,8 +15,6 @@ const createUserZodSchema = z.object({
     confirmPassword: z.string().min(8, "Password must be at least 8 characters"),
     role: z.enum([USER_ROLE.SUPER_ADMIN, USER_ROLE.USER, USER_ROLE.CREATOR]).default(USER_ROLE.USER),
     status: z.enum([USER_STATUS.ACTIVE, USER_STATUS.BLOCKED]).default(USER_STATUS.ACTIVE),
-    savedEvents: z.array(z.string().uuid()).default([]),
-    eventHistory: z.array(z.string().uuid()).default([]),
     selectedCategory: z.array(z.string().uuid()).default([]),
     isDeleted: z.boolean().default(false),
     otpVerification: otpVerificationSchema.optional(),
@@ -47,19 +45,11 @@ const userChangeStatusZodSchema = z.object({
   })
 })
 
-const saveEventZodSchema = z.object({
-  body: z.object({
-    eventId: z.string().regex(/^[0-9a-fA-F]{24}$/, {
-      message: "Accepted ObjectId format only!"
-    }),
-  })
-})
 
 
 export const UserValidation = {
   createUserZodSchema,
   updateFavouriteCategoryZodSchema,
-  saveEventZodSchema,
   userChangeStatusZodSchema,
   // updateProfileZodSchema,
 };

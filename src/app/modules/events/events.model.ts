@@ -4,7 +4,7 @@ import { IEvent } from "./events.interface";
 
 const eventSchema = new Schema<IEvent>(
   {
-    userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
+    createdBy: { type: Schema.Types.ObjectId, ref: "User", required: true },
     eventName: { type: String, required: true, trim: true },
     image: {
       type: String,
@@ -25,7 +25,7 @@ const eventSchema = new Schema<IEvent>(
     totalSeat: { type: Number, min: 1, required: true },
     views: { type: Number, default: 0, min: 0 },
     isTrending: { type: Boolean, default: false },
-    soldSeat: { type: Number, default: 0, min: 0 },
+    soldSeat: { type: Number, default: 0, min: 0 }, // ticket sold
     startTime: { type: Date, required: true },
     endTime: { type: Date, required: true },
     attendees: [{ type: Schema.Types.ObjectId, ref: "User", default: [] }],
@@ -37,6 +37,8 @@ const eventSchema = new Schema<IEvent>(
   },
   { timestamps: true }
 );
+
+eventSchema.index({ createdBy: 1 })
 
 export const Event = model<IEvent>("Event", eventSchema);
 

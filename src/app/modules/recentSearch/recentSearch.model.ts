@@ -11,4 +11,6 @@ const recentSearchSchema = new Schema<IRecentSearch>({
   ],
 });
 
+recentSearchSchema.index({ userId: 1 })
+
 export const RecentSearch = model<IRecentSearch>('RecentSearch', recentSearchSchema);

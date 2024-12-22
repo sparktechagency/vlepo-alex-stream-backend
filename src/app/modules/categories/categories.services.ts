@@ -4,10 +4,18 @@ import { ICategory } from "./categories.interface";
 import Category from "./categories.model";
 import mongoose from "mongoose";
 import unlinkFile from "../../../shared/unlinkFile";
+import { User } from "../user/user.model";
 
-const createCategoryIntoDB = async (payload: ICategory) => {
+const createCategoryIntoDB = async (payload: ICategory, id: string) => {
+    if (!await User.isUserPermission(id)) {
+        throw new ApiError(StatusCodes.BAD_REQUEST, "User have no permission or not found")
+    }
+
     // todo: when category error for some resons but photo create
-    const result = await Category.create(payload);
+    const result = await Category.create({
+        ...payload,
+        userId: id
+    });
 
     return result;
 }
@@ -25,17 +33,17 @@ const getSingleCategoryById = async (id: string) => {
 
 const updateSingleCategoryById = async (id: string, payload: ICategory) => {
     const existCategory = await Category.findById(id);
-    if(!existCategory){
+    if (!existCategory) {
         throw new ApiError(StatusCodes.BAD_REQUEST, "Category not found!")
     }
 
-    if(existCategory.image){
+    if (existCategory.image) {
         unlinkFile(existCategory?.image);
     }
 
     const category = await Category.findByIdAndUpdate(id,
         payload,
-        {new: true}
+        { new: true }
     );
 
     if (!category) {
@@ -57,7 +65,7 @@ const deleteCategory = async (id: string) => {
         throw new ApiError(StatusCodes.FORBIDDEN, "Category not found!");
     }
 
-    if(result.image){
+    if (result.image) {
         unlinkFile(result.image)
     }
 

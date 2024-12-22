@@ -6,7 +6,10 @@ import { categoriServices } from "./categories.services";
 
 const createCategory = catchAsync(async (req: Request, res: Response) => {
     const payload = req.body;
-    const result = await categoriServices.createCategoryIntoDB(payload);
+    const { id } = req.user;
+    console.log({ create_category: payload });
+
+    const result = await categoriServices.createCategoryIntoDB(payload, id);
 
     sendResponse(res, {
         success: true,

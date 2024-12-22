@@ -9,4 +9,7 @@ const followSchema = new Schema<IFollow>(
     { timestamps: true }
 );
 
+followSchema.index({ userId: 1 });
+followSchema.index({ followingId: 1 });
+
 export const Follow = model<IFollow>("Follow", followSchema);

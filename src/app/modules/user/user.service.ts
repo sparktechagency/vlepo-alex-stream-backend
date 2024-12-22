@@ -56,27 +56,6 @@ const userFavouriteCategoryUpdate = async (id: string, categoryId: string) => {
   return result;
 }
 
-const savedUserEvents = async (userId: string, eventId: string) => {
-  const isUser = await User.findById(userId);
-  if (!isUser) {
-    throw new ApiError(StatusCodes.NOT_FOUND, "User not found!");
-  }
-
-  const isEvent = await Event.findById(eventId);
-  if (!isEvent) {
-    throw new ApiError(StatusCodes.NOT_FOUND, "Event not found!");
-  }
-
-  const result = await User.findByIdAndUpdate(userId,
-    {
-      $addToSet: { savedEvents: eventId }
-    },
-    { new: true }
-  );
-
-  return { savedEvents: result?.savedEvents };
-};
-
 const deleteCurrentUser = async (userId: string) => {
   await User.findByIdAndUpdate(userId,
     { isDeleted: true },
@@ -139,7 +118,6 @@ export const UserService = {
   createUserToDB,
   getUserProfileFromDB,
   userFavouriteCategoryUpdate,
-  savedUserEvents,
   deleteCurrentUser,
   updateMyProfile,
   updateUserStatus,

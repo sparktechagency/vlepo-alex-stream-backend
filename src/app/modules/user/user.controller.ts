@@ -44,19 +44,7 @@ const userFavouriteCategoryUpdate = catchAsync(async (req: Request, res: Respons
   });
 });
 
-const savedUserEvents = catchAsync(async (req: Request, res: Response) => {
-  const { id } = req.user;
-  const { eventId } = req.body;
 
-  const result = await UserService.savedUserEvents(id, eventId);
-
-  sendResponse(res, {
-    success: true,
-    statusCode: StatusCodes.OK,
-    message: 'Save event successfully!',
-    data: result,
-  });
-});
 
 
 const deleteCurrentUser = catchAsync(async (req: Request, res: Response) => {
@@ -118,7 +106,6 @@ export const UserController = {
   createUser,
   getUserProfile,
   userFavouriteCategoryUpdate,
-  savedUserEvents,
   deleteCurrentUser,
   updateMyProfile,
   updateUserStatus,

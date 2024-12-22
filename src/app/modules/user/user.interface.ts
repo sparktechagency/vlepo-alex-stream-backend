@@ -19,8 +19,6 @@ export interface IUser extends Document {
   confirmPassword: string;
   role: USER_ROLE;
   status: USER_STATUS;
-  savedEvents?: ObjectId[];
-  eventHistory?: ObjectId[];
   selectedCategory?: ObjectId[];
   isDeleted: boolean;
   otpVerification?: IOtpVerification;

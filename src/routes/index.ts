@@ -5,6 +5,7 @@ import { EventRoutes } from '../app/modules/events/events.routes';
 import { CategoriRoutes } from '../app/modules/categories/categories.routes';
 import { FollowRoutes } from '../app/modules/follow/follow.routes';
 import { RecentSearchRoutes } from '../app/modules/recentSearch/recentSearch.routes';
+import { UserEventRoutes } from '../app/modules/userevents/userevents.routes';
 const router = express.Router();
 
 const apiRoutes = [
@@ -29,8 +30,8 @@ const apiRoutes = [
     route: EventRoutes,
   },
   {
-    path: '/events',
-    route: EventRoutes,
+    path: '/user-events',
+    route: UserEventRoutes,
   },
   {
     path: '/recent-search',

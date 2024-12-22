@@ -4,9 +4,10 @@ import { Secret } from 'jsonwebtoken';
 import config from '../../config';
 import ApiError from '../../errors/ApiError';
 import { jwtHelper } from '../../helpers/jwtHelper';
+import { USER_ROLE } from '../modules/user/user.constants';
 
 const auth =
-  (...roles: string[]) =>
+  (...roles: USER_ROLE[]) =>
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const tokenWithBearer = req.headers.authorization;

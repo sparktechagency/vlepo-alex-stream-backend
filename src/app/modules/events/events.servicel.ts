@@ -9,7 +9,7 @@ import { QueryBuilder } from "../../builder/QueryBuilder";
 import { EventSearchableFields } from "./events.constants";
 
 const createEventsIntoDB = async (payload: IEvent) => {
-    const { userId, categoryId } = payload;
+    const { createdBy, categoryId } = payload;
     // todo: upload image
 
     const category = await Category.findById(categoryId);
@@ -17,7 +17,7 @@ const createEventsIntoDB = async (payload: IEvent) => {
         throw new ApiError(StatusCodes.NOT_FOUND, "Category not available!")
     }
 
-    const user = await User.findById(userId);
+    const user = await User.findById(createdBy);
     if (!user || user.isDeleted || user.status === USER_STATUS.BLOCKED) {
         throw new ApiError(StatusCodes.NOT_FOUND, "User have not permission to create events!")
     }

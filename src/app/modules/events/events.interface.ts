@@ -2,7 +2,7 @@ import { Document, ObjectId } from "mongoose";
 import { EVENTS_STATUS, EVENTS_TYPE } from "./events.constants";
 
 export interface IEvent extends Document {
-  userId: ObjectId; 
+  createdBy: ObjectId; 
   eventName: string; 
   image: string; 
   description: string; 

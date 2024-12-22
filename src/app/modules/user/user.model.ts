@@ -35,16 +35,6 @@ const userSchema = new Schema<IUser>(
       enum: Object.values(USER_STATUS),
       default: USER_STATUS.ACTIVE
     },
-    savedEvents: [{
-      type: Schema.Types.ObjectId,
-      ref: 'Event',
-      default: []
-    }],
-    eventHistory: [{
-      type: Schema.Types.ObjectId,
-      ref: 'Event',
-      default: []
-    }],
     selectedCategory: [{
       type: Schema.Types.ObjectId,
       ref: 'Category',

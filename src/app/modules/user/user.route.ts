@@ -26,11 +26,6 @@ router.patch("/favourite-category",
   UserController.userFavouriteCategoryUpdate
 );
 
-router.patch("/save-event",
-  validateRequest(UserValidation.saveEventZodSchema),
-  auth(USER_ROLE.USER),
-  UserController.savedUserEvents
-)
 
 router.delete("/delete-me",
   auth(USER_ROLE.USER, USER_ROLE.CREATOR), // TODO: CAN SUPER_ADMIN DELETE HIM?

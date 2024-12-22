@@ -1,10 +1,13 @@
-import { model, Schema } from "mongoose";
+import mongoose, { model, Schema } from "mongoose";
 import { ICategory } from "./categories.interface";
 
 const categorySchema = new Schema<ICategory>({
     categoryName: { type: String, required: true, unique: true },
-    image: { 
-        type: String, 
+    userId: {
+        type: mongoose.Types.ObjectId, required: true
+    },
+    image: {
+        type: String,
         validate: {
             validator: function (v: string) {
                 // Validate if the path starts with /images/ and ends with .png, .jpeg, or .jpg
@@ -16,6 +19,8 @@ const categorySchema = new Schema<ICategory>({
         required: true
     }
 }, { timestamps: true });
+
+categorySchema.index({ userId: 1 });
 
 const Category = model<ICategory>('Category', categorySchema);
 

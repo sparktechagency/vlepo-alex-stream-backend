@@ -3,7 +3,7 @@ import { EVENTS_STATUS, EVENTS_TYPE } from "./events.constants";
 
 export const eventCreateValidationSchema = z.object({
   body:z.object({
-    userId: z.string({ required_error: "User ID is required" }).refine((id) => /^[a-f\d]{24}$/i.test(id), {
+    createdBy: z.string({ required_error: "User ID is required" }).refine((id) => /^[a-f\d]{24}$/i.test(id), {
       message: "Invalid ObjectId for userId",
     }),
     eventName: z.string({ required_error: "Event name is required" }).min(3, "Event name must be at least 3 characters long"),
