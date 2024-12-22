@@ -18,5 +18,10 @@ router.get("/",
     UserEventController.getEventsFilterByType
 );
 
+router.delete("/:userEventId",
+    auth(USER_ROLE.USER),
+    UserEventController.deleteUserEvent
+);
+
 
 export const UserEventRoutes = router;

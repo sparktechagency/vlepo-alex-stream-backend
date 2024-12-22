@@ -31,9 +31,23 @@ const getEventsFilterByType = catchAsync(async (req: Request, res: Response) => 
     });
 });
 
+const deleteUserEvent = catchAsync(async (req: Request, res: Response) => {
+    const { userEventId } = req.params;
+
+    const result = await UserEventServices.deleteUserEvent(userEventId);
+
+    sendResponse(res, {
+        success: true,
+        statusCode: StatusCodes.OK,
+        message: 'User event deleted successfully',
+        data: result,
+    });
+});
+
 
 
 export const UserEventController = {
     createUserEvent,
     getEventsFilterByType,
+    deleteUserEvent
 };
