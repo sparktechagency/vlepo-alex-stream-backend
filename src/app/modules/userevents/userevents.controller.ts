@@ -21,7 +21,7 @@ const createUserEvent = catchAsync(async (req: Request, res: Response) => {
 const getEventsFilterByType = catchAsync(async (req: Request, res: Response) => {
     const { id } = req.user;
 
-    const result = await UserEventServices.getEventsFilterByType(id, req.params);
+    const result = await UserEventServices.getEventsFilterByType(id, req.query);
 
     sendResponse(res, {
         success: true,

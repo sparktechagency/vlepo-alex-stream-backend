@@ -22,6 +22,7 @@ router.get("/",
 )
 
 router.get("/:categoryId",
+    auth(USER_ROLE.CREATOR, USER_ROLE.SUPER_ADMIN, USER_ROLE.USER),
     categoriController.getSingleCategory
 )
 
@@ -32,7 +33,7 @@ router.patch("/:categoryId",
     categoriController.updateSingleCategory
 )
 
-router.delete("/:id",
+router.delete("/:categoryId",
     auth(USER_ROLE.CREATOR, USER_ROLE.SUPER_ADMIN),
     categoriController.deleteCategory
 )

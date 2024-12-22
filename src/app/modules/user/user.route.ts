@@ -7,18 +7,18 @@ import { UserValidation } from './user.validation';
 import { USER_ROLE } from './user.constants';
 const router = express.Router();
 
+
+
+router.post("/",
+  validateRequest(UserValidation.createUserZodSchema),
+  UserController.createUser
+)
+
 router.get(
   '/my-profile',
   auth(USER_ROLE.CREATOR, USER_ROLE.USER, USER_ROLE.SUPER_ADMIN),
   UserController.getUserProfile
 );
-
-router
-  .route('/')
-  .post(
-    validateRequest(UserValidation.createUserZodSchema),
-    UserController.createUser
-  )
 
 router.patch("/favourite-category",
   validateRequest(UserValidation.updateFavouriteCategoryZodSchema),
@@ -49,18 +49,18 @@ export const UserRoutes = router;
 
 
 // (req: Request, res: Response, next: NextFunction) => {
-  //   let photo = '';
-  //   if (req.files && 'image' in req.files && req.files.image[0]) {
-  //     photo = `/images/${req.files.image[0].filename}`;
-  //   }
+//   let photo = '';
+//   if (req.files && 'image' in req.files && req.files.image[0]) {
+//     photo = `/images/${req.files.image[0].filename}`;
+//   }
 
-  //   const body = JSON.parse(req.body.data);
-  //   const formatedDataForZod = {
-  //     ...body,
-  //     photo
-  //   }
-  //   req.body = formatedDataForZod;
-  //   console.log(req.body)
-  //   next();
-  // },
-  // validateRequest(UserValidation.updateProfileZodSchema),
+//   const body = JSON.parse(req.body.data);
+//   const formatedDataForZod = {
+//     ...body,
+//     photo
+//   }
+//   req.body = formatedDataForZod;
+//   console.log(req.body)
+//   next();
+// },
+// validateRequest(UserValidation.updateProfileZodSchema),

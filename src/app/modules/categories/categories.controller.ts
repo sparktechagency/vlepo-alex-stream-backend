@@ -7,7 +7,6 @@ import { categoriServices } from "./categories.services";
 const createCategory = catchAsync(async (req: Request, res: Response) => {
     const payload = req.body;
     const { id } = req.user;
-    console.log({ create_category: payload });
 
     const result = await categoriServices.createCategoryIntoDB(payload, id);
 
@@ -55,9 +54,9 @@ const updateSingleCategory = catchAsync(async (req: Request, res: Response) => {
 })
 
 const deleteCategory = catchAsync(async (req: Request, res: Response) => {
-    const { id } = req.params;
+    const { categoryId } = req.params;
 
-    const result = await categoriServices.deleteCategory(id);
+    const result = await categoriServices.deleteCategory(categoryId, req.user);
 
     sendResponse(res, {
         success: true,

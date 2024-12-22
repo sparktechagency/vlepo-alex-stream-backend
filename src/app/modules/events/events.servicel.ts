@@ -6,11 +6,11 @@ import { Event } from "./events.model"
 import { User } from "../user/user.model";
 import { USER_STATUS } from "../user/user.constants";
 import { QueryBuilder } from "../../builder/QueryBuilder";
-import { EventSearchableFields } from "./events.constants";
+import { EVENTS_STATUS, EventSearchableFields } from "./events.constants";
+import mongoose from "mongoose";
 
-const createEventsIntoDB = async (payload: IEvent) => {
-    const { createdBy, categoryId } = payload;
-    // todo: upload image
+const createEventsIntoDB = async (createdBy: string, payload: IEvent) => {
+    const { categoryId } = payload;
 
     const category = await Category.findById(categoryId);
     if (!category) {
@@ -22,7 +22,7 @@ const createEventsIntoDB = async (payload: IEvent) => {
         throw new ApiError(StatusCodes.NOT_FOUND, "User have not permission to create events!")
     }
 
-    const result = await Event.create(payload);
+    const result = await Event.create({ ...payload, createdBy });
 
     return result;
 }
@@ -42,16 +42,15 @@ const getAllEvents = async (query: Record<string, unknown>) => {
         .search(EventSearchableFields)
 
     const result = await events.modelQuery
-        .populate('categoryId')
-        .populate("userId")
+        .populate('categoryId', 'categoryName image')
+        .populate("createdBy", "name photo")
         .populate("attendees")
 
     return result;
 }
 
 const getAllEventsOfCreator = async (query: Record<string, unknown>, creatorId: string) => {
-    console.log({creatorId});
-    const events = new QueryBuilder(Event.find({ userId: creatorId }), query)
+    const events = new QueryBuilder(Event.find({ createdBy: creatorId }), query)
         .fields()
         .paginate()
         .sort()
@@ -59,24 +58,37 @@ const getAllEventsOfCreator = async (query: Record<string, unknown>, creatorId: 
         .search(EventSearchableFields)
 
     const result = await events.modelQuery
-        // .populate('categoryId')
-        .populate("userId")
+        .populate('categoryId', 'categoryName image')
+        .populate("createdBy", "name photo")
         .populate("attendees")
 
     return result;
 }
 
-const findSaveEvent = async (userId: string) => {
-    const user = await User.findById(userId);
+const cancelMyEventById = async (eventId: string, creatorId: string) => {
+    if (!mongoose.isValidObjectId(eventId)) {
+        throw new ApiError(StatusCodes.BAD_REQUEST, "Event ID invalid.")
+    }
 
-    console.log(user?.savedEvents);
-    const savedEvents = await Event.find(
-        { _id: { $in: user?.savedEvents } }
-    )
+    const existEvent = await Event.findById(eventId).select("createdBy");
 
-    return savedEvents;
+    if (creatorId !== existEvent?.createdBy.toString()) {
+        throw new ApiError(StatusCodes.BAD_REQUEST, "You can not cancel event of another user.")
+    }
+
+    const event = await Event.findOneAndUpdate(
+        { _id: eventId, createdBy: creatorId },
+        { status: EVENTS_STATUS.CANCELLED },
+        { new: true }
+    );
+
+    if(!event){
+        throw new ApiError(StatusCodes.BAD_REQUEST, "Event status does't update.")
+    }
+
+    return event;
+
 }
-
 
 
 
@@ -85,5 +97,5 @@ export const eventServices = {
     getSingleEventByEventId,
     getAllEvents,
     getAllEventsOfCreator,
-    findSaveEvent,
+    cancelMyEventById,
 }

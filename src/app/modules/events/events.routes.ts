@@ -4,12 +4,16 @@ import auth from "../../middlewares/auth";
 import { USER_ROLE } from "../user/user.constants";
 import { eventValidationSchema } from "./events.validation";
 import { eventController } from "./events.controller";
+import fileUploadHandler from "../../middlewares/fileUploadHandler";
+import formDataProcessing from "../../middlewares/formDataProcessing";
 
 const router = Router();
 
 router.post("/create-events",
-    validateRequest(eventValidationSchema.eventCreateValidationSchema),
     auth(USER_ROLE.CREATOR, USER_ROLE.SUPER_ADMIN),
+    fileUploadHandler(),
+    formDataProcessing(),
+    validateRequest(eventValidationSchema.eventCreateValidationSchema),
     eventController.createEvents
 );
 
@@ -26,10 +30,12 @@ router.get("/",
     eventController.getAllEvents
 );
 
-router.get("/save-event",
-    auth(USER_ROLE.USER),
-    eventController.findSaveEvent
+
+router.patch("/cancel-event/:eventId",
+    auth(USER_ROLE.CREATOR),
+    eventController.cancelMyEventById
 );
+
 
 
 

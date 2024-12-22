@@ -1,4 +1,5 @@
 import { NextFunction, Request, RequestHandler, Response } from 'express';
+import unlinkFile from './unlinkFile';
 
 const catchAsync =
   (fn: RequestHandler) =>
@@ -6,6 +7,10 @@ const catchAsync =
     try {
       await fn(req, res, next);
     } catch (error) {
+      console.log(req.body)
+      if(req.body.image){
+        unlinkFile(req.body.image);  
+      }
       next(error);
     }
   };

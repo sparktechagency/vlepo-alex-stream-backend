@@ -2,6 +2,6 @@ import { Document, ObjectId } from "mongoose";
 
 export interface ICategory extends Document{
     categoryName: string;
-    userId: ObjectId;
+    createdBy: ObjectId;
     image: string;
 }

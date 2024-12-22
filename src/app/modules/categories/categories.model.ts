@@ -3,8 +3,10 @@ import { ICategory } from "./categories.interface";
 
 const categorySchema = new Schema<ICategory>({
     categoryName: { type: String, required: true, unique: true },
-    userId: {
-        type: mongoose.Types.ObjectId, required: true
+    createdBy: {
+        type: mongoose.Types.ObjectId,
+        ref: "User",
+        required: true
     },
     image: {
         type: String,

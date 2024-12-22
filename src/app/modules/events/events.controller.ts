@@ -5,8 +5,8 @@ import sendResponse from "../../../shared/sendResponse";
 import { StatusCodes } from "http-status-codes";
 
 const createEvents = catchAsync(async (req: Request, res: Response) => {
-
-    const result = await eventServices.createEventsIntoDB(req.body);
+    const { id } = req.user;
+    const result = await eventServices.createEventsIntoDB(id, req.body);
 
     sendResponse(res, {
         success: true,
@@ -42,7 +42,7 @@ const getAllEvents = catchAsync(async (req: Request, res: Response) => {
 });
 
 const getAllEventsOfCreator = catchAsync(async (req: Request, res: Response) => {
-    const {creatorId} = req.params;
+    const { creatorId } = req.params;
 
     const result = await eventServices.getAllEventsOfCreator(req.query, creatorId);
 
@@ -54,19 +54,20 @@ const getAllEventsOfCreator = catchAsync(async (req: Request, res: Response) => 
     });
 });
 
-const findSaveEvent = catchAsync(async (req: Request, res: Response) => {
-    const {id} = req.user;
 
-    const result = await eventServices.findSaveEvent(id);
+const cancelMyEventById = catchAsync(async (req: Request, res: Response) => {
+    const { id: creatorId } = req.user;
+    const {eventId} = req.params;
+
+    const result = await eventServices.cancelMyEventById(eventId, creatorId);
 
     sendResponse(res, {
         success: true,
         statusCode: StatusCodes.OK,
-        message: 'Events retrived successfully!',
+        message: 'User events retrived successfully!',
         data: result,
     });
 });
-
 
 
 export const eventController = {
@@ -74,6 +75,5 @@ export const eventController = {
     getSingleEventByEventId,
     getAllEvents,
     getAllEventsOfCreator,
-    findSaveEvent,
-    
+    cancelMyEventById,
 }

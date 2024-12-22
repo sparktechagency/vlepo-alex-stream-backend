@@ -5,17 +5,24 @@ import Category from "./categories.model";
 import mongoose from "mongoose";
 import unlinkFile from "../../../shared/unlinkFile";
 import { User } from "../user/user.model";
+import { JwtPayload } from "jsonwebtoken";
+import { USER_ROLE } from "../user/user.constants";
 
 const createCategoryIntoDB = async (payload: ICategory, id: string) => {
+
+
     if (!await User.isUserPermission(id)) {
         throw new ApiError(StatusCodes.BAD_REQUEST, "User have no permission or not found")
     }
 
-    // todo: when category error for some resons but photo create
     const result = await Category.create({
         ...payload,
-        userId: id
+        createdBy: id
     });
+
+    if (!result) {
+        unlinkFile(payload.image);
+    }
 
     return result;
 }
@@ -28,6 +35,9 @@ const getAllCategoriesIntoDB = async () => {
 const getSingleCategoryById = async (id: string) => {
 
     const category = await Category.findById(id); // todo: if no categoy find what is return? any error or null
+    if(!category){
+        throw new ApiError(StatusCodes.NOT_FOUND, "Category not found!")
+    }
     return category;
 }
 
@@ -53,24 +63,42 @@ const updateSingleCategoryById = async (id: string, payload: ICategory) => {
     return category;
 }
 
-const deleteCategory = async (id: string) => {
-
-    if (!mongoose.Types.ObjectId.isValid(id)) {
+const deleteCategory = async (categoryId: string, user: JwtPayload) => {
+    
+    if (!mongoose.Types.ObjectId.isValid(categoryId)) {
         throw new ApiError(StatusCodes.FORBIDDEN, "ObjectId is not valid!");
     }
 
-    const result = await Category.findByIdAndDelete(id);
+    const category = await Category.findById(categoryId);
 
-    if (!result) {
+    if (!category) {
         throw new ApiError(StatusCodes.FORBIDDEN, "Category not found!");
     }
 
-    if (result.image) {
-        unlinkFile(result.image)
+    
+    if (user.role === USER_ROLE.SUPER_ADMIN) {
+        if (category.image) {
+            unlinkFile(category.image); 
+        }
+        await Category.findByIdAndDelete(categoryId);
+        return null;  // Success
     }
 
-    return null;
-}
+    
+    if (category.createdBy.toString() !== user.id) {
+        throw new ApiError(StatusCodes.FORBIDDEN, "You are not authorized to delete this category!");
+    }
+
+    // if same creator create category or not super admin
+    if (category?.image) {
+        unlinkFile(category.image);  
+    }
+
+    
+    await Category.findByIdAndDelete(categoryId);
+
+    return null;  // Success
+};
 
 export const categoriServices = {
     createCategoryIntoDB,

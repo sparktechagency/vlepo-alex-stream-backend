@@ -15,6 +15,6 @@ const userEventSchema = new mongoose.Schema<IUserEvent>(
     { timestamps: true }
 );
 
-userEventSchema.index({ type: 1, userId: 1 });
+userEventSchema.index({ eventId: 1, type: 1 }, { unique: true });
 
 export const UserEvent = model<IUserEvent>("UserEvent", userEventSchema);
