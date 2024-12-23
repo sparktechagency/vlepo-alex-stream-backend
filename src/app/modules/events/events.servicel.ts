@@ -89,7 +89,7 @@ const cancelMyEventById = async (eventId: string, creatorId: string) => {
     // todo: when is event status will be cancel ticket will be blocked
 
     return event;
-}
+} 
 
 
 

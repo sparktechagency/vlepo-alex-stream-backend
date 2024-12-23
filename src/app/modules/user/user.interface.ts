@@ -24,6 +24,8 @@ export interface IUser extends Document {
   otpVerification?: IOtpVerification;
   createdAt?: Date;
   updatedAt?: Date;
+  followersCount?: number;
+  eventCount?: number;
 };
 
 export type UserModal = {

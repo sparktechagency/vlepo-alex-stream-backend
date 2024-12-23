@@ -4,9 +4,10 @@ import ApiError from '../../../errors/ApiError';
 import { IUser } from './user.interface';
 import { User } from './user.model';
 import { Event } from '../events/events.model';
-import { QueryBuilder } from '../../builder/QueryBuilder';
-import { USER_STATUS } from './user.constants';
+import { USER_ROLE, USER_STATUS } from './user.constants';
 import unlinkFile from '../../../shared/unlinkFile';
+import { Follow } from '../follow/follow.model';
+import { number } from 'zod';
 
 const createUserToDB = async (payload: Partial<IUser>): Promise<null> => {
   if (payload.password !== payload?.confirmPassword) {
@@ -29,10 +30,26 @@ const createUserToDB = async (payload: Partial<IUser>): Promise<null> => {
 const getUserProfileFromDB = async (
   user: JwtPayload
 ): Promise<Partial<IUser>> => {
-  const { id } = user;
+  const { id, role } = user;
   const isExistUser = await User.isExistUserById(id);
   if (!isExistUser) {
     throw new ApiError(StatusCodes.BAD_REQUEST, "User doesn't exist!");
+  }
+
+  let followersCount = 0;
+  let eventCount = 0;
+
+  if (role === USER_ROLE.CREATOR) {
+    followersCount = await Follow.countDocuments({ followingId: id });
+    eventCount = await Event.countDocuments({ createdBy: id });
+    let user = isExistUser.toObject();
+
+    // Add the new properties
+    user.followersCount = followersCount;
+    user.eventCount = eventCount;
+
+    
+    return user;
   }
 
   return isExistUser;

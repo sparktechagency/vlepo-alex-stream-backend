@@ -53,7 +53,7 @@ userSchema.index({ _id: 1, isDeleted: 1, status: 1 });
 
 // find user by _id
 userSchema.statics.isExistUserById = async (id: string) => {
-  const isExist = await User.findById(id);
+  const isExist = await User.findById(id).select("-password");
   return isExist;
 };
 
