@@ -6,6 +6,7 @@ import { CategoriRoutes } from '../app/modules/categories/categories.routes';
 import { FollowRoutes } from '../app/modules/follow/follow.routes';
 import { RecentSearchRoutes } from '../app/modules/recentSearch/recentSearch.routes';
 import { UserEventRoutes } from '../app/modules/userevents/userevents.routes';
+import { FaqRoutes } from '../app/modules/FAQ/faq.routes';
 const router = express.Router();
 
 const apiRoutes = [
@@ -37,6 +38,10 @@ const apiRoutes = [
     path: '/recent-search',
     route: RecentSearchRoutes,
   },
+  {
+    path: "/faqs",
+    route: FaqRoutes
+  }
 ];
 
 apiRoutes.forEach(route => router.use(route.path, route.route));

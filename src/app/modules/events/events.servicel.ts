@@ -86,8 +86,9 @@ const cancelMyEventById = async (eventId: string, creatorId: string) => {
         throw new ApiError(StatusCodes.BAD_REQUEST, "Event status does't update.")
     }
 
-    return event;
+    // todo: when is event status will be cancel ticket will be blocked
 
+    return event;
 }
 
 
@@ -98,4 +99,5 @@ export const eventServices = {
     getAllEvents,
     getAllEventsOfCreator,
     cancelMyEventById,
+    // todo: totalEventsCountOfCreator
 }
