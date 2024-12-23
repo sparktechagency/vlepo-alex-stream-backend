@@ -6,6 +6,7 @@ import { eventValidationSchema } from "./events.validation";
 import { eventController } from "./events.controller";
 import fileUploadHandler from "../../middlewares/fileUploadHandler";
 import formDataProcessing from "../../middlewares/formDataProcessing";
+import cron from "node-cron";
 
 const router = Router();
 
@@ -37,7 +38,9 @@ router.patch("/cancel-event/:eventId",
 );
 
 
-
+cron.schedule("* * * * *", 
+    eventController.updateAllEventsTrendingStatus
+);
 
 
 export const EventRoutes = router;

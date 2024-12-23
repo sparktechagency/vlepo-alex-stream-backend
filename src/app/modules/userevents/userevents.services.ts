@@ -23,10 +23,10 @@ const createUserEventIntoDB = async (id: string, payload: Partial<IUserEvent>) =
 
 const getEventsFilterByType = async (id: string, query: Record<string, unknown>) => {
     const userEvents = new QueryBuilder(UserEvent.find(
-        { userId: id, type: query.type }
+        { userId: id}
     ), query)
         .paginate()
-        // .filter()
+        .filter()
 
     const result = await userEvents.modelQuery
         .populate('eventId', 'eventName image startTime soldSeat')

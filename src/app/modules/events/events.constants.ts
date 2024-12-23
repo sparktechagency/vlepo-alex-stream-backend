@@ -4,6 +4,7 @@ export enum EVENTS_STATUS {
     COMPLETED = "COMPLETED",
     CANCELLED = "CANCELLED",
 }
+
 export enum EVENTS_TYPE {
     VIRTUAL = "VIRTUAL",
     OFFLINE = "OFFLINE"

@@ -82,15 +82,61 @@ const cancelMyEventById = async (eventId: string, creatorId: string) => {
         { new: true }
     );
 
-    if(!event){
+    if (!event) {
         throw new ApiError(StatusCodes.BAD_REQUEST, "Event status does't update.")
     }
 
     // todo: when is event status will be cancel ticket will be blocked
 
     return event;
-} 
+}
 
+
+const updateAllEventsTrendingStatus = async () => {
+    const events = await Event.find()
+        .select("isTrending soldSeat views startTime status");
+        console.log({events}, "\n")
+
+    const bulkOperations = events.map((event) => {
+        let isTrending = false;
+
+        if ([EVENTS_STATUS.LIVE, EVENTS_STATUS.CANCELLED, EVENTS_STATUS.COMPLETED].includes(event.status)) {
+            console.log({event});
+            isTrending = false;
+        } else {
+
+            if (event.views > 1000) {
+                isTrending = true;
+            }
+
+            else if (event.soldSeat > 500) {
+                isTrending = true;
+            }
+
+            else {
+                const currentTime = new Date();
+                const timeDifference = (event.startTime.getTime() - currentTime.getTime()) / (1000 * 60 * 60); // difference between hour
+                if (timeDifference <= 24 && timeDifference > 0) {
+                    isTrending = true;
+                }
+            }
+        }
+
+        // MongoDB bulkWrite 
+        return {
+            updateOne: {
+                filter: { _id: event._id },
+                update: { $set: { isTrending } },
+            },
+        };
+    });
+
+    // Bulk update 
+    const r = await Event.bulkWrite(bulkOperations);
+    console.log(r)
+
+    console.log("Trending status updated for all events");
+};
 
 
 export const eventServices = {
@@ -99,5 +145,5 @@ export const eventServices = {
     getAllEvents,
     getAllEventsOfCreator,
     cancelMyEventById,
-    // todo: totalEventsCountOfCreator
+    updateAllEventsTrendingStatus
 }

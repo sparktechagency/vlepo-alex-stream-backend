@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import catchAsync from "../../../shared/catchAsync";
-import { eventServices } from "./events.servicel";
+import { eventServices } from "./events.services";
 import sendResponse from "../../../shared/sendResponse";
 import { StatusCodes } from "http-status-codes";
 
@@ -57,7 +57,7 @@ const getAllEventsOfCreator = catchAsync(async (req: Request, res: Response) => 
 
 const cancelMyEventById = catchAsync(async (req: Request, res: Response) => {
     const { id: creatorId } = req.user;
-    const {eventId} = req.params;
+    const { eventId } = req.params;
 
     const result = await eventServices.cancelMyEventById(eventId, creatorId);
 
@@ -70,10 +70,20 @@ const cancelMyEventById = catchAsync(async (req: Request, res: Response) => {
 });
 
 
+const updateAllEventsTrendingStatus = async () => {
+    try {
+        await eventServices.updateAllEventsTrendingStatus();
+    } catch (error) {
+        console.error("Error in scheduled task:", error);
+    }
+};
+
+
 export const eventController = {
     createEvents,
     getSingleEventByEventId,
     getAllEvents,
     getAllEventsOfCreator,
     cancelMyEventById,
+    updateAllEventsTrendingStatus,
 }

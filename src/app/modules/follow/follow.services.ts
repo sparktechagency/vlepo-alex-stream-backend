@@ -50,7 +50,6 @@ const getFollowers = async (query: Record<string, unknown>, userId: string) => {
     }
 
     const followers = new QueryBuilder(Follow.find({ followingId: userId }), query)
-        .fields()
         .paginate()
         .sort()
         .filter()
@@ -77,7 +76,6 @@ const getFollowing = async (query: Record<string, unknown>, userId: string) => {
     }
 
     const followings = new QueryBuilder(Follow.find({ userId: userId }), query)
-        .fields()
         .paginate()
         .sort()
         .filter()
