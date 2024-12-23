@@ -30,6 +30,18 @@ const getUserProfile = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const getCreatorProfile = catchAsync(async (req: Request, res: Response) => {
+  const {creatorId} = req.params;
+  const result = await UserService.getCreatorProfileFromDB(creatorId);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: StatusCodes.OK,
+    message: 'Profile data retrieved successfully',
+    data: result,
+  });
+});
+
 const userFavouriteCategoryUpdate = catchAsync(async (req: Request, res: Response) => {
   const { id } = req.user;
   const { categoryId } = req.body;
@@ -109,4 +121,5 @@ export const UserController = {
   deleteCurrentUser,
   updateMyProfile,
   updateUserStatus,
+  getCreatorProfile,
 };

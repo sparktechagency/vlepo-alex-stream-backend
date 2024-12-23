@@ -48,11 +48,38 @@ const getUserProfileFromDB = async (
     user.followersCount = followersCount;
     user.eventCount = eventCount;
 
-    
+
     return user;
   }
 
   return isExistUser;
+};
+
+const getCreatorProfileFromDB = async (creatorId: string) => {
+  const isExistUser = await User.findById(creatorId)
+    .select("name bio description photo role");
+
+  if (!isExistUser) {
+    throw new ApiError(StatusCodes.BAD_REQUEST, "User doesn't exist!");
+  }
+
+  // if params is userId data does not retrived
+  if (isExistUser.role === USER_ROLE.USER) {
+    return null;
+  }
+
+  let followersCount = await Follow.countDocuments({ followingId: creatorId });
+  let eventCount = await Event.countDocuments({ createdBy: creatorId });
+
+
+
+  let user = isExistUser.toObject();
+
+  // Add the new properties
+  user.followersCount = followersCount;
+  user.eventCount = eventCount;
+
+  return user;
 };
 
 
@@ -138,4 +165,5 @@ export const UserService = {
   deleteCurrentUser,
   updateMyProfile,
   updateUserStatus,
+  getCreatorProfileFromDB,
 };

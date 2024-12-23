@@ -20,6 +20,12 @@ router.get(
   UserController.getUserProfile
 );
 
+router.get(
+  '/:creatorId',
+  auth(USER_ROLE.CREATOR, USER_ROLE.USER, USER_ROLE.SUPER_ADMIN),
+  UserController.getCreatorProfile
+);
+
 router.patch("/favourite-category",
   validateRequest(UserValidation.updateFavouriteCategoryZodSchema),
   auth(USER_ROLE.USER),
