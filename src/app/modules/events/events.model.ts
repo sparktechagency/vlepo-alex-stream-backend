@@ -27,7 +27,8 @@ const eventSchema = new Schema<IEvent>(
     totalSeat: { type: Number, min: 1, required: false },
     views: { type: Number, default: 0, min: 0 },
     isTrending: { type: Boolean, default: false },
-    soldSeat: { type: Number, default: 0, min: 0 }, // ticket sold
+    soldTicket: { type: Number, default: 0, min: 0 }, // ticket sold
+    totalSale: {type: Number, default: 0, min: 0},
     startTime: { type: Date, required: true },
     endTime: { type: Date, required: false },
     attendees: [{ type: Schema.Types.ObjectId, ref: "User", default: [] }],

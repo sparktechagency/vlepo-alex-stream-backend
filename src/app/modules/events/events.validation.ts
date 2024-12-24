@@ -28,7 +28,7 @@ export const eventCreateValidationSchema = z.object({
 
     views: z.number().min(0, "Views cannot be negative").default(0),
     isTrending: z.boolean().optional(),
-    soldSeat: z.number().min(0, "Sold seat cannot be negative").optional(),
+    soldTicket: z.number().min(0, "Sold seat cannot be negative").optional(),
     
     attendees: z.array(z.string().refine((id) => /^[a-f\d]{24}$/i.test(id), { message: "Invalid ObjectId in attendees" })).optional(),
 

@@ -21,4 +21,5 @@ export default {
     host: process.env.EMAIL_HOST,
     pass: process.env.EMAIL_PASS,
   },
+  stripe_secret_key: process.env.STRIPE_SECRET_KEY,
 };

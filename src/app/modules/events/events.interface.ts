@@ -10,9 +10,10 @@ export interface IEvent extends Document {
   eventType: EVENTS_TYPE; 
   ticketPrice: number; 
   totalSeat: number; 
-  views: number; 
-  isTrending: boolean; 
-  soldSeat: number; 
+  views?: number; 
+  isTrending?: boolean; 
+  soldTicket?: number; 
+  totalSale?: number;
   startTime: Date; 
   endTime: Date; 
   attendees?: ObjectId[]; 

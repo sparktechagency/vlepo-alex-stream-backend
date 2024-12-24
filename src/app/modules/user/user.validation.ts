@@ -46,10 +46,18 @@ const userChangeStatusZodSchema = z.object({
 })
 
 
+const userRoleChangeZodSchema = z.object({
+  body: z.object({
+    role: z.enum([USER_ROLE.USER, USER_ROLE.CREATOR])
+  })
+});
+
+
 
 export const UserValidation = {
   createUserZodSchema,
   updateFavouriteCategoryZodSchema,
   userChangeStatusZodSchema,
+  userRoleChangeZodSchema,
   // updateProfileZodSchema,
 };

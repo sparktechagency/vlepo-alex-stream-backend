@@ -3,6 +3,7 @@ import { StatusCodes } from 'http-status-codes';
 import catchAsync from '../../../shared/catchAsync';
 import sendResponse from '../../../shared/sendResponse';
 import { UserService } from './user.service';
+import config from '../../../config';
 
 const createUser = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
@@ -31,7 +32,7 @@ const getUserProfile = catchAsync(async (req: Request, res: Response) => {
 });
 
 const getCreatorProfile = catchAsync(async (req: Request, res: Response) => {
-  const {creatorId} = req.params;
+  const { creatorId } = req.params;
   const result = await UserService.getCreatorProfileFromDB(creatorId);
 
   sendResponse(res, {
@@ -101,7 +102,7 @@ const updateMyProfile = catchAsync(async (req: Request, res: Response) => {
 
 
 const updateUserStatus = catchAsync(async (req: Request, res: Response) => {
-  const {userId} = req.params;
+  const { userId } = req.params;
 
   const result = await UserService.updateUserStatus(userId, req.body);
 
@@ -109,6 +110,25 @@ const updateUserStatus = catchAsync(async (req: Request, res: Response) => {
     success: true,
     statusCode: StatusCodes.OK,
     message: 'Profile status updated successfully',
+    data: result,
+  });
+});
+
+
+const toggleUserRole = catchAsync(async (req: Request, res: Response) => {
+
+  const result = await UserService.toggleUserRole(req.user, req.body);
+  const { refreshToken } = result;
+
+  res.cookie('refreshToken', refreshToken, {
+    secure: config.node_env === "production",
+    httpOnly: true
+  })
+
+  sendResponse(res, {
+    success: true,
+    statusCode: StatusCodes.OK,
+    message: 'User switch his role successfully',
     data: result,
   });
 });
@@ -122,4 +142,5 @@ export const UserController = {
   updateMyProfile,
   updateUserStatus,
   getCreatorProfile,
+  toggleUserRole,
 };

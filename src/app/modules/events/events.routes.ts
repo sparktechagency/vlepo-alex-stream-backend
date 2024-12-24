@@ -38,7 +38,7 @@ router.patch("/cancel-event/:eventId",
 );
 
 
-cron.schedule("* * * * *", 
+cron.schedule("0 * * * *", 
     eventController.updateAllEventsTrendingStatus
 );
 

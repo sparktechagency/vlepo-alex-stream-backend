@@ -7,6 +7,7 @@ import { FollowRoutes } from '../app/modules/follow/follow.routes';
 import { RecentSearchRoutes } from '../app/modules/recentSearch/recentSearch.routes';
 import { UserEventRoutes } from '../app/modules/userevents/userevents.routes';
 import { FaqRoutes } from '../app/modules/FAQ/faq.routes';
+import { PaymentRoutes } from '../app/modules/payment/payment.routes';
 const router = express.Router();
 
 const apiRoutes = [
@@ -41,6 +42,10 @@ const apiRoutes = [
   {
     path: "/faqs",
     route: FaqRoutes
+  },
+  {
+    path: "/payments",
+    route: PaymentRoutes
   }
 ];
 

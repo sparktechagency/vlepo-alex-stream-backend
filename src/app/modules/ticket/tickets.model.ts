@@ -26,4 +26,4 @@ const TicketSchema = new Schema<ITicket>(
 );
 
 
-export const TicketModel = model<ITicket>("UserEvent", TicketSchema);
+export const TicketModel = model<ITicket>("Ticket", TicketSchema);

@@ -13,7 +13,7 @@ app.use(Morgan.successHandler);
 app.use(Morgan.errorHandler);
 
 // for access cookie
-app.use(cookieParser())
+app.use(cookieParser());
 
 //body parser
 app.use(cors());

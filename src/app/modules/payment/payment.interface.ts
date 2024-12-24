@@ -11,3 +11,9 @@ export interface IPayment extends Document {
     createdAt: Date;
     updatedAt: Date;
 }
+
+export interface IPaymentIntent extends Document {
+    userId: string;
+    eventId: string;
+    amount: number;
+}

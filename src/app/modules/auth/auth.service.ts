@@ -17,6 +17,7 @@ import { IAuthResetPassword, IChangePassword, IVerifyEmail, TLoginUser } from '.
 const loginUserFromDB = async (payload: TLoginUser) => {
   const { email, password } = payload;
   const isExistUser = await User.findOne({ email }).select('+password');
+  
   if (!isExistUser) {
     throw new ApiError(StatusCodes.BAD_REQUEST, "User doesn't exist!");
   }

@@ -8,7 +8,6 @@ import { USER_ROLE } from './user.constants';
 const router = express.Router();
 
 
-
 router.post("/",
   validateRequest(UserValidation.createUserZodSchema),
   UserController.createUser
@@ -48,6 +47,13 @@ router.patch("/update-user-status/:userId",
   auth(USER_ROLE.SUPER_ADMIN),
   validateRequest(UserValidation.userChangeStatusZodSchema),
   UserController.updateUserStatus
+)
+
+
+router.patch("/switch-user-role",
+  auth(USER_ROLE.USER, USER_ROLE.CREATOR),
+  validateRequest(UserValidation.userRoleChangeZodSchema),
+  UserController.toggleUserRole
 )
 
 

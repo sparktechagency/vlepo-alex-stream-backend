@@ -95,21 +95,20 @@ const cancelMyEventById = async (eventId: string, creatorId: string) => {
 const updateAllEventsTrendingStatus = async () => {
     const events = await Event.find()
         .select("isTrending soldSeat views startTime status");
-        console.log({events}, "\n")
 
     const bulkOperations = events.map((event) => {
         let isTrending = false;
 
         if ([EVENTS_STATUS.LIVE, EVENTS_STATUS.CANCELLED, EVENTS_STATUS.COMPLETED].includes(event.status)) {
-            console.log({event});
+            console.log({ event });
             isTrending = false;
         } else {
 
-            if (event.views > 1000) {
+            if (event.views as number > 1000) {
                 isTrending = true;
             }
 
-            else if (event.soldSeat > 500) {
+            else if (event.soldTicket as number > 500) {
                 isTrending = true;
             }
 
@@ -132,11 +131,22 @@ const updateAllEventsTrendingStatus = async () => {
     });
 
     // Bulk update 
-    const r = await Event.bulkWrite(bulkOperations);
-    console.log(r)
-
+    await Event.bulkWrite(bulkOperations);
+    
     console.log("Trending status updated for all events");
 };
+
+
+// todo: attendance create auto
+// const createAttendanceasync = async (eventId: string, userId: string) => {
+//     if (!mongoose.isValidObjectId(eventId)) {
+//         throw new ApiError(StatusCodes.BAD_REQUEST, "Event ID invalid.")
+//     }
+
+//     const existEvent = await Event.findById(eventId).select("createdBy");
+
+
+// }
 
 
 export const eventServices = {
@@ -145,5 +155,5 @@ export const eventServices = {
     getAllEvents,
     getAllEventsOfCreator,
     cancelMyEventById,
-    updateAllEventsTrendingStatus
+    updateAllEventsTrendingStatus,
 }
