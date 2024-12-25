@@ -14,6 +14,7 @@ import { EVENTS_STATUS } from "../events/events.constants";
 import { USER_ROLE } from "../user/user.constants";
 const stripe = new Stripe(config.stripe_secret_key as string);
 
+
 const createPaymentIntent = async (payload: IPaymentIntent) => {
     const { amount, eventId, userId } = payload;
 
@@ -23,21 +24,22 @@ const createPaymentIntent = async (payload: IPaymentIntent) => {
         eventId: eventId
     });
 
-    if(existSameTicket.length){
+    if (existSameTicket.length) {
         throw new ApiError(StatusCodes.BAD_REQUEST, "Already you have a ticket.")
     }
 
     const isEvent = await Event.findOne({
         _id: eventId,
-        status: EVENTS_STATUS.UPCOMING
+        status: EVENTS_STATUS.UPCOMING,
+        startTime: { $gt: new Date() },
     });
 
     if (!isEvent) {
-        throw new ApiError(StatusCodes.NOT_FOUND, "Event not found!")
+        throw new ApiError(StatusCodes.BAD_REQUEST, "No upcoming event found!");
     }
 
     const user = await User.isUserPermission(userId);
-    if(user.role !== USER_ROLE.USER){
+    if (user.role !== USER_ROLE.USER) {
         throw new ApiError(StatusCodes.NOT_FOUND, "Only user can booked ticket.")
     }
 

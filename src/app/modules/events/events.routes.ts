@@ -43,7 +43,13 @@ router.get("/event-analysis/:eventId",
 );
 
 
-cron.schedule("0 * * * *", 
+router.get("/creator-events-overview",
+    auth(USER_ROLE.CREATOR),
+    eventController.creatorEventOverview
+);
+
+
+cron.schedule("0 * * * *",
     eventController.updateAllEventsTrendingStatus
 );
 

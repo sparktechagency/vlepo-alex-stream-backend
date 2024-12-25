@@ -86,6 +86,20 @@ const cancelMyEventById = catchAsync(async (req: Request, res: Response) => {
 });
 
 
+const creatorEventOverview = catchAsync(async (req: Request, res: Response) => {
+    const { id: creatorId } = req.user;
+
+    const result = await eventServices.creatorEventOverview(creatorId);
+
+    sendResponse(res, {
+        success: true,
+        statusCode: StatusCodes.OK,
+        message: 'Creator events analysis data retrived successfully!',
+        data: result,
+    });
+});
+
+
 const updateAllEventsTrendingStatus = async () => {
     try {
         await eventServices.updateAllEventsTrendingStatus();
@@ -106,4 +120,5 @@ export const eventController = {
     cancelMyEventById,
     updateAllEventsTrendingStatus,
     getSingleSlfEventAnalysisByEventId,
+    creatorEventOverview,
 }    

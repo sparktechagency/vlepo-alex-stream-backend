@@ -98,6 +98,41 @@ const getSingleSlfEventAnalysisByEventId = async (id: string, timeframe = "6mont
 };
 
 
+const creatorEventOverview = async (creatorId: string) => {
+    console.log(creatorId)
+
+    const events = await Event.aggregate([
+        {
+            $match: {
+                createdBy: new mongoose.Types.ObjectId(creatorId),
+                // status: EVENTS_STATUS.COMPLETED,
+            }
+        },
+        {
+            $group: {
+                _id: "$createdBy", // group by creatorId
+                totalAmount: { $sum: "$totalSale" },
+                doneEvent: {
+                    $sum: { $cond: [{ $eq: ["$status", EVENTS_STATUS.COMPLETED] }, 1, 0] }
+                },
+                upcomingEvent: {
+                    $sum: { $cond: [{ $eq: ["$status", EVENTS_STATUS.UPCOMING] }, 1, 0] }
+                },
+                cancelEvent: {
+                    $sum: { $cond: [{ $eq: ["$status", EVENTS_STATUS.CANCELLED] }, 1, 0] }
+                },
+                liveEvent: {
+                    $sum: { $cond: [{ $eq: ["$status", EVENTS_STATUS.LIVE] }, 1, 0] }
+                }
+            }
+        }
+    ]);
+
+
+    return events;
+}
+
+
 
 const getAllEvents = async (query: Record<string, unknown>) => {
     const events = new QueryBuilder(Event.find(), query)
@@ -210,4 +245,5 @@ export const eventServices = {
     cancelMyEventById,
     updateAllEventsTrendingStatus,
     getSingleSlfEventAnalysisByEventId,
+    creatorEventOverview,
 }
