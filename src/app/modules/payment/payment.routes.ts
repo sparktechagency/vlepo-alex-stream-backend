@@ -2,10 +2,13 @@ import { Router } from "express"
 import { paymentController } from "./payment.controller";
 import { paymentValidationSchema } from "./payment.validation";
 import validateRequest from "../../middlewares/validateRequest";
+import auth from "../../middlewares/auth";
+import { USER_ROLE } from "../user/user.constants";
 
 const router = Router();
 
 router.post("/create-payment-intent",
+    auth(USER_ROLE.USER),
     validateRequest(paymentValidationSchema.paymentIntentSchema),
     paymentController.createPaymentIntent
 )
@@ -15,9 +18,6 @@ router.post("/verify-payment",
     validateRequest(paymentValidationSchema.paymentIntentIdValidation),
     paymentController.verifyPayment
 )
-
-
-router.post("/check", paymentController.check);
 
 
 export const PaymentRoutes = router;

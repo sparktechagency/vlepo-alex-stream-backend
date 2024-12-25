@@ -31,7 +31,6 @@ const eventSchema = new Schema<IEvent>(
     totalSale: {type: Number, default: 0, min: 0},
     startTime: { type: Date, required: true },
     endTime: { type: Date, required: false },
-    attendees: [{ type: Schema.Types.ObjectId, ref: "User", default: [] }],
     status: {
       type: String,
       enum: Object.values(EVENTS_STATUS),

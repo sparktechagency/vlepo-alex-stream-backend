@@ -3,11 +3,44 @@ import config from "../../../config";
 import { IPaymentIntent } from "./payment.interface";
 import { Payment } from "./payment.model";
 import { TicketModel } from "../ticket/tickets.model";
+import ApiError from "../../../errors/ApiError";
+import { StatusCodes } from "http-status-codes";
+import { Event } from "../events/events.model";
+import { User } from "../user/user.model";
+import { PAYMENT_STATUS } from "./payment.constant";
+import mongoose from "mongoose";
+import { AttendanceModel } from "../events/attendanceSchema";
+import { EVENTS_STATUS } from "../events/events.constants";
+import { USER_ROLE } from "../user/user.constants";
 const stripe = new Stripe(config.stripe_secret_key as string);
 
 const createPaymentIntent = async (payload: IPaymentIntent) => {
     const { amount, eventId, userId } = payload;
-    // check eventId and userId is have DB
+
+    // check already have any ticket for same event also same user
+    const existSameTicket = await TicketModel.find({
+        createdBy: userId,
+        eventId: eventId
+    });
+
+    if(existSameTicket){
+        throw new ApiError(StatusCodes.BAD_REQUEST, "Already you have a ticket.")
+    }
+
+    const isEvent = await Event.findOne({
+        _id: eventId,
+        status: EVENTS_STATUS.UPCOMING
+    });
+
+    if (!isEvent) {
+        throw new ApiError(StatusCodes.NOT_FOUND, "Event not found!")
+    }
+
+    const user = await User.isUserPermission(userId);
+    if(user.role !== USER_ROLE.USER){
+        throw new ApiError(StatusCodes.NOT_FOUND, "Only user can booked ticket.")
+    }
+
 
     const paymentIntent = await stripe.paymentIntents.create({
         amount: amount * 100, // সেন্টে রূপান্তর
@@ -16,7 +49,7 @@ const createPaymentIntent = async (payload: IPaymentIntent) => {
         metadata: { userId, eventId },
     });
 
-    return { 
+    return {
         clientSecret: paymentIntent.client_secret,
         paymentIntentId: paymentIntent.id
     };
@@ -25,35 +58,87 @@ const createPaymentIntent = async (payload: IPaymentIntent) => {
 
 
 const verifyPayment = async (paymentIntentId: string) => {
+    const session = await mongoose.startSession();
 
-    const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
-    console.log(paymentIntent);
-    return paymentIntent;
+    let paymentIntent;
 
-    // if (paymentIntent.status === "succeeded") {
-    //     // পেমেন্ট ডক তৈরি
-    //     await Payment.create({
-    //         userId: paymentIntent.metadata.userId,
-    //         eventId: paymentIntent.metadata.eventId,
-    //         transactionId: paymentIntent.id,
-    //         amount: paymentIntent.amount / 100,
-    //         paymentStatus: "PAID",
-    //         paymentMethod: "Card",
-    //     });
+    try {
+        session.startTransaction();
+        paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
 
-    //     // টিকেট ডক তৈরি
-    //     const secretCode = Math.floor(100000 + Math.random() * 900000).toString();
-    //     await TicketModel.create({
-    //         createdBy: paymentIntent.metadata.userId,
-    //         eventId: paymentIntent.metadata.eventId,
-    //         secretCode,
-    //     });
+        // if (paymentIntent.status !== "succeeded") {
+        //     throw new ApiError(StatusCodes.BAD_REQUEST, "Payment not successfull!")
+        // }
 
-    //     return true;
+        const userId = paymentIntent.metadata.userId;
+        const eventId = paymentIntent.metadata.eventId;
 
-    // } else {
-    //     return "Payment not successful";
-    // }
+        const newPayment = await Payment.create([{
+            userId: userId,
+            eventId: eventId,
+            transactionId: paymentIntent.id,
+            amount: paymentIntent.amount / 100,
+            paymentStatus: PAYMENT_STATUS.PAID,
+            paymentMethod: "Card",
+        }], { session });
+
+        if (!newPayment.length) {
+            throw new ApiError(StatusCodes.BAD_REQUEST, 'Failed to create payment');
+        }
+
+        const secretCode = Math.floor(100000 + Math.random() * 900000).toString();
+        const newTicket = await TicketModel.create([{
+            createdBy: userId,
+            eventId: eventId,
+            secretCode,
+        }], { session });
+
+        if (!newTicket.length) {
+            throw new ApiError(StatusCodes.BAD_REQUEST, 'Failed to create ticket');
+        }
+
+        const updateEvent = await Event.findOneAndUpdate(
+            { _id: eventId, status: EVENTS_STATUS.UPCOMING },
+            {
+                $inc: {
+                    soldTicket: 1,
+                    totalSale: paymentIntent.amount / 100,
+                },
+            },
+            { session, new: true }
+        );
+
+        if (!updateEvent) {
+            throw new ApiError(StatusCodes.BAD_REQUEST, "Event not update")
+        }
+
+        const increaseAttendance = await AttendanceModel.create([{
+            eventId,
+            userId
+        }], { session });
+
+        if (!increaseAttendance.length) {
+            throw new ApiError(StatusCodes.BAD_REQUEST, "Attencence not increase")
+        }
+
+        await session.commitTransaction();
+        await session.endSession();
+
+        return { PaymentStatus: paymentIntent.status }
+
+    } catch (err: any) {
+        await session.abortTransaction();
+        await session.endSession();
+
+        if (paymentIntent!.status === 'succeeded') {
+            await stripe.refunds.create({
+                payment_intent: paymentIntent!.id,
+            });
+            paymentIntent = "";
+        }
+
+        throw new Error(err);
+    }
 };
 
 

@@ -45,7 +45,7 @@ const paymentIntentSchema = z.object({
 
 const paymentIntentIdValidation = z.object({
   body: z.object({
-    paymentIntentIdValidation: z
+    paymentIntentId: z
       .string({ required_error: "User ID is required" })
   })
 });

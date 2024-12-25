@@ -25,5 +25,6 @@ const TicketSchema = new Schema<ITicket>(
     { timestamps: true }
 );
 
+TicketSchema.index({ createdBy: 1, eventId: 1 }, { unique: true })
 
 export const TicketModel = model<ITicket>("Ticket", TicketSchema);
