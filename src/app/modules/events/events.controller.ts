@@ -79,6 +79,9 @@ const updateAllEventsTrendingStatus = async () => {
 };
 
 
+
+
+
 export const eventController = {
     createEvents,
     getSingleEventByEventId,

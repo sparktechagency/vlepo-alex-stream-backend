@@ -23,7 +23,7 @@ const createPaymentIntent = async (payload: IPaymentIntent) => {
         eventId: eventId
     });
 
-    if(existSameTicket){
+    if(existSameTicket.length){
         throw new ApiError(StatusCodes.BAD_REQUEST, "Already you have a ticket.")
     }
 

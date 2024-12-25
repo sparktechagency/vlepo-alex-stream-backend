@@ -8,6 +8,7 @@ import { USER_STATUS } from "../user/user.constants";
 import { QueryBuilder } from "../../builder/QueryBuilder";
 import { EVENTS_STATUS, EventSearchableFields } from "./events.constants";
 import mongoose from "mongoose";
+import { AttendanceModel } from "./attendanceSchema";
 
 const createEventsIntoDB = async (createdBy: string, payload: IEvent) => {
     const { categoryId } = payload;
@@ -28,7 +29,18 @@ const createEventsIntoDB = async (createdBy: string, payload: IEvent) => {
 }
 
 const getSingleEventByEventId = async (id: string) => {
-    const event = await Event.findById(id);
+    if (!mongoose.isValidObjectId(id)) {
+        throw new ApiError(StatusCodes.BAD_REQUEST, "Invalid event ID.")
+    }
+
+    const event = await Event.findById(id).lean();
+    const participants = await AttendanceModel.find({ eventId: id })
+        .populate("userId", "name photo");
+
+    if (event) {
+        event.participants = participants
+    }
+
     return event;
 }
 
@@ -44,7 +56,6 @@ const getAllEvents = async (query: Record<string, unknown>) => {
     const result = await events.modelQuery
         .populate('categoryId', 'categoryName image')
         .populate("createdBy", "name photo")
-        .populate("attendees")
 
     return result;
 }
@@ -60,7 +71,6 @@ const getAllEventsOfCreator = async (query: Record<string, unknown>, creatorId: 
     const result = await events.modelQuery
         .populate('categoryId', 'categoryName image')
         .populate("createdBy", "name photo")
-        .populate("attendees")
 
     return result;
 }
@@ -132,21 +142,10 @@ const updateAllEventsTrendingStatus = async () => {
 
     // Bulk update 
     await Event.bulkWrite(bulkOperations);
-    
+
     console.log("Trending status updated for all events");
 };
 
-
-// todo: attendance create auto
-// const createAttendanceasync = async (eventId: string, userId: string) => {
-//     if (!mongoose.isValidObjectId(eventId)) {
-//         throw new ApiError(StatusCodes.BAD_REQUEST, "Event ID invalid.")
-//     }
-
-//     const existEvent = await Event.findById(eventId).select("createdBy");
-
-
-// }
 
 
 export const eventServices = {
