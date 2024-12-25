@@ -37,6 +37,11 @@ router.patch("/cancel-event/:eventId",
     eventController.cancelMyEventById
 );
 
+router.get("/event-analysis/:eventId",
+    auth(USER_ROLE.CREATOR),
+    eventController.getSingleSlfEventAnalysisByEventId
+);
+
 
 cron.schedule("0 * * * *", 
     eventController.updateAllEventsTrendingStatus

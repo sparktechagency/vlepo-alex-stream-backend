@@ -29,6 +29,22 @@ const getSingleEventByEventId = catchAsync(async (req: Request, res: Response) =
     });
 });
 
+
+const getSingleSlfEventAnalysisByEventId = catchAsync(async (req: Request, res: Response) => {
+    const { eventId } = req.params;
+    const { timeframe } = req.query;
+
+    const result = await eventServices.getSingleSlfEventAnalysisByEventId(eventId, timeframe as string);
+
+    sendResponse(res, {
+        success: true,
+        statusCode: StatusCodes.OK,
+        message: 'Event analysis retrived successfully!',
+        data: result,
+    });
+});
+
+
 const getAllEvents = catchAsync(async (req: Request, res: Response) => {
 
     const result = await eventServices.getAllEvents(req.query);
@@ -89,4 +105,5 @@ export const eventController = {
     getAllEventsOfCreator,
     cancelMyEventById,
     updateAllEventsTrendingStatus,
+    getSingleSlfEventAnalysisByEventId,
 }    

@@ -9,6 +9,7 @@ import { QueryBuilder } from "../../builder/QueryBuilder";
 import { EVENTS_STATUS, EventSearchableFields } from "./events.constants";
 import mongoose from "mongoose";
 import { AttendanceModel } from "./attendanceSchema";
+import { Payment } from "../payment/payment.model";
 
 const createEventsIntoDB = async (createdBy: string, payload: IEvent) => {
     const { categoryId } = payload;
@@ -33,16 +34,69 @@ const getSingleEventByEventId = async (id: string) => {
         throw new ApiError(StatusCodes.BAD_REQUEST, "Invalid event ID.")
     }
 
-    const event = await Event.findById(id).lean();
-    const participants = await AttendanceModel.find({ eventId: id })
-        .populate("userId", "name photo");
-
-    if (event) {
-        event.participants = participants
-    }
+    const event = await Event.findById(id)
+        .select("createdBy eventName image description eventType ticketPrice startTime")
+        .populate("createdBy", "name photo");
 
     return event;
 }
+
+
+const getSingleSlfEventAnalysisByEventId = async (id: string, timeframe = "6month") => {
+    if (!mongoose.isValidObjectId(id)) {
+        throw new ApiError(StatusCodes.BAD_REQUEST, "Invalid event ID.");
+    }
+
+    const currentDate = new Date();
+    let filterDate;
+
+    if (timeframe === "1month") {
+        filterDate = new Date(currentDate.setMonth(currentDate.getMonth() - 1));
+    } else if (timeframe === "6month") {
+        filterDate = new Date(currentDate.setMonth(currentDate.getMonth() - 6));
+    } else if (timeframe === "1year") {
+        filterDate = new Date(currentDate.setFullYear(currentDate.getFullYear() - 1));
+    } else {
+        throw new ApiError(StatusCodes.BAD_REQUEST, "Invalid timeframe.");
+    }
+
+
+    const event = await Event.findOne({
+        _id: id
+    })
+        .select("eventName image")
+        .lean();
+
+    const participants = await AttendanceModel.find({
+        eventId: id,
+        createdAt: { $gte: filterDate }
+    })
+        .populate("userId", "name photo ");
+
+    const payment = await Payment.aggregate([
+        {
+            $match: {
+                eventId: new mongoose.Types.ObjectId(id),
+                createdAt: { $gte: filterDate }
+            }
+        },
+        {
+            $group: {
+                _id: "$eventId",
+                totalAmount: { $sum: "$amount" },
+                ticketSold: { $count: {} }
+            }
+        }
+    ]);
+
+
+    if (event) {
+        event.participants = participants;
+    }
+
+    return { event, analysis: payment[0] };
+};
+
 
 
 const getAllEvents = async (query: Record<string, unknown>) => {
@@ -155,4 +209,5 @@ export const eventServices = {
     getAllEventsOfCreator,
     cancelMyEventById,
     updateAllEventsTrendingStatus,
+    getSingleSlfEventAnalysisByEventId,
 }

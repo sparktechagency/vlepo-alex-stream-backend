@@ -66,9 +66,9 @@ const verifyPayment = async (paymentIntentId: string) => {
         session.startTransaction();
         paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
 
-        // if (paymentIntent.status !== "succeeded") {
-        //     throw new ApiError(StatusCodes.BAD_REQUEST, "Payment not successfull!")
-        // }
+        if (paymentIntent.status !== "succeeded") {
+            throw new ApiError(StatusCodes.BAD_REQUEST, "Payment not successfull!")
+        }
 
         const userId = paymentIntent.metadata.userId;
         const eventId = paymentIntent.metadata.eventId;

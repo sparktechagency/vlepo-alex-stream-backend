@@ -9,7 +9,7 @@ interface IAttendance extends Document {
 const attendanceSchema = new Schema<IAttendance>({
     eventId: { type: Schema.Types.ObjectId, ref: "Event", required: true },
     userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
-});
+}, { timestamps: true });
 
 export const AttendanceModel = model<IAttendance>("Attendance", attendanceSchema);
 
