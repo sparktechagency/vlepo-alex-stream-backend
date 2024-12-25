@@ -27,28 +27,6 @@ export class QueryBuilder<T> {
               [field]: new RegExp(searchTerm, 'i'),
             } as FilterQuery<T>)
           ),
-
-
-        // $or: searchableFields.map((field) => {
-        //     // Zod schema check to get the type of the field
-        //     const schema = eventCreateValidationSchema.shape[field as keyof typeof eventCreateValidationSchema.shape];
-    
-        //     // If the field is a number, compare directly with the search term
-        //     console.log({schema: schema instanceof z.ZodNumber})
-        //     if (schema instanceof z.ZodNumber) {
-        //       return { [field]: Number(searchTerm) }; // for number fields
-        //     }
-    
-        //     // If the field is a string, use regular expression
-        //     if (schema instanceof z.ZodString) {
-        //       return { [field]: new RegExp(searchTerm, 'i') }; // for string fields
-        //     }
-    
-        //     // Default: return empty if type is unknown
-        //     return {};
-        //   }),
-
-
         });
 
         return this;

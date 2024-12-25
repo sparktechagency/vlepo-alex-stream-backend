@@ -45,8 +45,21 @@ const getFollowing = catchAsync(async (req: Request, res: Response) => {
 });
 
 
+const isFollowing = catchAsync(async (req: Request, res: Response) => {
+
+    const result = await FollowServices.isFollowing(req.body);
+    sendResponse(res, {
+        success: true,
+        statusCode: StatusCodes.OK,
+        message: 'Following',
+        data: result,
+    });
+});
+
+
 export const FollowsController = {
     toggleFollow,
     getFollowers,
-    getFollowing
+    getFollowing,
+    isFollowing,
 };

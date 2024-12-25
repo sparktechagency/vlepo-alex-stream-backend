@@ -96,9 +96,20 @@ const getFollowing = async (query: Record<string, unknown>, userId: string) => {
 };
 
 
+const isFollowing = async (payload: { userId: string, creatorId: string }) => {
+    const isFollowing = await Follow.findOne({
+        userId: payload.userId,
+        followingId: payload.creatorId
+    })
+
+    return isFollowing ? true : false;
+}
+
+
 
 export const FollowServices = {
     toggleFollow,
     getFollowers,
-    getFollowing
+    getFollowing,
+    isFollowing,
 };

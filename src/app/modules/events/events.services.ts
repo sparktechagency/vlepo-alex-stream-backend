@@ -99,7 +99,6 @@ const getSingleSlfEventAnalysisByEventId = async (id: string, timeframe = "6mont
 
 
 const creatorEventOverview = async (creatorId: string) => {
-    console.log(creatorId)
 
     const events = await Event.aggregate([
         {
