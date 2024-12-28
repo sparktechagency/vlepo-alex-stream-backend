@@ -9,6 +9,7 @@ import { UserEventRoutes } from '../app/modules/userevents/userevents.routes';
 import { FaqRoutes } from '../app/modules/FAQ/faq.routes';
 import { PaymentRoutes } from '../app/modules/payment/payment.routes';
 import { TicketRoutes } from '../app/modules/ticket/tickets.routes';
+import { NotificationRoutes } from '../app/modules/notifications/notification.routes';
 const router = express.Router();
 
 const apiRoutes = [
@@ -51,6 +52,10 @@ const apiRoutes = [
   {
     path: "/tickets",
     route: TicketRoutes
+  },
+  {
+    path: "/notifications",
+    route: NotificationRoutes
   },
 ];
 
