@@ -1,21 +1,11 @@
-// const session = await mongoose.startSession();
-// session.startTransaction();
+import { TicketModel } from "./tickets.model"
 
-// try {
-//   const ticket = await Ticket.create([{ userId, eventId, amount }], { session });
+const getSelfTicket = async (userId: string) => {
+    const tickets = await TicketModel.find({ createdBy: userId }).sort("-createdAt");
 
-//   await Event.findByIdAndUpdate(
-//     eventId,
-//     { $inc: { soldTickets: 1, totalSale: amount } },
-//     { session }
-//   );
+    return tickets;
+}
 
-//   await session.commitTransaction();
-//   session.endSession();
-
-//   return ticket;
-// } catch (err) {
-//   await session.abortTransaction();
-//   session.endSession();
-//   throw err;
-// }
+export const TicketServices = {
+    getSelfTicket,
+}
