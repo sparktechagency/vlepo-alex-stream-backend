@@ -3,7 +3,7 @@ import catchAsync from "../../../shared/catchAsync";
 import sendResponse from "../../../shared/sendResponse";
 import { TicketServices } from "./tickets.services";
 
-const gerSelfTickets = catchAsync(async (req, res) => {
+const getSelfTickets = catchAsync(async (req, res) => {
     const { id } = req.user;
 
     const result = await TicketServices.getSelfTicket(id);
@@ -15,7 +15,19 @@ const gerSelfTickets = catchAsync(async (req, res) => {
     });
 });
 
+const getSingleTicket = catchAsync(async (req, res) => {
+    const { ticketId } = req.params;
+    const ticket = await TicketServices.getSingleTicket(ticketId);
+    sendResponse(res, {
+        success: true,
+        statusCode: StatusCodes.OK,
+        message: 'Retrived single tickets!',
+        data: ticket,
+    });
+});
+
 
 export const TicketsController = {
-    gerSelfTickets,
+    getSelfTickets,
+    getSingleTicket,
 };

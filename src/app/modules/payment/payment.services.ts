@@ -12,6 +12,8 @@ import mongoose from "mongoose";
 import { AttendanceModel } from "../events/attendanceSchema";
 import { EVENTS_STATUS } from "../events/events.constants";
 import { USER_ROLE } from "../user/user.constants";
+import { emailTemplate } from "../../../shared/emailTemplate";
+import { emailHelper } from "../../../helpers/emailHelper";
 const stripe = new Stripe(config.stripe_secret_key as string);
 
 
@@ -59,7 +61,7 @@ const createPaymentIntent = async (payload: IPaymentIntent) => {
 
 
 
-const verifyPayment = async (paymentIntentId: string) => {
+const verifyPayment = async (paymentIntentId: string, userEmail: string) => {
     const session = await mongoose.startSession();
 
     let paymentIntent;
@@ -122,6 +124,16 @@ const verifyPayment = async (paymentIntentId: string) => {
         if (!increaseAttendance.length) {
             throw new ApiError(StatusCodes.BAD_REQUEST, "Attencence not increase")
         }
+
+        // send ticket secret code in email 
+        const value = {
+            secretCode,
+            email: userEmail,
+            event: updateEvent
+        }
+
+        const ticketTemplate = emailTemplate.ticketSecret(value);
+        emailHelper.sendEmail(ticketTemplate);
 
         await session.commitTransaction();
         await session.endSession();

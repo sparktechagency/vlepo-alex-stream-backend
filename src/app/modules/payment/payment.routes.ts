@@ -15,6 +15,7 @@ router.post("/create-payment-intent",
 
 
 router.post("/verify-payment",
+    auth(USER_ROLE.USER),
     validateRequest(paymentValidationSchema.paymentIntentIdValidation),
     paymentController.verifyPayment
 )

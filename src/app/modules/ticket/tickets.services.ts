@@ -6,6 +6,14 @@ const getSelfTicket = async (userId: string) => {
     return tickets;
 }
 
+const getSingleTicket = async (ticketId: string) => {
+    const ticket = await TicketModel.findById(ticketId)
+        .populate("eventId", "image eventName ticketPrice soldTicket");
+
+    return ticket;
+}
+
 export const TicketServices = {
     getSelfTicket,
+    getSingleTicket,
 }

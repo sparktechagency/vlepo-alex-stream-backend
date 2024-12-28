@@ -7,7 +7,12 @@ const router = Router();
 
 router.get("/my-tickets",
     auth(USER_ROLE.USER),
-    TicketsController.gerSelfTickets
+    TicketsController.getSelfTickets
+)
+
+router.get("/:ticketId",
+    auth(USER_ROLE.USER),
+    TicketsController.getSingleTicket
 )
 
 export const TicketRoutes = router;

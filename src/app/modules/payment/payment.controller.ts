@@ -17,8 +17,9 @@ const createPaymentIntent = catchAsync(async (req, res) => {
 
 const verifyPayment = catchAsync(async (req, res) => {
     const { paymentIntentId } = req.body;
+    const {email} = req.user;
 
-    const result = await paymentServices.verifyPayment(paymentIntentId);
+    const result = await paymentServices.verifyPayment(paymentIntentId, email);
 
     sendResponse(res, {
         success: true,
