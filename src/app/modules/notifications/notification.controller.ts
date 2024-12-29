@@ -31,6 +31,21 @@ const sendNotificationToUser = catchAsync(async (req, res) => {
     });
 });
 
+const sendNotificationToAll = catchAsync(async (req, res) => {
+    // @ts-ignore
+    const io = global.io;
+    const { id: senderId } = req.user;
+
+    const result = await NotificationServices.sendNotificationToAll(senderId, req.body, io);
+
+    sendResponse(res, {
+        success: true,
+        statusCode: StatusCodes.OK,
+        message: 'Notification send successfully!',
+        data: result,
+    });
+});
+
 
 const getAllNotificationOfReciver = catchAsync(async (req, res) => {
     const { id: receiverId } = req.user;
@@ -45,9 +60,24 @@ const getAllNotificationOfReciver = catchAsync(async (req, res) => {
 });
 
 
+const deleteAllMyNotification = catchAsync(async (req, res) => {
+    const { id } = req.user;
+    const result = await NotificationServices.deleteAllMyNotification(id);
+
+    sendResponse(res, {
+        success: true,
+        statusCode: StatusCodes.OK,
+        message: 'Notification deleted successfully!',
+        data: result,
+    });
+});
+
+
 
 export const NotificationController = {
     markNotificationAsRead,
     sendNotificationToUser,
     getAllNotificationOfReciver,
+    sendNotificationToAll,
+    deleteAllMyNotification,
 }

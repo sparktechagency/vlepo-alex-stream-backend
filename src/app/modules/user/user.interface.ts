@@ -9,6 +9,7 @@ export interface IOtpVerification {
 }
 
 export interface IUser extends Document {
+  _id?: string;
   name: string;
   email: string;
   phone?: string;
