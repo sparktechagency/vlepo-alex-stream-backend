@@ -19,6 +19,11 @@ router.get(
   UserController.getUserProfile
 );
 
+router.get("/best-seller-creators",
+  // auth(USER_ROLE.USER, USER_ROLE.CREATOR, USER_ROLE.SUPER_ADMIN),
+  UserController.bestSellerCreators
+)
+
 router.get(
   '/:creatorId',
   auth(USER_ROLE.CREATOR, USER_ROLE.USER, USER_ROLE.SUPER_ADMIN),
@@ -54,7 +59,7 @@ router.patch("/switch-user-role",
   auth(USER_ROLE.USER, USER_ROLE.CREATOR),
   validateRequest(UserValidation.userRoleChangeZodSchema),
   UserController.toggleUserRole
-)
+);
 
 
 export const UserRoutes = router;

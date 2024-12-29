@@ -134,6 +134,18 @@ const toggleUserRole = catchAsync(async (req: Request, res: Response) => {
 });
 
 
+const bestSellerCreators = catchAsync(async (req: Request, res: Response) => {
+  const result = await UserService.bestSellerCreators();
+
+  sendResponse(res, {
+    success: true,
+    statusCode: StatusCodes.OK,
+    message: 'Retrived best seller successfully',
+    data: result,
+  });
+});
+
+
 export const UserController = {
   createUser,
   getUserProfile,
@@ -143,4 +155,5 @@ export const UserController = {
   updateUserStatus,
   getCreatorProfile,
   toggleUserRole,
+  bestSellerCreators,
 };

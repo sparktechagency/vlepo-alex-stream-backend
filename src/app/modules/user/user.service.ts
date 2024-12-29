@@ -190,6 +190,45 @@ const toggleUserRole = async (user: JwtPayload, payload: Partial<IUser>) => {
   return { accessToken, refreshToken, result };
 }
 
+const bestSellerCreators = async () => {
+  const bestSeller = await Event.aggregate([
+    {
+      $group: {
+        _id: "$createdBy",
+        totalTicketSold: { $sum: "$soldTicket" },
+        totalRevenue: { $sum: "$totalSale" }
+      }
+    },
+    {
+      $sort: { totalTicketSold: -1 }
+    },
+    {
+      $limit: 4
+    },
+    {
+      $lookup: {
+        from: "users", // 'users' কালেকশন যেখানে ক্রিয়েটরদের তথ্য রয়েছে
+        localField: "_id", // এই আইডি গ্রুপিংয়ের _id হিসেবে এসেছে
+        foreignField: "_id", // users কালেকশনে _id ফিল্ডের সাথে মেলানো হবে
+        as: "creatorInfo" // পপুলেট হওয়া ডেটার জন্য নতুন ফিল্ড
+      }
+    },
+    {
+      $unwind: "$creatorInfo" // পপুলেট হওয়া তথ্য আনর‍্যাপ করার জন্য
+    },
+    {
+      $project: {
+        _id: 1,
+        totalTicketSold: 1,
+        totalRevenue: 1,
+        "creatorInfo.photo": 1,
+        "creatorInfo.name": 1,
+      }
+    }
+  ]);
+
+  return bestSeller;
+}
 
 export const UserService = {
   createUserToDB,
@@ -200,4 +239,5 @@ export const UserService = {
   updateUserStatus,
   getCreatorProfileFromDB,
   toggleUserRole,
+  bestSellerCreators,
 };
