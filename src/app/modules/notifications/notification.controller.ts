@@ -73,7 +73,6 @@ const deleteAllMyNotification = catchAsync(async (req, res) => {
 });
 
 
-
 export const NotificationController = {
     markNotificationAsRead,
     sendNotificationToUser,

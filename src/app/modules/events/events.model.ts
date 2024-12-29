@@ -28,8 +28,8 @@ const eventSchema = new Schema<IEvent>(
     views: { type: Number, default: 0, min: 0 },
     isTrending: { type: Boolean, default: false },
     soldTicket: { type: Number, default: 0, min: 0 }, // ticket sold
-    totalSale: {type: Number, default: 0, min: 0},
-    startTime: { type: Date, required: true },
+    totalSale: { type: Number, default: 0, min: 0 },
+    startTime: { type: Date, required: [true, "Start time will be a date."] },
     endTime: { type: Date, required: false },
     status: {
       type: String,

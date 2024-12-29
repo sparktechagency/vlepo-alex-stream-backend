@@ -198,7 +198,6 @@ const updateAllEventsTrendingStatus = async () => {
         let isTrending = false;
 
         if ([EVENTS_STATUS.LIVE, EVENTS_STATUS.CANCELLED, EVENTS_STATUS.COMPLETED].includes(event.status)) {
-            console.log({ event });
             isTrending = false;
         } else {
 

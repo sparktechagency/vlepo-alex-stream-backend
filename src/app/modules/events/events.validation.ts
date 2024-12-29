@@ -16,7 +16,7 @@ export const eventCreateValidationSchema = z.object({
     }),
     eventType: z.enum([EVENTS_TYPE.VIRTUAL, EVENTS_TYPE.OFFLINE], { required_error: "Event type is required" }),
     ticketPrice: z.number({ required_error: "Ticket price is required" }).min(0, "Ticket price cannot be negative"),
-    startTime: z.string({ required_error: "Start time is required" }).refine((date) => !isNaN(new Date(date).getTime()), {
+    startTime: z.string({ required_error: "Start time is required", invalid_type_error: "Start time will be date formate." }).refine((date) => !isNaN(new Date(date).getTime()), {
       message: "Invalid start time format",
     }),
 
@@ -29,7 +29,7 @@ export const eventCreateValidationSchema = z.object({
     views: z.number().min(0, "Views cannot be negative").default(0),
     isTrending: z.boolean().optional(),
     soldTicket: z.number().min(0, "Sold seat cannot be negative").optional(),
-    
+
     status: z.enum([EVENTS_STATUS.UPCOMING, EVENTS_STATUS.LIVE, EVENTS_STATUS.COMPLETED, EVENTS_STATUS.CANCELLED]).default(EVENTS_STATUS.UPCOMING),
   })
 });

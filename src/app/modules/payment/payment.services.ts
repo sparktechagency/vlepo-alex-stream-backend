@@ -14,6 +14,8 @@ import { EVENTS_STATUS } from "../events/events.constants";
 import { USER_ROLE } from "../user/user.constants";
 import { emailTemplate } from "../../../shared/emailTemplate";
 import { emailHelper } from "../../../helpers/emailHelper";
+import NotificationModel from "../notifications/notification.model";
+import { formattedTime } from "../../../util/formattedTime";
 const stripe = new Stripe(config.stripe_secret_key as string);
 
 
@@ -62,6 +64,8 @@ const createPaymentIntent = async (payload: IPaymentIntent) => {
 
 
 const verifyPayment = async (paymentIntentId: string, userEmail: string) => {
+    // @ts-ignore
+    const io = global.io;
     const session = await mongoose.startSession();
 
     let paymentIntent;
@@ -135,6 +139,19 @@ const verifyPayment = async (paymentIntentId: string, userEmail: string) => {
         const ticketTemplate = emailTemplate.ticketSecret(value);
         emailHelper.sendEmail(ticketTemplate);
 
+        const notificationValue = {
+            receiverId: userId,
+            title: "Ticket Purchase Successful!",
+            message: `Congratulations! You've successfully purchased a ticket for the event by payment ${paymentIntent.amount / 100}$. Visit your mail to view your secret code. Don't forget, the event will start at ${formattedTime(updateEvent.startTime)}. Enjoy the show!`,
+            isRead: false
+        }
+
+        // create new notification 
+        await NotificationModel.create([notificationValue], { session })
+
+        // send notification 
+        io.emit(`Purchase Successful notification::${userId.toString()}`, notificationValue);
+
         await session.commitTransaction();
         await session.endSession();
 
@@ -148,14 +165,22 @@ const verifyPayment = async (paymentIntentId: string, userEmail: string) => {
             await stripe.refunds.create({
                 payment_intent: paymentIntent!.id,
             });
+
+            const notificationValue = {
+                receiverId: paymentIntent?.metadata.userId,
+                title: "Refund your money!",
+                message: `Refund balance is ${paymentIntent!.amount / 100}$.`,
+                isRead: false
+            }
+            // send notification 
+            io.emit(`Refund notification::${paymentIntent?.metadata.userId.toString()}`, notificationValue);
+
             paymentIntent = "";
         }
 
         throw new Error(err);
     }
 };
-
-
 
 export const paymentServices = {
     createPaymentIntent,

@@ -15,6 +15,7 @@ router.post("/send-notification",
     validateRequest(notificationValidation.notificationCreateValidationSchema),
     NotificationController.sendNotificationToUser
 )
+
 router.post("/send-notification-to-all",
     auth(USER_ROLE.SUPER_ADMIN),
     validateRequest(notificationValidation.sendNotificationToAllValidationSchema),
