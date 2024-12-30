@@ -31,6 +31,11 @@ router.get("/",
     eventController.getAllEvents
 );
 
+router.get("/selected-categories-events",
+    auth(USER_ROLE.USER),
+    eventController.getMyFavouriteEvents
+);
+
 
 router.patch("/cancel-event/:eventId",
     auth(USER_ROLE.CREATOR),

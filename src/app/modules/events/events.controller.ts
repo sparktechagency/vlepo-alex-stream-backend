@@ -57,6 +57,20 @@ const getAllEvents = catchAsync(async (req: Request, res: Response) => {
     });
 });
 
+
+// find all the events which categories is select user
+const getMyFavouriteEvents = catchAsync(async (req: Request, res: Response) => {
+    const {id} = req.user;
+    const result = await eventServices.getMyFavouriteEvents(req.query, id);
+
+    sendResponse(res, {
+        success: true,
+        statusCode: StatusCodes.OK,
+        message: 'Selected categories events retrived successfully!',
+        data: result,
+    });
+});
+
 const getAllEventsOfCreator = catchAsync(async (req: Request, res: Response) => {
     const { creatorId } = req.params;
 
@@ -121,4 +135,5 @@ export const eventController = {
     updateAllEventsTrendingStatus,
     getSingleSlfEventAnalysisByEventId,
     creatorEventOverview,
+    getMyFavouriteEvents,
 }    

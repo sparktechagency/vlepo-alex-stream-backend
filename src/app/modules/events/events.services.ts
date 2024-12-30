@@ -132,9 +132,9 @@ const creatorEventOverview = async (creatorId: string) => {
 }
 
 
-
+// find all the events
 const getAllEvents = async (query: Record<string, unknown>) => {
-    const events = new QueryBuilder(Event.find(), query)
+    const events = new QueryBuilder(Event.find({}), query)
         .fields()
         .paginate()
         .sort()
@@ -144,6 +144,24 @@ const getAllEvents = async (query: Record<string, unknown>) => {
     const result = await events.modelQuery
         .populate('categoryId', 'categoryName image')
         .populate("createdBy", "name photo")
+
+    return result;
+}
+
+
+// find all the events which categories is select user
+const getMyFavouriteEvents = async (query: Record<string, unknown>, userId: string) => {
+    const me = await User.findById(userId).select("selectedCategory");
+    
+    const events = new QueryBuilder(Event.find({ categoryId: { $in: me?.selectedCategory } }), query)
+        .paginate()
+        .sort()
+        .filter()
+
+    const result = await events.modelQuery
+        .populate('categoryId', 'categoryName')
+        .populate("createdBy", "name photo")
+        .select("eventName image")
 
     return result;
 }
@@ -244,4 +262,5 @@ export const eventServices = {
     updateAllEventsTrendingStatus,
     getSingleSlfEventAnalysisByEventId,
     creatorEventOverview,
+    getMyFavouriteEvents,
 }
