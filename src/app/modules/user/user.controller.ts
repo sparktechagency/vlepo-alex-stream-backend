@@ -13,11 +13,24 @@ const createUser = catchAsync(
     sendResponse(res, {
       success: true,
       statusCode: StatusCodes.OK,
-      message: 'User created successfully',
+      message: 'User created successfully, and we send a OTP on your mail for verify email.',
       data: result,
     });
   }
 );
+
+const verifyRegisterEmail = catchAsync(async (req: Request, res: Response) => {
+  const { otp } = req.body;
+  const {email} = req.user;
+  const result = await UserService.verifyRegisterEmail(email, otp);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: StatusCodes.OK,
+    message: "Verified your account!",
+    data: result,
+  });
+});
 
 const getUserProfile = catchAsync(async (req: Request, res: Response) => {
   const user = req.user;
@@ -148,6 +161,7 @@ const bestSellerCreators = catchAsync(async (req: Request, res: Response) => {
 
 export const UserController = {
   createUser,
+  verifyRegisterEmail,
   getUserProfile,
   userFavouriteCategoryUpdate,
   deleteCurrentUser,

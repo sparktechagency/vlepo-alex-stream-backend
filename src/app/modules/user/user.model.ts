@@ -40,6 +40,10 @@ const userSchema = new Schema<IUser>(
       ref: 'Category',
       default: []
     }],
+    isVarified: {
+      type: Boolean,
+      default: false,
+    },
     isDeleted: { type: Boolean, default: false },
     otpVerification: { type: otpVerificationSchema, required: false, select: false },
   },

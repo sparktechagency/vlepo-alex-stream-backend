@@ -12,7 +12,7 @@ const createAccount = (values: ICreateAccount) => {
         <div style="text-align: center;">
             <p style="color: #555; font-size: 16px; line-height: 1.5; margin-bottom: 20px;">Your single use code is:</p>
             <div style="background-color: #277E16; width: 80px; padding: 10px; text-align: center; border-radius: 8px; color: #fff; font-size: 25px; letter-spacing: 2px; margin: 20px auto;">${values.otp}</div>
-            <p style="color: #555; font-size: 16px; line-height: 1.5; margin-bottom: 20px;">This code is valid for 3 minutes.</p>
+            <p style="color: #555; font-size: 16px; line-height: 1.5; margin-bottom: 20px;">This code is valid for 10 minutes.</p>
         </div>
     </div>
 </body>`,
@@ -30,10 +30,50 @@ const resetPassword = (values: IResetPassword) => { // todo: change <img
         <div style="text-align: center;">
             <p style="color: #555; font-size: 16px; line-height: 1.5; margin-bottom: 20px;">Your single use code is:</p>
             <div style="background-color: #277E16; width: 80px; padding: 10px; text-align: center; border-radius: 8px; color: #fff; font-size: 25px; letter-spacing: 2px; margin: 20px auto;">${values.otp}</div>
-            <p style="color: #555; font-size: 16px; line-height: 1.5; margin-bottom: 20px;">This code is valid for 3 minutes.</p>
+            <p style="color: #555; font-size: 16px; line-height: 1.5; margin-bottom: 20px;">This code is valid for 10 minutes.</p>
         </div>
     </div>
 </body>`,
+  };
+  return data;
+};
+
+
+const registerAccountOtpSend = (values: IResetPassword) => { // todo: change <img
+  const data = {
+    to: values.email,
+    subject: 'Reset your password',
+    html: `
+    <body style="font-family: Arial, sans-serif; background-color: #f9f9f9; margin: 0; padding: 0;">
+      <table width="100%" style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border: 1px solid #dddddd; border-radius: 8px; padding: 20px;">
+        <tr>
+          <td style="text-align: center; padding: 20px 0;">
+            <h2 style="color: #333333; margin: 0;">Verify Your Email</h2>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding: 20px; color: #555555; line-height: 1.6;">
+            <p style="margin: 0;">Hello,</p>
+            <p style="margin: 10px 0 0;">Thank you for creating an account with us. Please use the OTP below to verify your email address:</p>
+            <div style="margin: 20px 0; text-align: center;">
+              <span style="font-size: 24px; font-weight: bold; color: #333333; background-color: #f4f4f4; padding: 10px 20px; border-radius: 5px; display: inline-block;">${values.otp}</span>
+            </div>
+            <p style="margin: 0;"> If you did not request this email, please ignore it.</p>
+          </td>
+        </tr>
+        <tr>
+          <td style="text-align: center; padding: 20px;">
+            <a href=${config.client_url} style="text-decoration: none; color: #ffffff; background-color: #007bff; padding: 10px 20px; border-radius: 5px; display: inline-block;">Verify Now</a>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding: 20px; color: #999999; font-size: 12px; text-align: center; border-top: 1px solid #dddddd;">
+            <p style="margin: 0;">If you have any issues, contact our support team at <a href="mailto:support@example.com" style="color: #007bff;">support@example.com</a>.</p>
+          </td>
+        </tr>
+      </table>
+    </body>
+    `,
   };
   return data;
 };
@@ -79,4 +119,5 @@ export const emailTemplate = {
   createAccount,
   resetPassword,
   ticketSecret,
+  registerAccountOtpSend,
 };

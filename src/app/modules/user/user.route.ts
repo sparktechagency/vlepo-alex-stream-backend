@@ -11,6 +11,12 @@ const router = express.Router();
 router.post("/",
   validateRequest(UserValidation.createUserZodSchema),
   UserController.createUser
+);
+
+router.post("/verify-register-email",
+  auth(USER_ROLE.USER, USER_ROLE.CREATOR, USER_ROLE.SUPER_ADMIN),
+  validateRequest(UserValidation.verifyRegisterEmailZodSchema),
+  UserController.verifyRegisterEmail
 )
 
 router.get(

@@ -25,6 +25,7 @@ export interface IUser extends Document {
   otpVerification?: IOtpVerification;
   createdAt?: Date;
   updatedAt?: Date;
+  isVarified?: Boolean;
   followersCount?: number;
   eventCount?: number;
 };

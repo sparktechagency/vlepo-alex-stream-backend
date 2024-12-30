@@ -17,19 +17,16 @@ const createUserZodSchema = z.object({
     status: z.enum([USER_STATUS.ACTIVE, USER_STATUS.BLOCKED]).default(USER_STATUS.ACTIVE),
     selectedCategory: z.array(z.string().uuid()).default([]),
     isDeleted: z.boolean().default(false),
+    isVarified: z.boolean().default(false),
     otpVerification: otpVerificationSchema.optional(),
   })
 });
 
-// const updateProfileZodSchema = z.object({
-//   body: z.object({
-//     name: z.string().min(1, "Name is required").optional(),
-//     email: z.string().email("Invalid email format").optional(),
-//     photo: z.string().url().optional(),
-//     bio: z.string({message: "Bio is required!"}),
-//     address: z.string().optional(),
-//   })
-// })
+const verifyRegisterEmailZodSchema = z.object({
+  body: z.object({
+    otp: z.string().min(6, "OTP min 6 digit").max(6, "OTP max digit 6"),
+  })
+})
 
 const updateFavouriteCategoryZodSchema = z.object({
   body: z.object({
@@ -56,6 +53,7 @@ const userRoleChangeZodSchema = z.object({
 
 export const UserValidation = {
   createUserZodSchema,
+  verifyRegisterEmailZodSchema,
   updateFavouriteCategoryZodSchema,
   userChangeStatusZodSchema,
   userRoleChangeZodSchema,

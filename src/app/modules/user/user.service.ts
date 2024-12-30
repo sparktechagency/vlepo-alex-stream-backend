@@ -7,9 +7,21 @@ import { Event } from '../events/events.model';
 import { USER_ROLE, USER_STATUS } from './user.constants';
 import unlinkFile from '../../../shared/unlinkFile';
 import { Follow } from '../follow/follow.model';
-import { number } from 'zod';
 import { jwtHelper } from '../../../helpers/jwtHelper';
 import config from '../../../config';
+import generateOTP from '../../../util/generateOTP';
+import { emailTemplate } from '../../../shared/emailTemplate';
+import { emailHelper } from '../../../helpers/emailHelper';
+import { IVerifyEmail } from '../auth/atuh.interface';
+
+/**
+ * create and verify email
+ * => create user
+ *  = send OTP on user mail
+ * => login user
+ *  = if you want to full access than need to email verify
+ *  = in verify page give the OTP for verified
+ */
 
 const createUserToDB = async (payload: Partial<IUser>): Promise<null> => {
   if (payload.password !== payload?.confirmPassword) {
@@ -17,6 +29,7 @@ const createUserToDB = async (payload: Partial<IUser>): Promise<null> => {
   }
 
   const isEmailExit = await User.findOne({ email: payload.email });
+
   if (isEmailExit) {
     throw new ApiError(StatusCodes.BAD_REQUEST, "Email already exist")
   }
@@ -24,10 +37,82 @@ const createUserToDB = async (payload: Partial<IUser>): Promise<null> => {
   const createUser = await User.create(payload);
   if (!createUser) {
     throw new ApiError(StatusCodes.BAD_REQUEST, 'Failed to create user');
-  }
+  };
+
+  // send mail 
+  const otp = generateOTP();
+  const value = {
+    otp,
+    email: createUser.email,
+  };
+
+  const registerEmailTem = emailTemplate.registerAccountOtpSend(value);
+
+  emailHelper.sendEmail(registerEmailTem);
+
+  //save to DB
+  await User.findOneAndUpdate({ email: createUser.email },
+    {
+      $set: {
+        'otpVerification.otp': otp,
+      },
+    },
+  );
 
   return null;
 };
+
+
+//verify email
+const verifyRegisterEmail = async (email: string, otp: string) => {
+
+  if (!otp) {
+    throw new ApiError(
+      StatusCodes.BAD_REQUEST,
+      'OTP needed! Please check your email we send a code!'
+    );
+  }
+
+  const isExistUser = await User.findOne({ email }).select('+otpVerification');
+
+  if (!isExistUser) {
+    throw new ApiError(StatusCodes.BAD_REQUEST, "User doesn't exist!");
+  }
+
+  if (isExistUser.status === USER_STATUS.BLOCKED) {
+    throw new ApiError(
+      StatusCodes.BAD_REQUEST,
+      'User are bloocked!'
+    );
+  }
+
+  if (isExistUser.isDeleted) {
+    throw new ApiError(
+      StatusCodes.BAD_REQUEST,
+      'User is deleted!'
+    );
+  }
+
+  if (isExistUser?.otpVerification?.otp !== otp) {
+    throw new ApiError(StatusCodes.BAD_REQUEST, 'You provided wrong otp');
+  }
+
+
+  const result = await User.findByIdAndUpdate(
+    isExistUser._id,
+    {
+      isVarified: true,
+      otpVerification: {
+        otp: "",
+      }
+    },
+    { new: true }
+  )
+
+  return result;
+};
+
+
 
 const getUserProfileFromDB = async (
   user: JwtPayload
@@ -232,6 +317,7 @@ const bestSellerCreators = async () => {
 
 export const UserService = {
   createUserToDB,
+  verifyRegisterEmail,
   getUserProfileFromDB,
   userFavouriteCategoryUpdate,
   deleteCurrentUser,
