@@ -75,6 +75,13 @@ const verifyRegisterEmail = async (email: string, otp: string) => {
 
   const isExistUser = await User.findOne({ email }).select('+otpVerification');
 
+  if (isExistUser?.isVarified) {
+    throw new ApiError(
+      StatusCodes.BAD_REQUEST,
+      'You are already verified!'
+    );
+  }
+
   if (!isExistUser) {
     throw new ApiError(StatusCodes.BAD_REQUEST, "User doesn't exist!");
   }
