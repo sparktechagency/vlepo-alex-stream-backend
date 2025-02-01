@@ -11,23 +11,25 @@ import generateOTP from '../../../util/generateOTP';
 import { ResetToken } from '../resetToken/resetToken.model';
 import { User } from '../user/user.model';
 import { USER_STATUS } from '../user/user.constants';
-import { IAuthResetPassword, IChangePassword, IVerifyEmail, TLoginUser } from './atuh.interface';
+import {
+  IAuthResetPassword,
+  IChangePassword,
+  IVerifyEmail,
+  TLoginUser,
+} from './atuh.interface';
 
 //login
 const loginUserFromDB = async (payload: TLoginUser) => {
   const { email, password } = payload;
   const isExistUser = await User.findOne({ email }).select('+password');
-  
+
   if (!isExistUser) {
     throw new ApiError(StatusCodes.BAD_REQUEST, "User doesn't exist!");
   }
 
   //check blocked status
   if (isExistUser.isDeleted) {
-    throw new ApiError(
-      StatusCodes.BAD_REQUEST,
-      'Account is deleted!'
-    );
+    throw new ApiError(StatusCodes.BAD_REQUEST, 'Account is deleted!');
   }
 
   //check user status
@@ -59,7 +61,7 @@ const loginUserFromDB = async (payload: TLoginUser) => {
     config.jwt.jwt_refresh_expire_in as string
   );
 
-  return { accessToken, refreshToken };
+  return { accessToken, refreshToken, role: isExistUser.role };
 };
 
 //forget password
@@ -70,17 +72,11 @@ const forgetPasswordToDB = async (email: string) => {
   }
 
   if (isExistUser.status === USER_STATUS.BLOCKED) {
-    throw new ApiError(
-      StatusCodes.BAD_REQUEST,
-      'User are bloocked!'
-    );
+    throw new ApiError(StatusCodes.BAD_REQUEST, 'User are blocked!');  
   }
 
   if (isExistUser.isDeleted) {
-    throw new ApiError(
-      StatusCodes.BAD_REQUEST,
-      'User is deleted!'
-    );
+    throw new ApiError(StatusCodes.BAD_REQUEST, 'User is deleted!');
   }
 
   //send mail
@@ -93,21 +89,62 @@ const forgetPasswordToDB = async (email: string) => {
   emailHelper.sendEmail(forgetPassword);
 
   //save to DB
-  const expireAt = new Date(Date.now() + 10 * 60 * 1000); // validaty 10 min 
+  const expireAt = new Date(Date.now() + 10 * 60 * 1000); // validity 10 min
 
-  await User.findOneAndUpdate({ email },
+  await User.findOneAndUpdate(
+    { email },
     {
       $set: {
         'otpVerification.otp': otp, // Update OTP value
         'otpVerification.expireAt': expireAt, // Set expiration time
       },
-    },
+    }
   );
 };
 
 
+
+const resendOtpToDB = async (email: string) => {
+  const isExistUser = await User.isExistUserByEmail(email);
+  if (!isExistUser) {
+    throw new ApiError(StatusCodes.BAD_REQUEST, "User doesn't exist!");
+  }
+
+  if (isExistUser.status === USER_STATUS.BLOCKED) {
+    throw new ApiError(StatusCodes.BAD_REQUEST, 'User are blocked!');  
+  }
+
+  if (isExistUser.isDeleted) {
+    throw new ApiError(StatusCodes.BAD_REQUEST, 'User is deleted!');
+  }
+
+  //send mail
+  const otp = generateOTP();
+  const value = {
+    otp,
+    name: isExistUser.name,
+    email: isExistUser.email,
+  };
+  const forgetPassword = emailTemplate.createAccount(value);
+  emailHelper.sendEmail(forgetPassword);
+
+  //save to DB
+  const expireAt = new Date(Date.now() + 10 * 60 * 1000); // validity 10 min
+
+  await User.findOneAndUpdate(
+    { email },
+    {
+      $set: {
+        'otpVerification.otp': otp, // Update OTP value
+        'otpVerification.expireAt': expireAt, // Set expiration time
+      },
+    }
+  );
+};
+
 //verify email
 const verifyEmailToDB = async (payload: IVerifyEmail) => {
+  console.log(payload);
   const { email, oneTimeCode } = payload;
   const isExistUser = await User.findOne({ email }).select('+otpVerification');
 
@@ -116,17 +153,11 @@ const verifyEmailToDB = async (payload: IVerifyEmail) => {
   }
 
   if (isExistUser.status === USER_STATUS.BLOCKED) {
-    throw new ApiError(
-      StatusCodes.BAD_REQUEST,
-      'User are bloocked!'
-    );
+    throw new ApiError(StatusCodes.BAD_REQUEST, 'User are blocked!');
   }
 
   if (isExistUser.isDeleted) {
-    throw new ApiError(
-      StatusCodes.BAD_REQUEST,
-      'User is deleted!'
-    );
+    throw new ApiError(StatusCodes.BAD_REQUEST, 'User is deleted!');
   }
 
   if (!oneTimeCode) {
@@ -141,6 +172,7 @@ const verifyEmailToDB = async (payload: IVerifyEmail) => {
   }
 
   const date = new Date();
+  console.log(date, isExistUser.otpVerification?.expireAt);
   if (date > isExistUser.otpVerification?.expireAt) {
     throw new ApiError(
       StatusCodes.BAD_REQUEST,
@@ -150,8 +182,8 @@ const verifyEmailToDB = async (payload: IVerifyEmail) => {
 
   let message;
   let data;
-
-  if (isExistUser) {
+  console.log(isExistUser.isVarified,"isExistUser.isVarified")
+  if (isExistUser.isVarified) {
     //create token ;
     const createToken = cryptoToken();
 
@@ -159,18 +191,34 @@ const verifyEmailToDB = async (payload: IVerifyEmail) => {
       isExistUser._id,
       {
         otpVerification: {
-          otp: "",
+          otp: '',
           expireAt: new Date(Date.now() + 10 * 60000), // 10 min todo
           token: createToken,
-          isResetPassword: true
-        }
+          isResetPassword: true,
+        },
       },
       { new: true }
-    ).select("+otpVerification")
+    ).select('+otpVerification');
+
+
 
     console.log(result);
     message = 'Email verify successfully';
+    console.log(createToken)
     data = createToken;
+  }else{
+    await User.findByIdAndUpdate(
+      isExistUser._id,
+      {
+        isVarified: true,
+        otpVerification: {
+          otp: null,
+          expireAt: null, // 10 min todo
+        },
+      },
+      { new: true }
+    ).select('+otpVerification');
+    message = 'Email verify successfully';
   }
 
   return { data, message };
@@ -183,7 +231,9 @@ const resetPasswordToDB = async (
 ) => {
   const { newPassword, confirmPassword } = payload;
   //isExist token
-  const user = await User.findOne({ "otpVerification.token": token }).select("+otpVerification");
+  const user = await User.findOne({ 'otpVerification.token': token }).select(
+    '+otpVerification'
+  );
 
   if (!user) {
     throw new ApiError(StatusCodes.UNAUTHORIZED, 'You are not authorized');
@@ -197,7 +247,8 @@ const resetPasswordToDB = async (
   }
 
   // validity check
-  const isValid = new Date() >= user.otpVerification?.expireAt; console.log(isValid);
+  const isValid = new Date() >= user.otpVerification?.expireAt;
+  console.log(isValid);
   if (isValid) {
     throw new ApiError(
       StatusCodes.BAD_REQUEST,
@@ -223,20 +274,15 @@ const resetPasswordToDB = async (
     password: hashPassword,
     otpVerification: {
       isResetPassword: false,
-      token: "",
-      expireAt: new Date()
+      token: '',
+      expireAt: new Date(),
     },
   };
 
-  await User.findOneAndUpdate(
-    { _id: user._id },
-    updateData,
-    { new: true }
-  );
+  await User.findOneAndUpdate({ _id: user._id }, updateData, { new: true });
 
   return null;
 };
-
 
 const changePasswordToDB = async (
   user: JwtPayload,
@@ -253,7 +299,10 @@ const changePasswordToDB = async (
     currentPassword &&
     !(await User.isMatchPassword(currentPassword, isExistUser.password))
   ) {
-    throw new ApiError(StatusCodes.BAD_REQUEST, 'Current password is incorrect');
+    throw new ApiError(
+      StatusCodes.BAD_REQUEST,
+      'Current password is incorrect'
+    );
   }
 
   //newPassword and current password
@@ -283,12 +332,13 @@ const changePasswordToDB = async (
   await User.findOneAndUpdate({ _id: user.id }, updateData, { new: true });
 };
 
-
 const refreshToken = async (token: string) => {
+  const decoded = jwtHelper.verifyToken(
+    token,
+    config.jwt.jwt_refresh as string
+  );
 
-  const decoded = jwtHelper.verifyToken(token, config.jwt.jwt_refresh as string);
-  
-  const { id, iat } = decoded; 
+  const { id, iat } = decoded;
 
   // checking if the user is exist
   const user = await User.findById(id);
@@ -311,15 +361,15 @@ const refreshToken = async (token: string) => {
     throw new ApiError(StatusCodes.FORBIDDEN, 'This user is blocked!');
   }
 
-
   const accessToken = jwtHelper.createToken(
     { id: user._id, role: user.role, email: user.email },
     config.jwt.jwt_secret as Secret,
     config.jwt.jwt_expire_in as string
   );
 
-  return {accessToken};
-}
+  return { accessToken };
+};
+
 
 
 export const AuthService = {
@@ -329,4 +379,5 @@ export const AuthService = {
   verifyEmailToDB,
   resetPasswordToDB,
   refreshToken,
+  resendOtpToDB
 };

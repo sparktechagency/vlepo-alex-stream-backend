@@ -13,24 +13,24 @@ const createUser = catchAsync(
     sendResponse(res, {
       success: true,
       statusCode: StatusCodes.OK,
-      message: 'User created successfully, and we send a OTP on your mail for verify email.',
+      message:
+        'User created successfully, and we send a OTP on your mail for verify email.',
       data: result,
     });
   }
 );
 
-const verifyRegisterEmail = catchAsync(async (req: Request, res: Response) => {
-  const { otp } = req.body;
-  const {email} = req.user;
-  const result = await UserService.verifyRegisterEmail(email, otp);
+// const verifyRegisterEmail = catchAsync(async (req: Request, res: Response) => {
+//   const { otp, email } = req.body;
+//   const result = await UserService.verifyRegisterEmail(email, otp);
 
-  sendResponse(res, {
-    success: true,
-    statusCode: StatusCodes.OK,
-    message: "Verified your account!",
-    data: result,
-  });
-});
+//   sendResponse(res, {
+//     success: true,
+//     statusCode: StatusCodes.OK,
+//     message: 'Verified your account!',
+//     data: result,
+//   });
+// });
 
 const getUserProfile = catchAsync(async (req: Request, res: Response) => {
   const user = req.user;
@@ -56,22 +56,24 @@ const getCreatorProfile = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-const userFavouriteCategoryUpdate = catchAsync(async (req: Request, res: Response) => {
-  const { id } = req.user;
-  const { categoryId } = req.body;
+const userFavouriteCategoryUpdate = catchAsync(
+  async (req: Request, res: Response) => {
+    const { id } = req.user;
+    const { categoryId } = req.body;
 
-  const result = await UserService.userFavouriteCategoryUpdate(id, categoryId);
+    const result = await UserService.userFavouriteCategoryUpdate(
+      id,
+      categoryId
+    );
 
-  sendResponse(res, {
-    success: true,
-    statusCode: StatusCodes.OK,
-    message: 'Favourite category added successfully',
-    data: result,
-  });
-});
-
-
-
+    sendResponse(res, {
+      success: true,
+      statusCode: StatusCodes.OK,
+      message: 'Favourite category added successfully',
+      data: result,
+    });
+  }
+);
 
 const deleteCurrentUser = catchAsync(async (req: Request, res: Response) => {
   const { id } = req.user;
@@ -113,7 +115,6 @@ const updateMyProfile = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-
 const updateUserStatus = catchAsync(async (req: Request, res: Response) => {
   const { userId } = req.params;
 
@@ -127,16 +128,14 @@ const updateUserStatus = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-
 const toggleUserRole = catchAsync(async (req: Request, res: Response) => {
-
   const result = await UserService.toggleUserRole(req.user, req.body);
   const { refreshToken } = result;
 
   res.cookie('refreshToken', refreshToken, {
-    secure: config.node_env === "production",
-    httpOnly: true
-  })
+    secure: config.node_env === 'production',
+    httpOnly: true,
+  });
 
   sendResponse(res, {
     success: true,
@@ -145,7 +144,6 @@ const toggleUserRole = catchAsync(async (req: Request, res: Response) => {
     data: result,
   });
 });
-
 
 const bestSellerCreators = catchAsync(async (req: Request, res: Response) => {
   const result = await UserService.bestSellerCreators();
@@ -158,10 +156,9 @@ const bestSellerCreators = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-
 export const UserController = {
   createUser,
-  verifyRegisterEmail,
+  // verifyRegisterEmail,
   getUserProfile,
   userFavouriteCategoryUpdate,
   deleteCurrentUser,

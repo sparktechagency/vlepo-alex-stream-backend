@@ -6,6 +6,7 @@ import { AuthService } from './auth.service';
 import config from '../../../config';
 
 const verifyEmail = catchAsync(async (req: Request, res: Response) => {
+  console.log(req.body);
   const { ...verifyData } = req.body;
   const result = await AuthService.verifyEmailToDB(verifyData);
 
@@ -20,12 +21,12 @@ const verifyEmail = catchAsync(async (req: Request, res: Response) => {
 const loginUser = catchAsync(async (req: Request, res: Response) => {
   const { ...loginData } = req.body;
   const result = await AuthService.loginUserFromDB(loginData);
-  const {refreshToken} = result;
+  const { refreshToken } = result;
 
   res.cookie('refreshToken', refreshToken, {
-    secure: config.node_env === "production",
-    httpOnly: true
-  })
+    secure: config.node_env === 'production',
+    httpOnly: true,
+  });
 
   sendResponse(res, {
     success: true,
@@ -38,6 +39,18 @@ const loginUser = catchAsync(async (req: Request, res: Response) => {
 const forgetPassword = catchAsync(async (req: Request, res: Response) => {
   const email = req.body.email;
   const result = await AuthService.forgetPasswordToDB(email);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: StatusCodes.OK,
+    message: 'Please check your email, we send a OTP!',
+    data: result,
+  });
+});
+
+const resendOtp = catchAsync(async (req: Request, res: Response) => {
+  const email = req.body.email;
+  const result = await AuthService.resendOtpToDB(email);
 
   sendResponse(res, {
     success: true,
@@ -73,7 +86,6 @@ const changePassword = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-
 const refreshToken = catchAsync(async (req, res) => {
   const { refreshToken } = req.cookies;
 
@@ -82,7 +94,7 @@ const refreshToken = catchAsync(async (req, res) => {
   sendResponse(res, {
     statusCode: StatusCodes.OK,
     success: true,
-    message: 'Access token is retrieved succesfully!',
+    message: 'Access token is retrieved successfully!',
     data: result,
   });
 });
@@ -94,4 +106,5 @@ export const AuthController = {
   resetPassword,
   changePassword,
   refreshToken,
+  resendOtp
 };

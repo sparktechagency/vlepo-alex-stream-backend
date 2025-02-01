@@ -50,6 +50,13 @@ const refreshTokenValidationSchema = z.object({
   }),
 });
 
+const resendOtpZodSchema = z.object({
+  body: z.object({
+    email: z.string()
+    .email({ message: 'Invalid email format' })
+  })
+})
+
 
 export const AuthValidation = {
   createLoginZodSchema,
@@ -58,4 +65,5 @@ export const AuthValidation = {
   createVerifyEmailZodSchema,
   createResetPasswordZodSchema,
   refreshTokenValidationSchema,
+  resendOtpZodSchema
 };

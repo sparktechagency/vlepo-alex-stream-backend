@@ -7,17 +7,17 @@ import { UserValidation } from './user.validation';
 import { USER_ROLE } from './user.constants';
 const router = express.Router();
 
-
-router.post("/",
+router.post(
+  '/',
   validateRequest(UserValidation.createUserZodSchema),
   UserController.createUser
 );
 
-router.post("/verify-register-email",
-  auth(USER_ROLE.USER, USER_ROLE.CREATOR, USER_ROLE.SUPER_ADMIN),
-  validateRequest(UserValidation.verifyRegisterEmailZodSchema),
-  UserController.verifyRegisterEmail
-)
+// router.post(
+//   '/verify-register-email',
+//   validateRequest(UserValidation.verifyRegisterEmailZodSchema),
+//   UserController.verifyRegisterEmail
+// );
 
 router.get(
   '/my-profile',
@@ -25,10 +25,11 @@ router.get(
   UserController.getUserProfile
 );
 
-router.get("/best-seller-creators",
+router.get(
+  '/best-seller-creators',
   // auth(USER_ROLE.USER, USER_ROLE.CREATOR, USER_ROLE.SUPER_ADMIN),
   UserController.bestSellerCreators
-)
+);
 
 router.get(
   '/:creatorId',
@@ -36,40 +37,41 @@ router.get(
   UserController.getCreatorProfile
 );
 
-router.patch("/favourite-category",
+router.patch(
+  '/favourite-category',
   validateRequest(UserValidation.updateFavouriteCategoryZodSchema),
   auth(USER_ROLE.USER),
   UserController.userFavouriteCategoryUpdate
 );
 
-
-router.delete("/delete-me",
+router.delete(
+  '/delete-me',
   auth(USER_ROLE.USER, USER_ROLE.CREATOR), // TODO: CAN SUPER_ADMIN DELETE HIM?
   UserController.deleteCurrentUser
-)
+);
 
-router.patch("/update-myprofile",
+router.patch(
+  '/update-myprofile',
   auth(USER_ROLE.USER, USER_ROLE.CREATOR, USER_ROLE.SUPER_ADMIN),
   fileUploadHandler(),
   UserController.updateMyProfile
-)
+);
 
-router.patch("/update-user-status/:userId",
+router.patch(
+  '/update-user-status/:userId',
   auth(USER_ROLE.SUPER_ADMIN),
   validateRequest(UserValidation.userChangeStatusZodSchema),
   UserController.updateUserStatus
-)
+);
 
-
-router.patch("/switch-user-role",
+router.patch(
+  '/switch-user-role',
   auth(USER_ROLE.USER, USER_ROLE.CREATOR),
   validateRequest(UserValidation.userRoleChangeZodSchema),
   UserController.toggleUserRole
 );
 
-
 export const UserRoutes = router;
-
 
 // (req: Request, res: Response, next: NextFunction) => {
 //   let photo = '';

@@ -25,21 +25,21 @@ import { IVerifyEmail } from '../auth/atuh.interface';
 
 const createUserToDB = async (payload: Partial<IUser>): Promise<null> => {
   if (payload.password !== payload?.confirmPassword) {
-    throw new ApiError(StatusCodes.BAD_GATEWAY, "Your password does't match!")
+    throw new ApiError(StatusCodes.BAD_GATEWAY, "Your password does't match!");
   }
 
   const isEmailExit = await User.findOne({ email: payload.email });
 
   if (isEmailExit) {
-    throw new ApiError(StatusCodes.BAD_REQUEST, "Email already exist")
+    throw new ApiError(StatusCodes.BAD_REQUEST, 'Email already exist');
   }
 
   const createUser = await User.create(payload);
   if (!createUser) {
     throw new ApiError(StatusCodes.BAD_REQUEST, 'Failed to create user');
-  };
+  }
 
-  // send mail 
+  // send mail
   const otp = generateOTP();
   const value = {
     otp,
@@ -51,75 +51,63 @@ const createUserToDB = async (payload: Partial<IUser>): Promise<null> => {
   emailHelper.sendEmail(registerEmailTem);
 
   //save to DB
-  await User.findOneAndUpdate({ email: createUser.email },
+  await User.findOneAndUpdate(
+    { email: createUser.email },
     {
       $set: {
         'otpVerification.otp': otp,
+        'otpVerification.expireAt': Date.now() + 10 * 60 * 1000,
       },
-    },
+    }
   );
 
   return null;
 };
 
-
 //verify email
-const verifyRegisterEmail = async (email: string, otp: string) => {
+// const verifyRegisterEmail = async (email: string, otp: string) => {
+//   if (!otp) {
+//     throw new ApiError(
+//       StatusCodes.BAD_REQUEST,
+//       'OTP needed! Please check your email we send a code!'
+//     );
+//   }
 
-  if (!otp) {
-    throw new ApiError(
-      StatusCodes.BAD_REQUEST,
-      'OTP needed! Please check your email we send a code!'
-    );
-  }
+//   const isExistUser = await User.findOne({ email }).select('+otpVerification');
 
-  const isExistUser = await User.findOne({ email }).select('+otpVerification');
+//   if (isExistUser?.isVarified) {
+//     throw new ApiError(StatusCodes.BAD_REQUEST, 'You are already verified!');
+//   }
 
-  if (isExistUser?.isVarified) {
-    throw new ApiError(
-      StatusCodes.BAD_REQUEST,
-      'You are already verified!'
-    );
-  }
+//   if (!isExistUser) {
+//     throw new ApiError(StatusCodes.BAD_REQUEST, "User doesn't exist!");
+//   }
 
-  if (!isExistUser) {
-    throw new ApiError(StatusCodes.BAD_REQUEST, "User doesn't exist!");
-  }
+//   if (isExistUser.status === USER_STATUS.BLOCKED) {
+//     throw new ApiError(StatusCodes.BAD_REQUEST, 'User are bloocked!');
+//   }
 
-  if (isExistUser.status === USER_STATUS.BLOCKED) {
-    throw new ApiError(
-      StatusCodes.BAD_REQUEST,
-      'User are bloocked!'
-    );
-  }
+//   if (isExistUser.isDeleted) {
+//     throw new ApiError(StatusCodes.BAD_REQUEST, 'User is deleted!');
+//   }
 
-  if (isExistUser.isDeleted) {
-    throw new ApiError(
-      StatusCodes.BAD_REQUEST,
-      'User is deleted!'
-    );
-  }
+//   if (isExistUser?.otpVerification?.otp !== otp) {
+//     throw new ApiError(StatusCodes.BAD_REQUEST, 'You provided wrong otp');
+//   }
 
-  if (isExistUser?.otpVerification?.otp !== otp) {
-    throw new ApiError(StatusCodes.BAD_REQUEST, 'You provided wrong otp');
-  }
+//   const result = await User.findByIdAndUpdate(
+//     isExistUser._id,
+//     {
+//       isVarified: true,
+//       otpVerification: {
+//         otp: '',
+//       },
+//     },
+//     { new: true }
+//   );
 
-
-  const result = await User.findByIdAndUpdate(
-    isExistUser._id,
-    {
-      isVarified: true,
-      otpVerification: {
-        otp: "",
-      }
-    },
-    { new: true }
-  )
-
-  return result;
-};
-
-
+//   return result;
+// };
 
 const getUserProfileFromDB = async (
   user: JwtPayload
@@ -142,7 +130,6 @@ const getUserProfileFromDB = async (
     user.followersCount = followersCount;
     user.eventCount = eventCount;
 
-
     return user;
   }
 
@@ -150,8 +137,9 @@ const getUserProfileFromDB = async (
 };
 
 const getCreatorProfileFromDB = async (creatorId: string) => {
-  const isExistUser = await User.findById(creatorId)
-    .select("name bio description photo role");
+  const isExistUser = await User.findById(creatorId).select(
+    'name bio description photo role'
+  );
 
   if (!isExistUser) {
     throw new ApiError(StatusCodes.BAD_REQUEST, "User doesn't exist!");
@@ -165,8 +153,6 @@ const getCreatorProfileFromDB = async (creatorId: string) => {
   let followersCount = await Follow.countDocuments({ followingId: creatorId });
   let eventCount = await Event.countDocuments({ createdBy: creatorId });
 
-
-
   let user = isExistUser.toObject();
 
   // Add the new properties
@@ -176,33 +162,28 @@ const getCreatorProfileFromDB = async (creatorId: string) => {
   return user;
 };
 
-
 // selectedCategory update
 const userFavouriteCategoryUpdate = async (id: string, categoryId: string) => {
   const result = await User.findByIdAndUpdate(
     id,
     {
-      $addToSet: { selectedCategory: categoryId }
+      $addToSet: { selectedCategory: categoryId },
     },
     { new: true }
   );
 
   if (!result) {
-    throw new ApiError(StatusCodes.NOT_FOUND, "User not found!");
+    throw new ApiError(StatusCodes.NOT_FOUND, 'User not found!');
   }
 
   return result;
-}
+};
 
 const deleteCurrentUser = async (userId: string) => {
-  await User.findByIdAndUpdate(userId,
-    { isDeleted: true },
-    { new: true }
-  );
+  await User.findByIdAndUpdate(userId, { isDeleted: true }, { new: true });
 
   return null;
-}
-
+};
 
 const updateMyProfile = async (id: string, payload: Partial<IUser>) => {
   const isExistUser = await User.isUserPermission(id);
@@ -210,7 +191,7 @@ const updateMyProfile = async (id: string, payload: Partial<IUser>) => {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   if (payload.email) {
     if (!emailRegex.test(payload.email)) {
-      throw new ApiError(StatusCodes.BAD_REQUEST, "Invalid email format.")
+      throw new ApiError(StatusCodes.BAD_REQUEST, 'Invalid email format.');
     }
   }
 
@@ -221,31 +202,32 @@ const updateMyProfile = async (id: string, payload: Partial<IUser>) => {
 
   const result = await User.findOneAndUpdate(
     {
-      _id: id,                      // Match by ID
-      isDeleted: false,             // User should not be deleted
+      _id: id, // Match by ID
+      isDeleted: false, // User should not be deleted
       status: { $ne: USER_STATUS.BLOCKED }, // User should not be blocked
     },
-    payload,                        // Update payload
-    { new: true }                // Return updated document
+    payload, // Update payload
+    { new: true } // Return updated document
   );
 
   if (!result) {
-    throw new ApiError(StatusCodes.BAD_REQUEST, "Permission denied or user not found!");
+    throw new ApiError(
+      StatusCodes.BAD_REQUEST,
+      'Permission denied or user not found!'
+    );
   }
 
   return result;
 };
 
-
 const updateUserStatus = async (id: string, payload: Partial<IUser>) => {
-
-  const result = await User.findByIdAndUpdate(id,
-    payload,
-    { new: true }
-  );
+  const result = await User.findByIdAndUpdate(id, payload, { new: true });
 
   if (!result) {
-    throw new ApiError(StatusCodes.BAD_REQUEST, "Permission denied or user not found!");
+    throw new ApiError(
+      StatusCodes.BAD_REQUEST,
+      'Permission denied or user not found!'
+    );
   }
 
   return result;
@@ -255,7 +237,10 @@ const toggleUserRole = async (user: JwtPayload, payload: Partial<IUser>) => {
   const { id: userId, role } = user;
 
   if (role === payload.role) {
-    throw new ApiError(StatusCodes.BAD_REQUEST, `You already logedin as a ${payload.role}`);
+    throw new ApiError(
+      StatusCodes.BAD_REQUEST,
+      `You already logedin as a ${payload.role}`
+    );
   }
 
   await User.isUserPermission(userId);
@@ -263,7 +248,7 @@ const toggleUserRole = async (user: JwtPayload, payload: Partial<IUser>) => {
   const result = await User.findByIdAndUpdate(userId, payload, { new: true });
 
   if (!result) {
-    throw new ApiError(StatusCodes.FORBIDDEN, "User can't switch his role.")
+    throw new ApiError(StatusCodes.FORBIDDEN, "User can't switch his role.");
   }
 
   //create token
@@ -280,51 +265,51 @@ const toggleUserRole = async (user: JwtPayload, payload: Partial<IUser>) => {
   );
 
   return { accessToken, refreshToken, result };
-}
+};
 
 const bestSellerCreators = async () => {
   const bestSeller = await Event.aggregate([
     {
       $group: {
-        _id: "$createdBy",
-        totalTicketSold: { $sum: "$soldTicket" },
-        totalRevenue: { $sum: "$totalSale" }
-      }
+        _id: '$createdBy',
+        totalTicketSold: { $sum: '$soldTicket' },
+        totalRevenue: { $sum: '$totalSale' },
+      },
     },
     {
-      $sort: { totalTicketSold: -1 }
+      $sort: { totalTicketSold: -1 },
     },
     {
-      $limit: 4
+      $limit: 4,
     },
     {
       $lookup: {
-        from: "users", // 'users' কালেকশন যেখানে ক্রিয়েটরদের তথ্য রয়েছে
-        localField: "_id", // এই আইডি গ্রুপিংয়ের _id হিসেবে এসেছে
-        foreignField: "_id", // users কালেকশনে _id ফিল্ডের সাথে মেলানো হবে
-        as: "creatorInfo" // পপুলেট হওয়া ডেটার জন্য নতুন ফিল্ড
-      }
+        from: 'users', // 'users' কালেকশন যেখানে ক্রিয়েটরদের তথ্য রয়েছে
+        localField: '_id', // এই আইডি গ্রুপিংয়ের _id হিসেবে এসেছে
+        foreignField: '_id', // users কালেকশনে _id ফিল্ডের সাথে মেলানো হবে
+        as: 'creatorInfo', // পপুলেট হওয়া ডেটার জন্য নতুন ফিল্ড
+      },
     },
     {
-      $unwind: "$creatorInfo" // পপুলেট হওয়া তথ্য আনর‍্যাপ করার জন্য
+      $unwind: '$creatorInfo', // পপুলেট হওয়া তথ্য আনর‍্যাপ করার জন্য
     },
     {
       $project: {
         _id: 1,
         totalTicketSold: 1,
         totalRevenue: 1,
-        "creatorInfo.photo": 1,
-        "creatorInfo.name": 1,
-      }
-    }
+        'creatorInfo.photo': 1,
+        'creatorInfo.name': 1,
+      },
+    },
   ]);
 
   return bestSeller;
-}
+};
 
 export const UserService = {
   createUserToDB,
-  verifyRegisterEmail,
+  // verifyRegisterEmail,
   getUserProfileFromDB,
   userFavouriteCategoryUpdate,
   deleteCurrentUser,
