@@ -99,6 +99,8 @@ const refreshToken = catchAsync(async (req, res) => {
   });
 });
 
+
+
 export const AuthController = {
   verifyEmail,
   loginUser,

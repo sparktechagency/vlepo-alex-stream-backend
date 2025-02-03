@@ -12,7 +12,7 @@ import { AttendanceModel } from "./attendanceSchema";
 import { Payment } from "../payment/payment.model";
 
 const createEventsIntoDB = async (createdBy: string, payload: IEvent) => {
-    const { categoryId } = payload;
+    const { categoryId, ticketPrice, totalSeat } = payload;
 
     const category = await Category.findById(categoryId);
     if (!category) {
@@ -24,7 +24,9 @@ const createEventsIntoDB = async (createdBy: string, payload: IEvent) => {
         throw new ApiError(StatusCodes.NOT_FOUND, "User have not permission to create events!")
     }
 
-    const result = await Event.create({ ...payload, createdBy });
+    payload.ticketPrice = Number(ticketPrice);
+    payload.totalSeat = Number(totalSeat);
+    const result = await Event.create({ ...payload});
 
     return result;
 }

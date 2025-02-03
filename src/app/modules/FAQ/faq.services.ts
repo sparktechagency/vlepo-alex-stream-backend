@@ -1,6 +1,6 @@
 import { StatusCodes } from "http-status-codes";
 import ApiError from "../../../errors/ApiError";
-import { Faq } from "./faq.model"
+import { Faq, TermsAndCondition } from "./faq.model"
 import { IFaq } from "./faq.interface";
 
 const createFAQintoDB = async (payload: IFaq) => {
@@ -28,8 +28,26 @@ const updateFaq = async (id: string, payload: Partial<IFaq>) => {
 }
 
 
+const createOrUpdateTermsAndCondition = async (payload: Partial<IFaq>) => {
+    const exist = await TermsAndCondition.findOne({});
+    if (exist) {
+        const result = await TermsAndCondition.findOneAndUpdate({}, payload);
+        console.log(result)
+        return "Terms and conditions updated";
+    }
+    const result = await TermsAndCondition.create(payload);
+    return "Terms and conditions created";
+}
+
+const getTermsAndCondition = async () => {
+    const result = await TermsAndCondition.find({});
+    return result;
+}
+
 export const FaqServices = {
     createFAQintoDB,
     getAllFaqFromDB,
     updateFaq,
+    createOrUpdateTermsAndCondition,
+    getTermsAndCondition,
 }

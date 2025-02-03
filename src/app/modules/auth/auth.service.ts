@@ -21,7 +21,7 @@ import {
 //login
 const loginUserFromDB = async (payload: TLoginUser) => {
   const { email, password } = payload;
-  const isExistUser = await User.findOne({ email }).select('+password');
+  const isExistUser = await User.findOne({ email, isDeleted: false }).select('+password');
 
   if (!isExistUser) {
     throw new ApiError(StatusCodes.BAD_REQUEST, "User doesn't exist!");
@@ -146,7 +146,7 @@ const resendOtpToDB = async (email: string) => {
 const verifyEmailToDB = async (payload: IVerifyEmail) => {
   console.log(payload);
   const { email, oneTimeCode } = payload;
-  const isExistUser = await User.findOne({ email }).select('+otpVerification');
+  const isExistUser = await User.findOne({ email, isDeleted: false }).select('+otpVerification');
 
   if (!isExistUser) {
     throw new ApiError(StatusCodes.BAD_REQUEST, "User doesn't exist!");
@@ -234,7 +234,7 @@ const resetPasswordToDB = async (
   const user = await User.findOne({ 'otpVerification.token': token }).select(
     '+otpVerification'
   );
-
+console.log(user,"From Reset Password")
   if (!user) {
     throw new ApiError(StatusCodes.UNAUTHORIZED, 'You are not authorized');
   }
@@ -279,7 +279,7 @@ const resetPasswordToDB = async (
     },
   };
 
-  await User.findOneAndUpdate({ _id: user._id }, updateData, { new: true });
+  await User.findByIdAndUpdate(user._id, updateData, { new: true });
 
   return null;
 };

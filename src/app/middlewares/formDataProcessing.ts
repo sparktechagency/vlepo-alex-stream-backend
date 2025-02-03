@@ -4,9 +4,10 @@ import catchAsync from "../../shared/catchAsync";
 const formDataProcessing = () => {
     return catchAsync(async (req: Request, res: Response, next: NextFunction) => {
         let payload;
-        if (req.body.data) {
-            payload = JSON.parse(req.body.data);
+        if (req.body) {
+            payload = req.body;
         }
+
 
         // only for image
         let photo;

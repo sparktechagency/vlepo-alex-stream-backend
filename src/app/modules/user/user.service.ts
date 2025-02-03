@@ -28,9 +28,11 @@ const createUserToDB = async (payload: Partial<IUser>): Promise<null> => {
     throw new ApiError(StatusCodes.BAD_GATEWAY, "Your password does't match!");
   }
 
-  const isEmailExit = await User.findOne({ email: payload.email });
+  const isEmailExit = await User.findOne({ email: payload.email, isDeleted: false });
+  console.log(isEmailExit, 'isEmailExit');
 
   if (isEmailExit) {
+    console.log(isEmailExit, '---isEmailExit');
     throw new ApiError(StatusCodes.BAD_REQUEST, 'Email already exist');
   }
 

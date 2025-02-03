@@ -19,7 +19,7 @@ const otpVerificationSchema = new Schema<IOtpVerification>({
 const userSchema = new Schema<IUser>(
   {
     name: { type: String, required: true },
-    email: { type: String, required: true, unique: true },
+    email: { type: String, unique: false },
     phone: { type: String, default: "" },
     bio: { type: String, default: "", },
     address: { type: String, default: "" },
@@ -53,15 +53,12 @@ const userSchema = new Schema<IUser>(
 userSchema.index({ role: 1 })
 userSchema.index({ _id: 1, isDeleted: 1, status: 1 });
 
-
-
 // find user by _id
 userSchema.statics.isExistUserById = async (id: string) => {
   const isExist = await User.findById(id).select("-password");
-  
+
   return isExist;
 };
-
 
 // check user permission for action
 // userSchema.statics.isUserPermission = async (id: string) => {
@@ -95,7 +92,7 @@ userSchema.statics.isUserPermission = async function (id: string) {
 
 // find user by email
 userSchema.statics.isExistUserByEmail = async (email: string) => {
-  const isExist = await User.findOne({ email });
+  const isExist = await User.findOne({ email, isDeleted: false });
   return isExist;
 };
 
@@ -110,7 +107,7 @@ userSchema.statics.isMatchPassword = async (
 
 userSchema.pre('save', async function (next) {
   // check already exist user
-  const isExist = await User.findOne({ email: this.email });
+  const isExist = await User.findOne({ email: this.email, isDeleted: false });
   if (isExist) {
     throw new ApiError(StatusCodes.BAD_REQUEST, 'Email already exist!');
   }

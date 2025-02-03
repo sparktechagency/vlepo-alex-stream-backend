@@ -23,4 +23,8 @@ router.patch("/:faqId",
     FaqController.updateSingleCategory
 )
 
+
+
 export const FaqRoutes = router;
+
+

@@ -23,7 +23,16 @@ const faqUpdateValidationSchema = z.object({
     })
 });
 
+const termsAndConditionValidationSchema = z.object({
+    body: z.object({
+        content: z
+            .string()
+            .min(10, "Content must be at least 10 characters long")
+    })
+});
+
 export const faqValidationSchema = {
     faqCreateValidationSchema,
     faqUpdateValidationSchema,
+    termsAndConditionValidationSchema
 }

@@ -41,9 +41,32 @@ const updateSingleCategory = catchAsync(async (req: Request, res: Response) => {
 })
 
 
+const createOrUpdateTermsAndCondition = catchAsync(async (req: Request, res: Response) => {
+    const result = await FaqServices.createOrUpdateTermsAndCondition(req.body);
+    sendResponse(res, {
+        success: true,
+        statusCode: StatusCodes.OK,
+        message: 'Create or update terms and condition!',
+        data: result,    
+    });
+})
+
+const getTermsAndCondition = catchAsync(async (req: Request, res: Response) => {
+    const result = await FaqServices.getTermsAndCondition();
+    sendResponse(res, {
+        success: true,
+        statusCode: StatusCodes.OK,
+        message: 'Retrieved terms and condition!',
+        data: result,
+    });
+})
+
+
 
 export const FaqController = {
     createFAQ,
     getAllFaq,
     updateSingleCategory,
+    createOrUpdateTermsAndCondition,
+    getTermsAndCondition,
 }
