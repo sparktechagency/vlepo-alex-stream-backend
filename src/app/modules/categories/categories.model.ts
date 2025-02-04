@@ -1,13 +1,9 @@
-import mongoose, { model, Schema } from "mongoose";
+import mongoose, { model, Schema, Types } from "mongoose";
 import { ICategory } from "./categories.interface";
 
 const categorySchema = new Schema<ICategory>({
     categoryName: { type: String, required: true, unique: true },
-    createdBy: {
-        type: mongoose.Types.ObjectId,
-        ref: "User",
-        required: true
-    },
+    createdBy: { type: Schema.Types.ObjectId, ref: "User", required: true },
     image: {
         type: String,
         validate: {
@@ -22,7 +18,7 @@ const categorySchema = new Schema<ICategory>({
     }
 }, { timestamps: true });
 
-categorySchema.index({ userId: 1 });
+categorySchema.index({ createdBy: 1 });
 
 const Category = model<ICategory>('Category', categorySchema);
 

@@ -1,7 +1,7 @@
-import { Document, ObjectId } from "mongoose";
+import { Document, Types } from "mongoose";
 
 export interface ICategory extends Document{
     categoryName: string;
-    createdBy: ObjectId;
+    createdBy: Types.ObjectId;
     image: string;
 }

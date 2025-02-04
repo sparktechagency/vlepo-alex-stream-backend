@@ -7,7 +7,7 @@ import { User } from "../user/user.model";
 import { USER_STATUS } from "../user/user.constants";
 import { QueryBuilder } from "../../builder/QueryBuilder";
 import { EVENTS_STATUS, EventSearchableFields } from "./events.constants";
-import mongoose from "mongoose";
+import mongoose, { Types } from "mongoose";
 import { AttendanceModel } from "./attendanceSchema";
 import { Payment } from "../payment/payment.model";
 
@@ -26,6 +26,7 @@ const createEventsIntoDB = async (createdBy: string, payload: IEvent) => {
 
     payload.ticketPrice = Number(ticketPrice);
     payload.totalSeat = Number(totalSeat);
+    payload.createdBy = new Types.ObjectId(createdBy);
     const result = await Event.create({ ...payload});
 
     return result;
