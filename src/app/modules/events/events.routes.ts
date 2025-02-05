@@ -54,6 +54,12 @@ router.get("/creator-events-overview",
 );
 
 
+router.patch("/update-event/:eventId",
+    auth(USER_ROLE.CREATOR),
+    validateRequest(eventValidationSchema.updateEventValidationSchema),
+    eventController.updateEvent
+);
+
 cron.schedule("0 * * * *",
     eventController.updateAllEventsTrendingStatus
 );

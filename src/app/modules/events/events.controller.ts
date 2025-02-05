@@ -3,6 +3,7 @@ import catchAsync from "../../../shared/catchAsync";
 import { eventServices } from "./events.services";
 import sendResponse from "../../../shared/sendResponse";
 import { StatusCodes } from "http-status-codes";
+import { Types } from "mongoose";
 
 const createEvents = catchAsync(async (req: Request, res: Response) => {
     const { id } = req.user;
@@ -114,6 +115,8 @@ const creatorEventOverview = catchAsync(async (req: Request, res: Response) => {
 });
 
 
+
+
 const updateAllEventsTrendingStatus = async () => {
     try {
         await eventServices.updateAllEventsTrendingStatus();
@@ -122,7 +125,19 @@ const updateAllEventsTrendingStatus = async () => {
     }
 };
 
+const updateEvent = catchAsync(async (req: Request, res: Response) => {
+    const { eventId } = req.params;
 
+
+    const result = await eventServices.updateEvent(new Types.ObjectId(eventId), req.body);
+
+    sendResponse(res, {
+        success: true,
+        statusCode: StatusCodes.OK,
+        message: 'Event updated successfully!',
+        data: result,
+    }); 
+});
 
 
 
@@ -136,4 +151,5 @@ export const eventController = {
     getSingleSlfEventAnalysisByEventId,
     creatorEventOverview,
     getMyFavouriteEvents,
+    updateEvent
 }    

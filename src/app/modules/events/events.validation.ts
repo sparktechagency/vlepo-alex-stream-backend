@@ -36,6 +36,15 @@ export const eventCreateValidationSchema = z.object({
 
 export const validateEvent = (data: unknown) => eventCreateValidationSchema.parse(data);
 
+const updateEventValidationSchema = z.object({
+  body: z.object({
+    eventName: z.string().optional(),
+    description: z.string().optional(),
+    
+  })
+})
+
 export const eventValidationSchema = {
-  eventCreateValidationSchema
+  eventCreateValidationSchema,
+  updateEventValidationSchema
 }

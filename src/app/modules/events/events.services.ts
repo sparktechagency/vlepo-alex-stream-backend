@@ -38,7 +38,7 @@ const getSingleEventByEventId = async (id: string) => {
     }
 
     const event = await Event.findById(id)
-        .select("createdBy eventName image description eventType ticketPrice startTime")
+        .select("createdBy eventName image description eventType ticketPrice startTime soldTicket totalSale")
         .populate("createdBy", "name photo");
 
     return event;
@@ -67,7 +67,7 @@ const getSingleSlfEventAnalysisByEventId = async (id: string, timeframe = "6mont
     const event = await Event.findOne({
         _id: id
     })
-        .select("eventName image")
+        .select("eventName image soldTicket totalSale startTime endTime")
         .lean();
 
     const participants = await AttendanceModel.find({
@@ -255,6 +255,22 @@ const updateAllEventsTrendingStatus = async () => {
 };
 
 
+const updateEvent= async (id: Types.ObjectId, payload: Partial<IEvent>) => {
+
+    const event = await Event.findByIdAndUpdate(
+        id,
+        { $set: payload },
+        { new: true }
+    );
+
+
+    if (!event) {   
+        throw new ApiError(StatusCodes.BAD_REQUEST, "Failed to update event!");
+    }
+
+    return event;
+}
+
 
 export const eventServices = {
     createEventsIntoDB,
@@ -266,4 +282,5 @@ export const eventServices = {
     getSingleSlfEventAnalysisByEventId,
     creatorEventOverview,
     getMyFavouriteEvents,
+    updateEvent
 }
