@@ -29,9 +29,23 @@ const verifyPayment = catchAsync(async (req, res) => {
     });
 })
 
+const getTransactionHistory = catchAsync(async (req, res) => {
+    const { id } = req.user;
+
+    const result = await paymentServices.getTransactionHistory(id);
+
+    sendResponse(res, {
+        success: true,  
+        statusCode: StatusCodes.OK,
+        message: 'Transaction history retrieved!',
+        data: result,
+    });
+})
+
 
 
 export const paymentController = {
     createPaymentIntent,
     verifyPayment,
-}
+    getTransactionHistory,
+    }
