@@ -21,4 +21,10 @@ router.post("/verify-payment",
 )
 
 
+router.get("/get-transaction-history",
+    auth(USER_ROLE.USER),
+    paymentController.getTransactionHistory
+)
+
+
 export const PaymentRoutes = router;

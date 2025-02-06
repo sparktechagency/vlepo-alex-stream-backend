@@ -61,7 +61,7 @@ const loginUserFromDB = async (payload: TLoginUser) => {
     config.jwt.jwt_refresh_expire_in as string
   );
 
-  return { accessToken, refreshToken, role: isExistUser.role };
+  return { id: isExistUser._id, accessToken, refreshToken, role: isExistUser.role };
 };
 
 //forget password

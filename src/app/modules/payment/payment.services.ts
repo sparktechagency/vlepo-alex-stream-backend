@@ -182,7 +182,34 @@ const verifyPayment = async (paymentIntentId: string, userEmail: string) => {
     }
 };
 
+const getTransactionHistory = async (userId: string) => {
+
+    const payments = await Payment.find({ userId: userId })
+        .select('transactionId amount createdAt')
+        .populate<{ eventId: { title: string } }>({
+            path: 'eventId',
+            select: 'title',
+        }).populate<{ userId: { name: string, profileImage: string } }>({
+            path: 'userId',
+            select: 'name profileImage',
+        })
+        .sort({ createdAt: -1 });
+
+    const result = payments.map(payment => ({
+        transactionId: payment.transactionId,
+        amount: payment.amount,
+        createdAt: payment.createdAt,
+        eventName: payment.eventId.title,
+        userName: payment.userId.name,
+        profileImage: payment.userId.profileImage,
+    }));
+
+    return result;
+};
+
+
 export const paymentServices = {
     createPaymentIntent,
-    verifyPayment
+    verifyPayment,
+    getTransactionHistory
 }
