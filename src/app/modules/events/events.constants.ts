@@ -18,4 +18,9 @@ export const EventSearchableFields = [
     // "ticketPrice",
 ]; 
 
+export const EventFilterableFields = [
+    'searchTerm',
+    'eventType',
+    'status'
+]
 

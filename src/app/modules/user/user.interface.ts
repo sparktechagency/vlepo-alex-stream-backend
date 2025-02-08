@@ -1,4 +1,4 @@
-import { Document, Model, ObjectId } from 'mongoose';
+import { Document, Model, ObjectId, Types } from 'mongoose';
 import { USER_ROLE, USER_STATUS } from './user.constants';
 
 export interface IOtpVerification {
@@ -20,7 +20,8 @@ export interface IUser extends Document {
   confirmPassword: string;
   role: USER_ROLE;
   status: USER_STATUS;
-  selectedCategory?: ObjectId[];
+  selectedCategory?: Types.ObjectId[];
+  favoriteEvents?: Types.ObjectId[];
   isDeleted: boolean;
   otpVerification?: IOtpVerification;
   createdAt?: Date;

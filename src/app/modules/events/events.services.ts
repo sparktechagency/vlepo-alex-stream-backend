@@ -1,15 +1,17 @@
 import { StatusCodes } from "http-status-codes";
 import ApiError from "../../../errors/ApiError";
 import Category from "../categories/categories.model";
-import { IEvent } from "./events.interface";
+import { IEvent, IEventFilters } from "./events.interface";
 import { Event } from "./events.model"
 import { User } from "../user/user.model";
 import { USER_STATUS } from "../user/user.constants";
 import { QueryBuilder } from "../../builder/QueryBuilder";
-import { EVENTS_STATUS, EventSearchableFields } from "./events.constants";
+import { EventFilterableFields, EVENTS_STATUS, EventSearchableFields } from "./events.constants";
 import mongoose, { Types } from "mongoose";
 import { AttendanceModel } from "./attendanceSchema";
 import { Payment } from "../payment/payment.model";
+import { JwtPayload } from "jsonwebtoken";
+import { IPaginationOptions } from "../../../types/pagination";
 
 const createEventsIntoDB = async (createdBy: string, payload: IEvent) => {
     const { categoryId, ticketPrice, totalSeat } = payload;
@@ -272,6 +274,60 @@ const updateEvent= async (id: Types.ObjectId, payload: Partial<IEvent>) => {
 }
 
 
+const getFollowingUserEvents = async (userId: Types.ObjectId, filters: IEventFilters) => {
+    const { searchTerm, ...EventFilterableFields } = filters;
+    // Step 1: Retrieve the user's favorite events
+    const user = await mongoose.model('User').findById(userId).select('favoriteEvents');
+    if (!user) {
+      throw new Error('User not found');
+    }
+
+    const favoriteEventIds = user.favoriteEvents;
+
+    const andConditions = [];
+
+    // Step 2: Build the query for favorite events
+    andConditions.push({ _id: { $in: favoriteEventIds } });
+    // Step 3: Apply search term if provided
+    if (searchTerm) {
+      const searchRegex = new RegExp(searchTerm, 'i');
+      const searchQuery = {
+        $or: EventSearchableFields.map(field => ({
+          [field]: searchRegex
+        }))
+      };
+      andConditions.push(searchQuery);
+    }
+  
+    // Step 4: Apply filters if provided
+    if (Object.keys(EventFilterableFields).length > 0) {
+      andConditions.push({
+        $and: Object.entries(EventFilterableFields).map(([key, value]) => ({
+          [key]: value
+        }))
+      });
+    }
+     
+    
+
+    const whereConditions = andConditions.length > 0 ? { $and: andConditions } : {};
+
+    const [upcomingEvents, completedEvents] = await Promise.all([
+      Event.countDocuments({ _id: { $in: favoriteEventIds } }, { status: EVENTS_STATUS.UPCOMING }),
+      Event.countDocuments({ _id: { $in: favoriteEventIds } }, { status: EVENTS_STATUS.COMPLETED })
+    ]);
+
+    const result = await Event.find(whereConditions);
+
+    return {
+        upcomingEvents,
+        completedEvents,
+        ...result
+    };
+    
+
+}
+
 export const eventServices = {
     createEventsIntoDB,
     getSingleEventByEventId,
@@ -282,5 +338,7 @@ export const eventServices = {
     getSingleSlfEventAnalysisByEventId,
     creatorEventOverview,
     getMyFavouriteEvents,
-    updateEvent
+    updateEvent,
+    getFollowingUserEvents
+
 }

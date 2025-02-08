@@ -22,3 +22,11 @@ export interface IEvent extends Document {
   createdAt?: Date;
   updatedAt?: Date;
 }
+
+
+export type IEventFilters = {
+    searchTerm?: string;
+    eventType?: EVENTS_TYPE;
+    status?: EVENTS_STATUS;
+}
+

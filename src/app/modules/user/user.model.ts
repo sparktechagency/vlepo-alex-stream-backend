@@ -40,6 +40,11 @@ const userSchema = new Schema<IUser>(
       ref: 'Category',
       default: []
     }],
+    favoriteEvents: [{
+      type: Schema.Types.ObjectId,
+      ref: 'Event',
+      default: []
+    }],
     isVarified: {
       type: Boolean,
       default: false,

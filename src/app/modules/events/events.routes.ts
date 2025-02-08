@@ -60,6 +60,11 @@ router.patch("/update-event/:eventId",
     eventController.updateEvent
 );
 
+router.get("/following-events",
+    auth(USER_ROLE.USER),
+    eventController.getFollowingUserEvents
+)
+
 cron.schedule("0 * * * *",
     eventController.updateAllEventsTrendingStatus
 );

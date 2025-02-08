@@ -4,6 +4,7 @@ import catchAsync from '../../../shared/catchAsync';
 import sendResponse from '../../../shared/sendResponse';
 import { UserService } from './user.service';
 import config from '../../../config';
+import { Types } from 'mongoose';
 
 const createUser = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
@@ -56,12 +57,12 @@ const getCreatorProfile = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-const userFavouriteCategoryUpdate = catchAsync(
+const userFavoriteCategoryUpdate = catchAsync(
   async (req: Request, res: Response) => {
     const { id } = req.user;
     const { categoryId } = req.body;
 
-    const result = await UserService.userFavouriteCategoryUpdate(
+    const result = await UserService.userFavoriteCategoryUpdate(
       id,
       categoryId
     );
@@ -69,7 +70,7 @@ const userFavouriteCategoryUpdate = catchAsync(
     sendResponse(res, {
       success: true,
       statusCode: StatusCodes.OK,
-      message: 'Favourite category added successfully',
+      message: 'Favorite category added successfully',
       data: result,
     });
   }
@@ -151,7 +152,22 @@ const bestSellerCreators = catchAsync(async (req: Request, res: Response) => {
   sendResponse(res, {
     success: true,
     statusCode: StatusCodes.OK,
-    message: 'Retrived best seller successfully',
+    message: 'Retrieved best seller successfully',
+    data: result,
+  });
+});
+
+
+const userFavoriteEventUpdate = catchAsync(async (req: Request, res: Response) => {
+  const { id } = req.user;
+  const { eventId } = req.params;
+
+  const result = await UserService.favoritesEvent(id, new Types.ObjectId(eventId));
+
+  sendResponse(res, {
+    success: true,
+    statusCode: StatusCodes.OK,
+    message: result,
     data: result,
   });
 });
@@ -160,11 +176,12 @@ export const UserController = {
   createUser,
   // verifyRegisterEmail,
   getUserProfile,
-  userFavouriteCategoryUpdate,
+  userFavoriteEventUpdate,
   deleteCurrentUser,
   updateMyProfile,
   updateUserStatus,
   getCreatorProfile,
   toggleUserRole,
   bestSellerCreators,
+  userFavoriteCategoryUpdate
 };

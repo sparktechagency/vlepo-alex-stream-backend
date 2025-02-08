@@ -4,6 +4,8 @@ import { eventServices } from "./events.services";
 import sendResponse from "../../../shared/sendResponse";
 import { StatusCodes } from "http-status-codes";
 import { Types } from "mongoose";
+import pick from "../../../shared/pick";
+import { EventFilterableFields } from "./events.constants";
 
 const createEvents = catchAsync(async (req: Request, res: Response) => {
     const { id } = req.user;
@@ -141,6 +143,21 @@ const updateEvent = catchAsync(async (req: Request, res: Response) => {
 
 
 
+const getFollowingUserEvents = catchAsync(async (req: Request, res: Response) => {
+  
+
+    const filters = pick(req.query, EventFilterableFields)
+    const result = await eventServices.getFollowingUserEvents(req.user.id, filters);
+
+    sendResponse(res, {
+        success: true,
+        statusCode: StatusCodes.OK, 
+        message: 'Following user events retrieved successfully!',
+        data: result,
+    });
+});
+
+
 export const eventController = {
     createEvents,
     getSingleEventByEventId,
@@ -151,5 +168,6 @@ export const eventController = {
     getSingleSlfEventAnalysisByEventId,
     creatorEventOverview,
     getMyFavouriteEvents,
-    updateEvent
+    updateEvent,
+    getFollowingUserEvents
 }    

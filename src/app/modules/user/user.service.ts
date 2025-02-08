@@ -13,6 +13,7 @@ import generateOTP from '../../../util/generateOTP';
 import { emailTemplate } from '../../../shared/emailTemplate';
 import { emailHelper } from '../../../helpers/emailHelper';
 import { IVerifyEmail } from '../auth/atuh.interface';
+import { Types } from 'mongoose';
 
 /**
  * create and verify email
@@ -124,13 +125,29 @@ const getUserProfileFromDB = async (
   let eventCount = 0;
 
   if (role === USER_ROLE.CREATOR) {
-    followersCount = await Follow.countDocuments({ followingId: id });
-    eventCount = await Event.countDocuments({ createdBy: id });
+const [followersCount, eventCount] = await Promise.all([
+  Follow.countDocuments({ followingId: id }),
+  Event.countDocuments({ createdBy: id }),
+])
     let user = isExistUser.toObject();
 
     // Add the new properties
     user.followersCount = followersCount;
     user.eventCount = eventCount;
+
+    return user;
+  }
+
+  if (role === USER_ROLE.USER) {
+
+    const followingCount = await Follow.countDocuments({ followingId: id });
+    const totalEvents = isExistUser.favoriteEvents?.length || 0;
+
+    let user = isExistUser.toObject();
+
+    // Add the new properties
+    user.followingCount = followingCount;
+    user.eventCount = totalEvents;
 
     return user;
   }
@@ -165,7 +182,7 @@ const getCreatorProfileFromDB = async (creatorId: string) => {
 };
 
 // selectedCategory update
-const userFavouriteCategoryUpdate = async (id: string, categoryId: string) => {
+const userFavoriteCategoryUpdate = async (id: string, categoryId: string) => {
   const result = await User.findByIdAndUpdate(
     id,
     {
@@ -309,15 +326,43 @@ const bestSellerCreators = async () => {
   return bestSeller;
 };
 
+
+
+const favoritesEvent = async (user: JwtPayload, id: Types.ObjectId) => {
+
+    // Check if the event is already in the user's favorites
+    const userDoc = await User.findById(user);
+    if (!userDoc) {
+      throw new Error("User not found");
+    }
+
+    const isFavorite = userDoc!.favoriteEvents!.includes(id);
+
+    // Use $pull to remove or $addToSet to add the event
+    const updateOperation = isFavorite
+      ? { $pull: { favoriteEvents: id } }
+      : { $addToSet: { favoriteEvents: id } };
+
+    const result = await User.findByIdAndUpdate(user, updateOperation, { new: true });
+
+    return isFavorite
+      ? "Removed from favorites"
+      : "Added to favorites";
+  
+};
+
+export default favoritesEvent;
+
 export const UserService = {
   createUserToDB,
   // verifyRegisterEmail,
   getUserProfileFromDB,
-  userFavouriteCategoryUpdate,
+  userFavoriteCategoryUpdate,
   deleteCurrentUser,
   updateMyProfile,
   updateUserStatus,
   getCreatorProfileFromDB,
   toggleUserRole,
   bestSellerCreators,
+  favoritesEvent
 };

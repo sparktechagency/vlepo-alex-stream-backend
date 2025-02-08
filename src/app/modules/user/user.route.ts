@@ -38,10 +38,10 @@ router.get(
 );
 
 router.patch(
-  '/favourite-category',
+  '/favorite-category',
   validateRequest(UserValidation.updateFavouriteCategoryZodSchema),
   auth(USER_ROLE.USER),
-  UserController.userFavouriteCategoryUpdate
+  UserController.userFavoriteCategoryUpdate
 );
 
 router.delete(
@@ -69,6 +69,12 @@ router.patch(
   auth(USER_ROLE.USER, USER_ROLE.CREATOR),
   validateRequest(UserValidation.userRoleChangeZodSchema),
   UserController.toggleUserRole
+);
+
+router.patch(
+  '/favorites-event/:eventId',
+  auth(USER_ROLE.USER),
+  UserController.userFavoriteEventUpdate
 );
 
 export const UserRoutes = router;
