@@ -3,6 +3,7 @@ import { EVENTS_STATUS, EVENTS_TYPE } from "./events.constants";
 import { IUser } from "../user/user.interface";
 
 export interface IEvent extends Document {
+  [x: string]: any;
   createdBy: Types.ObjectId;
   eventName: string;
   image: string;
@@ -19,6 +20,8 @@ export interface IEvent extends Document {
   endTime: Date;
   status: EVENTS_STATUS;
   participants: any;
+  upcomingEvents: number;
+  pastEvents: number;
   createdAt?: Date;
   updatedAt?: Date;
 }

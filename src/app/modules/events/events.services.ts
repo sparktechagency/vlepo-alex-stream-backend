@@ -12,6 +12,8 @@ import { AttendanceModel } from "./attendanceSchema";
 import { Payment } from "../payment/payment.model";
 import { JwtPayload } from "jsonwebtoken";
 import { IPaginationOptions } from "../../../types/pagination";
+import { UserEvent } from "../userevents/userevents.model";
+import { Follow } from "../follow/follow.model";
 
 const createEventsIntoDB = async (createdBy: string, payload: IEvent) => {
     const { categoryId, ticketPrice, totalSeat } = payload;
@@ -34,7 +36,7 @@ const createEventsIntoDB = async (createdBy: string, payload: IEvent) => {
     return result;
 }
 
-const getSingleEventByEventId = async (id: string) => {
+const getSingleEventByEventId = async (user: JwtPayload, id: string) => {
     if (!mongoose.isValidObjectId(id)) {
         throw new ApiError(StatusCodes.BAD_REQUEST, "Invalid event ID.")
     }
@@ -43,7 +45,32 @@ const getSingleEventByEventId = async (id: string) => {
         .select("createdBy eventName image description eventType ticketPrice startTime soldTicket totalSale")
         .populate("createdBy", "name photo");
 
-    return event;
+        if(!event) {
+            throw new ApiError(StatusCodes.NOT_FOUND, "Event not found!")
+        }
+    //check if the event is favorites by the user and also the creator of the event is followed by the user or not based on that add two flag when returning the event
+ 
+     const [existingUser, following] = await Promise.all([
+         User.findById(user.id),
+         Follow.findOne({userId:user.id, followingId:event.createdBy})
+        ]);
+        
+        if(!existingUser) {
+           throw new ApiError(StatusCodes.NOT_FOUND, "User not found!")
+        }
+        if(!following) {
+            event.isFollowing = false;
+        }else {
+            event.isFollowing = true;
+        }
+        const isFavorite = existingUser?.favoriteEvents?.includes(new Types.ObjectId(id));
+        event.isFavorite = isFavorite;
+        const isFollowing = event.isFollowing;
+
+
+        return {...event.toObject(), isFavorite, isFollowing};
+
+    
 }
 
 
@@ -138,20 +165,35 @@ const creatorEventOverview = async (creatorId: string) => {
 
 
 // find all the events
-const getAllEvents = async (query: Record<string, unknown>) => {
+const getAllEvents = async (user: JwtPayload, query: Record<string, unknown>) => {
+    const isExistUser = await User.findById(user.id).select("favoriteEvents");
+
+    if (!isExistUser) {
+        throw new ApiError(StatusCodes.NOT_FOUND, "User not found!");
+    }
+
+    const favoriteEvents = isExistUser?.favoriteEvents?.map(event => event.toString()); // Convert to string for comparison
+
     const events = new QueryBuilder(Event.find({}), query)
         .fields()
         .paginate()
         .sort()
         .filter()
-        .search(EventSearchableFields)
+        .search(EventSearchableFields);
 
     const result = await events.modelQuery
         .populate('categoryId', 'categoryName image')
-        .populate("createdBy", "name photo")
+        .populate("createdBy", "name photo");
 
-    return result;
-}
+    // Add `isFavorite` flag
+    const eventsWithFavoriteFlag = result.map((event: Record<string, any>) => ({
+        ...event.toObject(), // Convert Mongoose document to plain object
+        isFavorite: favoriteEvents?.includes(event._id.toString()) // Check if event is in user's favorite list
+    }));
+
+    return eventsWithFavoriteFlag;
+};
+
 
 
 // find all the events which categories is select user
@@ -313,17 +355,14 @@ const getFollowingUserEvents = async (userId: Types.ObjectId, filters: IEventFil
     const whereConditions = andConditions.length > 0 ? { $and: andConditions } : {};
 
     const [upcomingEvents, completedEvents] = await Promise.all([
-      Event.countDocuments({ _id: { $in: favoriteEventIds } }, { status: EVENTS_STATUS.UPCOMING }),
-      Event.countDocuments({ _id: { $in: favoriteEventIds } }, { status: EVENTS_STATUS.COMPLETED })
+      Event.countDocuments({ _id: { $in: favoriteEventIds }, status: EVENTS_STATUS.UPCOMING }),
+      Event.countDocuments({ _id: { $in: favoriteEventIds }, status: EVENTS_STATUS.COMPLETED })
     ]);
 
     const result = await Event.find(whereConditions);
 
-    return {
-        upcomingEvents,
-        completedEvents,
-        ...result
-    };
+
+    return {stat:{upcomingEvent:upcomingEvents, completedEvents:completedEvents}, result:result}
     
 
 }

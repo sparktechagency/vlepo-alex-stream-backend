@@ -47,7 +47,7 @@ const getUserProfile = catchAsync(async (req: Request, res: Response) => {
 
 const getCreatorProfile = catchAsync(async (req: Request, res: Response) => {
   const { creatorId } = req.params;
-  const result = await UserService.getCreatorProfileFromDB(creatorId);
+  const result = await UserService.getCreatorProfileFromDB(req.user,creatorId);
 
   sendResponse(res, {
     success: true,
@@ -91,10 +91,6 @@ const deleteCurrentUser = catchAsync(async (req: Request, res: Response) => {
 
 const updateMyProfile = catchAsync(async (req: Request, res: Response) => {
   const { id } = req.user;
-  let payload;
-  if (req.body.data) {
-    payload = JSON.parse(req?.body?.data);
-  }
 
   let photo;
   if (req.files && 'image' in req.files && req.files.image[0]) {
@@ -103,7 +99,7 @@ const updateMyProfile = catchAsync(async (req: Request, res: Response) => {
 
   const data = {
     photo,
-    ...payload,
+    ...req.body,
   };
 
   const result = await UserService.updateMyProfile(id, data);
@@ -172,6 +168,19 @@ const userFavoriteEventUpdate = catchAsync(async (req: Request, res: Response) =
   });
 });
 
+
+const getUserFavoriteEvents = catchAsync(async (req: Request, res: Response) => {
+console.log("👍👍👍👍👍👍👍")
+  const result = await UserService.getUserFavoriteEvents(req.user);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: StatusCodes.OK,
+    message: 'Retrieved favorite events successfully',
+    data: result,
+  });
+});
+
 export const UserController = {
   createUser,
   // verifyRegisterEmail,
@@ -183,5 +192,6 @@ export const UserController = {
   getCreatorProfile,
   toggleUserRole,
   bestSellerCreators,
-  userFavoriteCategoryUpdate
+  userFavoriteCategoryUpdate,
+  getUserFavoriteEvents
 };

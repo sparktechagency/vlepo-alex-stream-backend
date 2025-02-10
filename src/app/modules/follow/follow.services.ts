@@ -5,6 +5,7 @@ import { User } from "../user/user.model";
 import { USER_ROLE } from "../user/user.constants";
 import mongoose from "mongoose";
 import { QueryBuilder } from "../../builder/QueryBuilder";
+import { JwtPayload } from "jsonwebtoken";
 
 //followerId: req.user => who want to follow => req.user
 const toggleFollow = async (followerId: string, creatorId: string) => {
@@ -70,22 +71,22 @@ const getFollowers = async (query: Record<string, unknown>, userId: string) => {
 };
 
 
-const getFollowing = async (query: Record<string, unknown>, userId: string) => {
-    if (!mongoose.isValidObjectId(userId)) {
+const getFollowing = async (query: Record<string, unknown>, user: JwtPayload) => {
+    if (!mongoose.isValidObjectId(user.id)) {
         throw new Error("Invalid User or Creator ID!");
     }
 
-    const followings = new QueryBuilder(Follow.find({ userId: userId }), query)
+    const followings = new QueryBuilder(Follow.find({ userId: user.id }), query)
         .paginate()
         .sort()
         .filter()
 
     const result = await followings.modelQuery
-        .populate("userId", "name email photo")
+        .populate("followingId", "name email photo")
 
     // total follower
     const followingCount = await Follow
-        .countDocuments({ userId })
+        .countDocuments({ userId: user.id })
 
     const followersData = {
         followings: result,

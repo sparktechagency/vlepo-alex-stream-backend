@@ -155,7 +155,7 @@ const [followersCount, eventCount] = await Promise.all([
   return isExistUser;
 };
 
-const getCreatorProfileFromDB = async (creatorId: string) => {
+const getCreatorProfileFromDB = async (user:JwtPayload,creatorId: string) => {
   const isExistUser = await User.findById(creatorId).select(
     'name bio description photo role'
   );
@@ -172,13 +172,17 @@ const getCreatorProfileFromDB = async (creatorId: string) => {
   let followersCount = await Follow.countDocuments({ followingId: creatorId });
   let eventCount = await Event.countDocuments({ createdBy: creatorId });
 
-  let user = isExistUser.toObject();
+  let existingUser = isExistUser.toObject();
+
+  //make sure if the requested user follow the creator return isFollowed true else false
+  const isFollowed = await Follow.findOne({ userId: user.id, followingId: creatorId });
 
   // Add the new properties
-  user.followersCount = followersCount;
-  user.eventCount = eventCount;
+  existingUser.followersCount = followersCount;
+  existingUser.eventCount = eventCount;
+  existingUser.isFollowed = isFollowed ? true : false;
 
-  return user;
+  return existingUser;
 };
 
 // selectedCategory update
@@ -206,6 +210,8 @@ const deleteCurrentUser = async (userId: string) => {
 
 const updateMyProfile = async (id: string, payload: Partial<IUser>) => {
   const isExistUser = await User.isUserPermission(id);
+
+  console.log(payload,"profile update payload");
 
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   if (payload.email) {
@@ -351,7 +357,16 @@ const favoritesEvent = async (user: JwtPayload, id: Types.ObjectId) => {
   
 };
 
-export default favoritesEvent;
+const getUserFavoriteEvents = async (user: JwtPayload) => {
+  console.log(user)
+  const userDoc = await User.findById(user.id, { favoriteEvents: 1, name: 1, profilePhoto: 1 }).populate('favoriteEvents');
+  if (!userDoc) {
+    throw new Error("User not found");
+  }
+
+
+    return userDoc;
+}
 
 export const UserService = {
   createUserToDB,
@@ -364,5 +379,6 @@ export const UserService = {
   getCreatorProfileFromDB,
   toggleUserRole,
   bestSellerCreators,
-  favoritesEvent
+  favoritesEvent,
+  getUserFavoriteEvents
 };

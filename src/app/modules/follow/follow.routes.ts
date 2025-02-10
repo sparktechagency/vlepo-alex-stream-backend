@@ -17,7 +17,7 @@ router.get("/get-followers/:userId",
     FollowsController.getFollowers
 )
 
-router.get("/get-following/:userId",
+router.get("/get-following/",
     auth(USER_ROLE.SUPER_ADMIN, USER_ROLE.CREATOR, USER_ROLE.USER),
     FollowsController.getFollowing
 )

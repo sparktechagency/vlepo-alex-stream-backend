@@ -28,6 +28,7 @@ export interface IUser extends Document {
   updatedAt?: Date;
   isVarified?: Boolean;
   followersCount?: number;
+  isFollowed?: boolean;
   eventCount?: number;
 };
 

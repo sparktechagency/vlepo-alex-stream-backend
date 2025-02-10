@@ -52,6 +52,7 @@ const createOrUpdateTermsAndCondition = catchAsync(async (req: Request, res: Res
 })
 
 const getTermsAndCondition = catchAsync(async (req: Request, res: Response) => {
+    
     const result = await FaqServices.getTermsAndCondition();
     sendResponse(res, {
         success: true,

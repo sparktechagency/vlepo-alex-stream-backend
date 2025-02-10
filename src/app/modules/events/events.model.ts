@@ -12,7 +12,7 @@ const eventSchema = new Schema<IEvent>(
         validator: function (v: string) {
           return /^\/images\/[\w-]+\.(png|jpeg|jpg)$/i.test(v);
         },
-        message: props => `${props.value} is not a valid image path! Only .png, .jpeg, or .jpg files in '/images/' directory are allowed.`
+        message: (props: { value: any; }) => `${props.value} is not a valid image path! Only .png, .jpeg, or .jpg files in '/images/' directory are allowed.`
       },
       required: true
     },

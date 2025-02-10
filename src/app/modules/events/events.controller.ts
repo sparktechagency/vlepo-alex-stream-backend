@@ -22,7 +22,7 @@ const createEvents = catchAsync(async (req: Request, res: Response) => {
 const getSingleEventByEventId = catchAsync(async (req: Request, res: Response) => {
     const { eventId } = req.params;
 
-    const result = await eventServices.getSingleEventByEventId(eventId);
+    const result = await eventServices.getSingleEventByEventId(req.user,eventId);
 
     sendResponse(res, {
         success: true,
@@ -50,7 +50,7 @@ const getSingleSlfEventAnalysisByEventId = catchAsync(async (req: Request, res: 
 
 const getAllEvents = catchAsync(async (req: Request, res: Response) => {
 
-    const result = await eventServices.getAllEvents(req.query);
+    const result = await eventServices.getAllEvents(req.user,req.query);
 
     sendResponse(res, {
         success: true,
