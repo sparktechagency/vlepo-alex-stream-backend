@@ -23,7 +23,7 @@ const sendNotificationToUser = async (payload: INotification, io: Server) => {
         throw new ApiError(StatusCodes.BAD_REQUEST, 'Failed to send notification!');
     }
 
-    io.emit(`New notification::${result.receiverId.toString()}`, result)
+    io.emit(`NewNotification::${result.receiverId.toString()}`, result)
 
     return result;
 };

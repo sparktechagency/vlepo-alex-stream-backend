@@ -359,7 +359,7 @@ const getFollowingUserEvents = async (userId: Types.ObjectId, filters: IEventFil
       Event.countDocuments({ _id: { $in: favoriteEventIds }, status: EVENTS_STATUS.COMPLETED })
     ]);
 
-    const result = await Event.find(whereConditions);
+    const result = await Event.find(whereConditions).populate({path:'createdBy',select:{name:1,photo:1}});
 
 
     return {stat:{upcomingEvent:upcomingEvents, completedEvents:completedEvents}, result:result}
