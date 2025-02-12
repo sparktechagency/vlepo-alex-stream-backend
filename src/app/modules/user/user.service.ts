@@ -14,6 +14,7 @@ import { emailTemplate } from '../../../shared/emailTemplate';
 import { emailHelper } from '../../../helpers/emailHelper';
 import { IVerifyEmail } from '../auth/atuh.interface';
 import { Types } from 'mongoose';
+import { EVENTS_STATUS } from '../events/events.constants';
 
 /**
  * create and verify email
@@ -368,6 +369,41 @@ const getUserFavoriteEvents = async (user: JwtPayload) => {
     return userDoc;
 }
 
+
+const getCreatorTotalSalesAndRecentEvents = async (user: JwtPayload) => {
+  console.log(user)
+  const userDoc = await User.findOne(user.id);
+
+  const totalEarning = await Event.aggregate([
+    {
+      $match: {
+        createdBy: user.id,
+        status: { $ne: EVENTS_STATUS.COMPLETED },
+        startDate: { $gt: new Date() },
+      },
+    },
+    {
+      $group: {
+        _id: null,
+        totalEarning: { $sum: "$totalRevenue" },
+      },
+    },
+  ]).then((result) => result[0]?.totalEarning || 0);
+
+
+  const recentEvents = await Event.find({
+    createdBy: user.id,
+    status: { $nin: [EVENTS_STATUS.COMPLETED, EVENTS_STATUS.CANCELLED] },
+    startDate: { $gt: new Date() },
+  }).sort({ startDate: -1 });
+
+  if (!userDoc) {
+    throw new Error("User not found");
+  }
+
+  return { totalEarning, recentEvents };
+}
+
 export const UserService = {
   createUserToDB,
   // verifyRegisterEmail,
@@ -380,5 +416,6 @@ export const UserService = {
   toggleUserRole,
   bestSellerCreators,
   favoritesEvent,
-  getUserFavoriteEvents
+  getUserFavoriteEvents,
+  getCreatorTotalSalesAndRecentEvents
 };

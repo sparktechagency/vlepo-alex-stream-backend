@@ -91,6 +91,11 @@ router.patch(
 );
 
 
+router.get(
+  '/creator/sales-and-recent-events',
+  auth(USER_ROLE.CREATOR),
+  UserController.getCreatorTotalSalesAndRecentEvents
+);
 
 
 export const UserRoutes = router;

@@ -170,13 +170,24 @@ const userFavoriteEventUpdate = catchAsync(async (req: Request, res: Response) =
 
 
 const getUserFavoriteEvents = catchAsync(async (req: Request, res: Response) => {
-console.log("👍👍👍👍👍👍👍")
+
   const result = await UserService.getUserFavoriteEvents(req.user);
 
   sendResponse(res, {
     success: true,
     statusCode: StatusCodes.OK,
     message: 'Retrieved favorite events successfully',
+    data: result,
+  });
+});
+
+const getCreatorTotalSalesAndRecentEvents = catchAsync(async (req: Request, res: Response) => {
+  const result = await UserService.getCreatorTotalSalesAndRecentEvents(req.user);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: StatusCodes.OK,
+    message: 'Retrieved sales and events successfully',
     data: result,
   });
 });
@@ -193,5 +204,6 @@ export const UserController = {
   toggleUserRole,
   bestSellerCreators,
   userFavoriteCategoryUpdate,
-  getUserFavoriteEvents
+  getUserFavoriteEvents,
+  getCreatorTotalSalesAndRecentEvents
 };
