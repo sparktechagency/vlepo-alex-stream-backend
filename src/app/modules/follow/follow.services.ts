@@ -107,10 +107,25 @@ const isFollowing = async (payload: { userId: string, creatorId: string }) => {
 }
 
 
+const removeFollower = async (user:JwtPayload, userId:string) => {
+    console.log(user, userId)
+    const isFollowing = await Follow.findOneAndDelete({
+        userId: userId,
+        followingId: user.id
+    })
+
+    if(!isFollowing) {
+        throw new ApiError(StatusCodes.BAD_REQUEST, "Failed to remove follower.")
+    }
+
+    return isFollowing;
+}
+
 
 export const FollowServices = {
     toggleFollow,
     getFollowers,
     getFollowing,
     isFollowing,
+    removeFollower
 };

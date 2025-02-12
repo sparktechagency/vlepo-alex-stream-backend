@@ -97,6 +97,13 @@ router.get(
   UserController.getCreatorTotalSalesAndRecentEvents
 );
 
+router.get(
+  '/user/:userId',
+  auth(USER_ROLE.SUPER_ADMIN, USER_ROLE.CREATOR, USER_ROLE.USER),
+  UserController.getUserByUserId
+);
+
+
 
 export const UserRoutes = router;
 

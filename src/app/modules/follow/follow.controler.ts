@@ -57,9 +57,24 @@ const isFollowing = catchAsync(async (req: Request, res: Response) => {
 });
 
 
+const removeFollower = catchAsync(async (req: Request, res: Response) => {
+    const { userId } = req.params;
+    const user = req.user;  
+
+    const result = await FollowServices.removeFollower(user, userId);
+    sendResponse(res, {
+        success: true,
+        statusCode: StatusCodes.OK,
+        message: 'Follower removed successfully!',
+        data: result,
+    });
+});
+
+
 export const FollowsController = {
     toggleFollow,
     getFollowers,
     getFollowing,
     isFollowing,
+    removeFollower,
 };

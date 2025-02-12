@@ -404,6 +404,21 @@ const getCreatorTotalSalesAndRecentEvents = async (user: JwtPayload) => {
   return { totalEarning, recentEvents };
 }
 
+
+const getUserByUserId = async (userId: Types.ObjectId) => {
+  const user = await User.findById(userId,{name: 1, profilePhoto: 1, email: 1, phone: 1});
+  if (!user) {
+    throw new Error("User not found");
+  }
+
+
+  //get user followers
+  const followingCount = await Follow.countDocuments({ followingId: userId });
+
+  return {...user.toObject(), followingCount};
+}
+
+
 export const UserService = {
   createUserToDB,
   // verifyRegisterEmail,
@@ -417,5 +432,6 @@ export const UserService = {
   bestSellerCreators,
   favoritesEvent,
   getUserFavoriteEvents,
-  getCreatorTotalSalesAndRecentEvents
+  getCreatorTotalSalesAndRecentEvents,
+  getUserByUserId
 };

@@ -28,4 +28,9 @@ router.get("/isFollowing",
     FollowsController.isFollowing
 )
 
+router.delete("/remove-follower/:userId",
+    auth(USER_ROLE.SUPER_ADMIN, USER_ROLE.CREATOR),
+    FollowsController.removeFollower
+)
+
 export const FollowRoutes = router;

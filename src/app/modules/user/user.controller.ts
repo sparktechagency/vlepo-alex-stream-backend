@@ -192,6 +192,19 @@ const getCreatorTotalSalesAndRecentEvents = catchAsync(async (req: Request, res:
   });
 });
 
+const getUserByUserId = catchAsync(async (req: Request, res: Response) => {
+  const { userId } = req.params;
+
+  const result = await UserService.getUserByUserId(new Types.ObjectId(userId));
+
+  sendResponse(res, {
+    success: true,
+    statusCode: StatusCodes.OK,
+    message: 'User retrived successfully!',
+    data: result,
+  });
+});
+
 export const UserController = {
   createUser,
   // verifyRegisterEmail,
@@ -205,5 +218,6 @@ export const UserController = {
   bestSellerCreators,
   userFavoriteCategoryUpdate,
   getUserFavoriteEvents,
-  getCreatorTotalSalesAndRecentEvents
+  getCreatorTotalSalesAndRecentEvents,
+  getUserByUserId
 };
