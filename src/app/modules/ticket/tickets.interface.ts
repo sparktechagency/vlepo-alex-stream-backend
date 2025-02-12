@@ -1,8 +1,8 @@
 import mongoose from "mongoose";
 
 export interface ITicket extends Document {
-  _id: mongoose.Schema.Types.ObjectId;
-  createdBy: mongoose.Schema.Types.ObjectId; 
+  _id: mongoose.Types.ObjectId;
+  createdBy: mongoose.Types.ObjectId; 
   eventId: mongoose.Types.ObjectId;
   secretCode: string; 
   createdAt: Date;

@@ -4,7 +4,7 @@ import { IResetToken, ResetTokenModel } from './resetToken.interface';
 const resetTokenSchema = new Schema<IResetToken, ResetTokenModel>(
   {
     user: {
-      type: Schema.Types.ObjectId,
+      type: Types.ObjectId,
       ref: 'User',
     },
     token: {

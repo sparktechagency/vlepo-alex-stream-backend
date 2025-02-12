@@ -32,10 +32,10 @@ const getFollowers = catchAsync(async (req: Request, res: Response) => {
 });
 
 const getFollowing = catchAsync(async (req: Request, res: Response) => {
-    const { userId } = req.params;
+    
     const query = req.query;
 
-    const result = await FollowServices.getFollowing(query, userId);
+    const result = await FollowServices.getFollowing(query, req.user);
     sendResponse(res, {
         success: true,
         statusCode: StatusCodes.OK,

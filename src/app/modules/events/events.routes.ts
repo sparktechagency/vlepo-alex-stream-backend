@@ -19,6 +19,7 @@ router.post("/create-events",
 );
 
 router.get("/single-event/:eventId",
+    auth(USER_ROLE.CREATOR, USER_ROLE.SUPER_ADMIN, USER_ROLE.USER),
     eventController.getSingleEventByEventId
 );
 
@@ -59,6 +60,11 @@ router.patch("/update-event/:eventId",
     validateRequest(eventValidationSchema.updateEventValidationSchema),
     eventController.updateEvent
 );
+
+router.get("/following-events",
+    auth(USER_ROLE.USER),
+    eventController.getFollowingUserEvents
+)
 
 cron.schedule("0 * * * *",
     eventController.updateAllEventsTrendingStatus

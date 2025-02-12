@@ -7,6 +7,8 @@ import { UserValidation } from './user.validation';
 import { USER_ROLE } from './user.constants';
 const router = express.Router();
 
+
+
 router.post(
   '/',
   validateRequest(UserValidation.createUserZodSchema),
@@ -18,6 +20,9 @@ router.post(
 //   validateRequest(UserValidation.verifyRegisterEmailZodSchema),
 //   UserController.verifyRegisterEmail
 // );
+
+
+
 
 router.get(
   '/my-profile',
@@ -38,10 +43,10 @@ router.get(
 );
 
 router.patch(
-  '/favourite-category',
+  '/favorite-category',
   validateRequest(UserValidation.updateFavouriteCategoryZodSchema),
   auth(USER_ROLE.USER),
-  UserController.userFavouriteCategoryUpdate
+  UserController.userFavoriteCategoryUpdate
 );
 
 router.delete(
@@ -64,12 +69,34 @@ router.patch(
   UserController.updateUserStatus
 );
 
+
 router.patch(
   '/switch-user-role',
   auth(USER_ROLE.USER, USER_ROLE.CREATOR),
   validateRequest(UserValidation.userRoleChangeZodSchema),
   UserController.toggleUserRole
 );
+
+router.get(
+  '/events/favorites-events',
+  auth(USER_ROLE.USER),
+  UserController.getUserFavoriteEvents
+);
+
+
+router.patch(
+  '/favorites-event/:eventId',
+  auth(USER_ROLE.USER),
+  UserController.userFavoriteEventUpdate
+);
+
+
+router.get(
+  '/creator/sales-and-recent-events',
+  auth(USER_ROLE.CREATOR),
+  UserController.getCreatorTotalSalesAndRecentEvents
+);
+
 
 export const UserRoutes = router;
 

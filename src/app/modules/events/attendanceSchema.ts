@@ -1,4 +1,4 @@
-import { Document, model, ObjectId, Schema } from "mongoose";
+import { Document, model, ObjectId, Schema, Types } from "mongoose";
 import { z } from "zod";
 
 interface IAttendance extends Document {
@@ -7,8 +7,8 @@ interface IAttendance extends Document {
 }
 
 const attendanceSchema = new Schema<IAttendance>({
-    eventId: { type: Schema.Types.ObjectId, ref: "Event", required: true },
-    userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
+    eventId: { type: Types.ObjectId, ref: "Event", required: true },
+    userId: { type: Types.ObjectId, ref: "User", required: true },
 }, { timestamps: true });
 
 export const AttendanceModel = model<IAttendance>("Attendance", attendanceSchema);

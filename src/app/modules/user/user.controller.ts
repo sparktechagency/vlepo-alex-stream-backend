@@ -4,6 +4,7 @@ import catchAsync from '../../../shared/catchAsync';
 import sendResponse from '../../../shared/sendResponse';
 import { UserService } from './user.service';
 import config from '../../../config';
+import { Types } from 'mongoose';
 
 const createUser = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
@@ -46,7 +47,7 @@ const getUserProfile = catchAsync(async (req: Request, res: Response) => {
 
 const getCreatorProfile = catchAsync(async (req: Request, res: Response) => {
   const { creatorId } = req.params;
-  const result = await UserService.getCreatorProfileFromDB(creatorId);
+  const result = await UserService.getCreatorProfileFromDB(req.user,creatorId);
 
   sendResponse(res, {
     success: true,
@@ -56,12 +57,12 @@ const getCreatorProfile = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-const userFavouriteCategoryUpdate = catchAsync(
+const userFavoriteCategoryUpdate = catchAsync(
   async (req: Request, res: Response) => {
     const { id } = req.user;
     const { categoryId } = req.body;
 
-    const result = await UserService.userFavouriteCategoryUpdate(
+    const result = await UserService.userFavoriteCategoryUpdate(
       id,
       categoryId
     );
@@ -69,7 +70,7 @@ const userFavouriteCategoryUpdate = catchAsync(
     sendResponse(res, {
       success: true,
       statusCode: StatusCodes.OK,
-      message: 'Favourite category added successfully',
+      message: 'Favorite category added successfully',
       data: result,
     });
   }
@@ -90,10 +91,6 @@ const deleteCurrentUser = catchAsync(async (req: Request, res: Response) => {
 
 const updateMyProfile = catchAsync(async (req: Request, res: Response) => {
   const { id } = req.user;
-  let payload;
-  if (req.body.data) {
-    payload = JSON.parse(req?.body?.data);
-  }
 
   let photo;
   if (req.files && 'image' in req.files && req.files.image[0]) {
@@ -102,7 +99,7 @@ const updateMyProfile = catchAsync(async (req: Request, res: Response) => {
 
   const data = {
     photo,
-    ...payload,
+    ...req.body,
   };
 
   const result = await UserService.updateMyProfile(id, data);
@@ -151,7 +148,46 @@ const bestSellerCreators = catchAsync(async (req: Request, res: Response) => {
   sendResponse(res, {
     success: true,
     statusCode: StatusCodes.OK,
-    message: 'Retrived best seller successfully',
+    message: 'Retrieved best seller successfully',
+    data: result,
+  });
+});
+
+
+const userFavoriteEventUpdate = catchAsync(async (req: Request, res: Response) => {
+  const { id } = req.user;
+  const { eventId } = req.params;
+
+  const result = await UserService.favoritesEvent(id, new Types.ObjectId(eventId));
+
+  sendResponse(res, {
+    success: true,
+    statusCode: StatusCodes.OK,
+    message: result,
+    data: result,
+  });
+});
+
+
+const getUserFavoriteEvents = catchAsync(async (req: Request, res: Response) => {
+
+  const result = await UserService.getUserFavoriteEvents(req.user);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: StatusCodes.OK,
+    message: 'Retrieved favorite events successfully',
+    data: result,
+  });
+});
+
+const getCreatorTotalSalesAndRecentEvents = catchAsync(async (req: Request, res: Response) => {
+  const result = await UserService.getCreatorTotalSalesAndRecentEvents(req.user);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: StatusCodes.OK,
+    message: 'Retrieved sales and events successfully',
     data: result,
   });
 });
@@ -160,11 +196,14 @@ export const UserController = {
   createUser,
   // verifyRegisterEmail,
   getUserProfile,
-  userFavouriteCategoryUpdate,
+  userFavoriteEventUpdate,
   deleteCurrentUser,
   updateMyProfile,
   updateUserStatus,
   getCreatorProfile,
   toggleUserRole,
   bestSellerCreators,
+  userFavoriteCategoryUpdate,
+  getUserFavoriteEvents,
+  getCreatorTotalSalesAndRecentEvents
 };
