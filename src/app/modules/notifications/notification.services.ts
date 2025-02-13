@@ -28,6 +28,8 @@ const sendNotificationToUser = async (payload: INotification, io: Server) => {
     return result;
 };
 
+
+
 const sendNotificationToAll = async (senderId: string, payload: Omit<INotification, 'receiverId'>, io: Server) => {
     // Step 1: Fetch all user IDs
     const allUsers = await User.find({}, '_id'); // only get _id field of all users
@@ -79,6 +81,11 @@ const deleteAllMyNotification = async (userId: string) => {
     return null;
 }
 
+const markAllSelfNotificationAsRead = async (userId: string) => {
+    const result = await NotificationModel.updateMany({ receiverId: userId, isRead: false }, { isRead: true });
+
+    return "Notifications marked as read";
+};
 
 export const NotificationServices = {
     markNotificationAsRead,
@@ -86,4 +93,5 @@ export const NotificationServices = {
     getAllNotificationOfReciver,
     sendNotificationToAll,
     deleteAllMyNotification,
+    markAllSelfNotificationAsRead
 }

@@ -371,13 +371,13 @@ const getUserFavoriteEvents = async (user: JwtPayload) => {
 
 
 const getCreatorTotalSalesAndRecentEvents = async (user: JwtPayload) => {
-  console.log(user)
-  const userDoc = await User.findOne(user.id);
+  console.log(user.id);
+  const userDoc = await User.findOne({ _id: user.id });
 
   const totalEarning = await Event.aggregate([
     {
       $match: {
-        createdBy: user.id,
+        createdBy: new Types.ObjectId(user.id),
         status: { $ne: EVENTS_STATUS.COMPLETED },
         startDate: { $gt: new Date() },
       },
@@ -406,7 +406,7 @@ const getCreatorTotalSalesAndRecentEvents = async (user: JwtPayload) => {
 
 
 const getUserByUserId = async (userId: Types.ObjectId) => {
-  const user = await User.findById(userId,{name: 1, profilePhoto: 1, email: 1, phone: 1});
+  const user = await User.findById(userId,{name: 1, profilePhoto: 1, email: 1, phone: 1, photo: 1});
   if (!user) {
     throw new Error("User not found");
   }
