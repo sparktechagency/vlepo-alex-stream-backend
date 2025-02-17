@@ -6,8 +6,4 @@ export type IPaginationOptions = {
 };
 
 
-export const paginationFields = [  'page',
-  'limit',
-  'sortBy',
-  'sortOrder',
-  'skip'];
+export const paginationFields = ['page', 'limit', 'sortBy', 'sortOrder'];

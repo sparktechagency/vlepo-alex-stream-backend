@@ -179,8 +179,6 @@ const getAllEvents = async (user: JwtPayload,  query: Record<string, unknown>) =
         .sort()
         .filter()
         .search(EventSearchableFields);
-    console.log("Final Mongo Query:", events.modelQuery.getFilter());
-    console.log("Sorting Applied:", events.query.sortBy, events.query.sortOrder);
 
     const result = await events.modelQuery
         .populate('categoryId', 'categoryName image')

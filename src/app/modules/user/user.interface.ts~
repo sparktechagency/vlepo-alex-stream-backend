@@ -47,7 +47,7 @@ export type IUserFilterableFields = {
   status?: string;
 }
 
-export type IUserSearchableFields = {
+export type IUserSearchFields = {
   name?: string;
   email?: string;
   phone?: string;

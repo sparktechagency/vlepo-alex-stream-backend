@@ -1,9 +1,14 @@
 import { User } from '../user/user.model';
-import { USER_ROLE } from '../user/user.constants';
+import { USER_ROLE, userSearchableFields } from '../user/user.constants';
 import { Event } from '../events/events.model';
 import { TicketModel } from '../ticket/tickets.model';
 import { EVENTS_STATUS } from '../events/events.constants';
 import { Payment } from '../payment/payment.model';
+import { IUserFilterableFields } from '../user/user.interface';
+import { IPaginationOptions } from '../../../types/pagination';
+import { paginationHelper } from '../../../helpers/paginationHelper';
+import { SortOrder } from 'mongoose';
+import { IPaymentFilterableFields } from '../payment/payment.interface';
 
 
 const getTotalViewerCountWithGrowthRate = async () => {
@@ -342,15 +347,116 @@ const getAllEvents = async () => {
   });
 }
 
-const getAllPurchaseHistory = async () => {
-  return Payment.find({}).populate({
-    path: 'userId',
-    select: 'name email'
-  })
+const getAllPurchaseHistory = async (filters: IPaymentFilterableFields, pagination: IPaginationOptions) => {
+  const { skip, sortBy, sortOrder, page, limit } = paginationHelper.calculatePagination(pagination);
+  const { searchTerm, paymentStatus } = filters;
+
+  const andConditions = [];
+
+  // Filter by payment status
+  if (paymentStatus) {
+    andConditions.push({ paymentStatus: paymentStatus });
+  }
+
+  // Sorting conditions
+  const sortConditions: { [key: string]: 1 | -1 } = {};
+  if (sortBy && sortOrder) {
+    sortConditions[sortBy] = sortOrder === 'asc' ? 1 : -1; // Ensure sortOrder is in correct format
+  }
+
+  // Build the where condition
+  const whereCondition = andConditions.length > 0 ? { $and: andConditions } : {};
+
+  // Query the database and populate fields
+  let result = await Payment.find(whereCondition)
+    .populate({
+      path: 'userId',
+      select: 'name email'
+    })
     .populate({
       path: 'eventId',
-      select: 'eventName'
+      select: 'eventName image ticketPrice startTime endTime' // Adjust the fields you want
+    })
+    .lean()  // This will convert the Mongoose documents to plain objects
+    .sort(sortConditions)
+    .skip(skip)
+    .limit(limit);
+
+  // Apply search term filtering after population
+  if (searchTerm) {
+    result = result.filter(payment => {
+      const eventNameMatch = payment.eventId.eventName.toLowerCase().includes(searchTerm.toLowerCase());
+      const userNameMatch = payment.userId.name.toLowerCase().includes(searchTerm.toLowerCase());
+      return eventNameMatch || userNameMatch;
+    });
+  }
+
+  // Count total documents
+  const total = await Payment.countDocuments(whereCondition);
+
+  // Return paginated data
+  return {
+    meta: {
+      page,
+      limit,
+      total,
+      totalPage: Math.ceil(total / limit),
+    },
+    data: result, // The data is now a plain object without circular references
+  };
+};
+
+
+const getAllUsers = async (filters:IUserFilterableFields, pagination:IPaginationOptions) => {
+
+  const { limit, page, skip, sortBy, sortOrder } = paginationHelper.calculatePagination(pagination);
+  const {searchTerm, ...filtersData} = filters;
+
+  const andConditions = [];
+  if(searchTerm) {
+    andConditions.push({
+      $or:
+        userSearchableFields.map((field) => ({
+          [field]: {
+            $regex: searchTerm,
+            $options: 'i',
+          },
+        })),
+
+    })
+  }
+
+    if(Object.keys(filtersData).length){
+      andConditions.push({
+        $and: Object.entries(filtersData).map(([field,value]) => ({
+          [field]: value,
+        })),
       });
+    }
+
+    const sortConditions:{[key:string]:SortOrder} = {};
+    if(sortBy && sortOrder){
+      sortConditions[sortBy] = sortOrder;
+    }
+
+
+    const whereCondition = andConditions.length > 0 ? { $and: andConditions } : {};
+
+
+    const result = await User.find(whereCondition).sort(sortConditions).skip(skip).limit(limit);
+    const total = await User.countDocuments(whereCondition);
+
+    return {
+      meta: {
+        page,
+        limit,
+        total,
+        totalPage: Math.ceil(total / limit),
+      },
+      data: result,
+
+    }
+
 }
 
 export const DashboardService = {
@@ -360,5 +466,6 @@ export const DashboardService = {
   getEventStat,
   getAllEvents,
   getAllPurchaseHistory,
+  getAllUsers,
 
 };

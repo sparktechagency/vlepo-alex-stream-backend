@@ -74,19 +74,16 @@ export class QueryBuilder<T> {
         return this;
     }
 
-  filter() {
-    const queryObj = { ...this.query };
-    const excludeFields = ['searchTerm', 'page', 'limit', 'sortBy', 'sortOrder', 'fields'];
+    filter() {
+        // pass exact field name which have in my model, it can be filter depend on this filter
+        const queryObj = { ...this.query };
+        const excludeFields = ['searchTerm', 'page', 'limit', 'sortBy', 'fields'];
 
-    // Remove all non-filterable fields
-    excludeFields.forEach(field => delete queryObj[field]);
+        excludeFields.forEach((e) => delete queryObj[e]);
 
-    if (Object.keys(queryObj).length) {
-      this.modelQuery = this.modelQuery.find(queryObj as FilterQuery<T>);
+        this.modelQuery = this.modelQuery.find(queryObj as FilterQuery<T>);
+
+        return this;
     }
-
-    return this;
-  }
-
 
 }

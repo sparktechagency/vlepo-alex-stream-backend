@@ -1,6 +1,6 @@
 import { Document,  Types } from "mongoose";
 import { EVENTS_STATUS, EVENTS_TYPE } from "./events.constants";
-import { IUser } from "../user/user.interface";
+
 
 export interface IEvent extends Document {
   [x: string]: any;

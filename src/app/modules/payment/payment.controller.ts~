@@ -71,7 +71,7 @@ const webhooks = catchAsync(async (req, res) => {
                 //handle scenarios where a payment is successful
                 const session = event.data.object as Stripe.Checkout.Session;
 
-                const updatePayment = await  Payment.findOneAndUpdate({userId:session?.metadata?.userId, eventId: session?.metadata?.eventId}, {$set:{paymentStatus: PAYMENT_STATUS.PAID, transactionId:session.payment_intent}}, {new: true});
+                const updatePayment = await  Payment.findOneAndUpdate({userId:session?.metadata?.userId, eventId: session?.metadata?.eventId}, {$set:{paymentStatus: PAYMENT_STATUS.PAID}}, {new: true});
                 if(!updatePayment){
                     throw new ApiError(StatusCodes.BAD_REQUEST, 'Failed to update payment status');
 

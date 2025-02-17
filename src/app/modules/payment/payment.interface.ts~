@@ -20,12 +20,12 @@ export interface IPaymentIntent extends Document {
 
 
 export type IPaymentFilterableFields = {
-    searchTerm?: string,
-    paymentStatus?:string,
+    searchTerm: string,
+    paymentStatus:string,
 }
 
 
 export type IPaymentSearchableFields ={
-    paymentMethod?:string,
-    eventName?:string
+    paymentMethod:string,
+    eventName:string
 }

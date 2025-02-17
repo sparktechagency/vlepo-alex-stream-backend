@@ -3,6 +3,10 @@ import { DashboardService } from './dashboard.service';
 import { StatusCodes } from 'http-status-codes';
 import sendResponse from '../../../shared/sendResponse';
 import { Request, Response } from 'express';
+import { userFilterableFields } from '../user/user.constants';
+import pick from '../../../shared/pick';
+import { paginationFields } from '../../../types/pagination';
+import { paymentFilterableFields } from '../payment/payment.constant';
 
 const getTotalViewerCountWithGrowthRate = catchAsync(async(req: Request, res: Response) => {
   const  result = await DashboardService.getTotalViewerCountWithGrowthRate();
@@ -64,20 +68,43 @@ const getAllEvents = catchAsync(async(req: Request, res: Response) => {
 
 
 const getAllPurchaseHistory = catchAsync(async(req: Request, res: Response) => {
-  const  result = await DashboardService.getAllPurchaseHistory();
+  const filters = pick(req.query, paymentFilterableFields);
+  const paginationOptions = pick(req.query, paginationFields
+  );
+  const  result = await DashboardService.getAllPurchaseHistory(filters,paginationOptions);
   sendResponse(res, {
     success: true,
     statusCode: StatusCodes.OK,
     message: 'All purchase history retrieved successfully',
-    data: result,
+    pagination:result.meta,
+    data: result.data,
   });
 
 });
+
+const getAllUsers = catchAsync(async(req: Request, res: Response) => {
+  const filters = pick(req.query, userFilterableFields);
+  const paginationOptions = pick(req.query, paginationFields);
+
+  const result = await DashboardService.getAllUsers(filters, paginationOptions);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: StatusCodes.OK,
+    message: 'All users retrieved successfully',
+    pagination: result?.meta,
+    data: result?.data,
+  });
+});
+
+
+
 export const DashboardController = {
   getTotalViewerCountWithGrowthRate,
   getUserEngagement,
   getViewsAndCreatorCount,
   getEventStat,
   getAllEvents,
-  getAllPurchaseHistory
+  getAllPurchaseHistory,
+  getAllUsers
 }

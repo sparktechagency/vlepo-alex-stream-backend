@@ -70,8 +70,10 @@ const createPaymentIntent = async (auth:JwtPayload,payload: IPaymentIntent) => {
         success_url: 'http://localhost:3000/success',
         cancel_url: 'http://localhost:3000/cancel',
         metadata: {
+            amount: Number(isEvent.ticketPrice),
             userId: auth.id,
             eventId: eventId,
+            email: user.email,
         },
     });
      await Payment.create([{ userId: auth.id, eventId: eventId, amount: Number(isEvent.ticketPrice), transactionId:'', paymentStatus: PAYMENT_STATUS.PENDING, paymentMethod: "Card" }]);
