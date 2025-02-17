@@ -4,11 +4,12 @@ import { Event } from '../events/events.model';
 import { TicketModel } from '../ticket/tickets.model';
 import { EVENTS_STATUS } from '../events/events.constants';
 import { Payment } from '../payment/payment.model';
-import { IUserFilterableFields } from '../user/user.interface';
+import { IUser, IUserFilterableFields } from '../user/user.interface';
 import { IPaginationOptions } from '../../../types/pagination';
 import { paginationHelper } from '../../../helpers/paginationHelper';
 import { SortOrder } from 'mongoose';
 import { IPaymentFilterableFields } from '../payment/payment.interface';
+import { IEvent } from '../events/events.interface';
 
 
 const getTotalViewerCountWithGrowthRate = async () => {
@@ -353,16 +354,6 @@ const getAllPurchaseHistory = async (filters: IPaymentFilterableFields, paginati
 
   const andConditions = [];
 
-  // Search by event name
-  if (searchTerm) {
-    andConditions.push({
-      $or: [
-        { 'eventId.eventName': { $regex: searchTerm, $options: 'i' } },  // Search in eventName (case-insensitive)
-        { 'userId.name': { $regex: searchTerm, $options: 'i' } }         // Search in user name (case-insensitive)
-      ]
-    });
-  }
-
   // Filter by payment status
   if (paymentStatus) {
     andConditions.push({ paymentStatus: paymentStatus });
@@ -378,12 +369,12 @@ const getAllPurchaseHistory = async (filters: IPaymentFilterableFields, paginati
   const whereCondition = andConditions.length > 0 ? { $and: andConditions } : {};
 
   // Query the database and populate fields
-  const result = await Payment.find(whereCondition)
-    .populate({
+  let result = await Payment.find(whereCondition)
+    .populate<{userId:Partial<IUser>}>({
       path: 'userId',
       select: 'name email'
     })
-    .populate({
+    .populate<{eventId:Partial<IEvent>}>({
       path: 'eventId',
       select: 'eventName image ticketPrice startTime endTime' // Adjust the fields you want
     })
@@ -391,6 +382,15 @@ const getAllPurchaseHistory = async (filters: IPaymentFilterableFields, paginati
     .sort(sortConditions)
     .skip(skip)
     .limit(limit);
+
+  // Apply search term filtering after population
+  if (searchTerm) {
+    result = result.filter(payment => {
+      const eventNameMatch = payment!.eventId!.eventName!.toLowerCase().includes(searchTerm.toLowerCase());
+      const userNameMatch = payment.userId.name.toLowerCase().includes(searchTerm.toLowerCase());
+      return eventNameMatch || userNameMatch;
+    });
+  }
 
   // Count total documents
   const total = await Payment.countDocuments(whereCondition);
@@ -406,7 +406,6 @@ const getAllPurchaseHistory = async (filters: IPaymentFilterableFields, paginati
     data: result, // The data is now a plain object without circular references
   };
 };
-
 
 
 const getAllUsers = async (filters:IUserFilterableFields, pagination:IPaginationOptions) => {

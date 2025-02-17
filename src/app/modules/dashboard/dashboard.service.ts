@@ -4,11 +4,12 @@ import { Event } from '../events/events.model';
 import { TicketModel } from '../ticket/tickets.model';
 import { EVENTS_STATUS } from '../events/events.constants';
 import { Payment } from '../payment/payment.model';
-import { IUserFilterableFields } from '../user/user.interface';
+import { IUser, IUserFilterableFields } from '../user/user.interface';
 import { IPaginationOptions } from '../../../types/pagination';
 import { paginationHelper } from '../../../helpers/paginationHelper';
 import { SortOrder } from 'mongoose';
 import { IPaymentFilterableFields } from '../payment/payment.interface';
+import { IEvent } from '../events/events.interface';
 
 
 const getTotalViewerCountWithGrowthRate = async () => {
@@ -369,11 +370,11 @@ const getAllPurchaseHistory = async (filters: IPaymentFilterableFields, paginati
 
   // Query the database and populate fields
   let result = await Payment.find(whereCondition)
-    .populate({
+    .populate<{userId:Partial<IUser>}>({
       path: 'userId',
       select: 'name email'
     })
-    .populate({
+    .populate<{eventId:Partial<IEvent>}>({
       path: 'eventId',
       select: 'eventName image ticketPrice startTime endTime' // Adjust the fields you want
     })
@@ -385,8 +386,8 @@ const getAllPurchaseHistory = async (filters: IPaymentFilterableFields, paginati
   // Apply search term filtering after population
   if (searchTerm) {
     result = result.filter(payment => {
-      const eventNameMatch = payment.eventId.eventName.toLowerCase().includes(searchTerm.toLowerCase());
-      const userNameMatch = payment.userId.name.toLowerCase().includes(searchTerm.toLowerCase());
+      const eventNameMatch = payment!.eventId!.eventName!.toLowerCase().includes(searchTerm.toLowerCase());
+      const userNameMatch = payment!.userId!.name!.toLowerCase().includes(searchTerm.toLowerCase());
       return eventNameMatch || userNameMatch;
     });
   }
