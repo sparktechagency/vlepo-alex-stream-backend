@@ -1,4 +1,4 @@
-import mongoose, { Schema, model } from "mongoose";
+import  { Schema, model } from "mongoose";
 import { EVENTS_STATUS, EVENTS_TYPE } from "./events.constants";
 import { IEvent } from "./events.interface";
 

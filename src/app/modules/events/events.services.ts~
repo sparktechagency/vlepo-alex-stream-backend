@@ -65,8 +65,11 @@ const getSingleEventByEventId = async (user: JwtPayload, id: string) => {
         event.isFavorite = isFavorite;
         const isFollowing = event.isFollowing;
 
+    //add is ticket booked flag from payment collection
+    const eventIds = await Payment.find({userId:user.id}).distinct("eventId");
+    const bookedEvents = eventIds?.map(event => event.toString());
 
-        return {...event.toObject(), isFavorite, isFollowing};
+        return {...event.toObject(), isFavorite, isFollowing, isTicketBooked:bookedEvents.includes(id)};
 
     
 }
@@ -94,7 +97,7 @@ const getSingleSlfEventAnalysisByEventId = async (id: string, timeframe = "6mont
     const event = await Event.findOne({
         _id: id
     })
-        .select("eventName image soldTicket totalSale startTime endTime")
+        .select("eventName image soldTicket totalSale startTime endTime participants")
         .lean();
 
     const participants = await AttendanceModel.find({
@@ -171,7 +174,7 @@ const getAllEvents = async (user: JwtPayload,  query: Record<string, unknown>) =
     }
 
     const favoriteEvents = isExistUser?.favoriteEvents?.map(event => event.toString()); // Convert to string for comparison
-    console.log("Incoming query:", query);
+
 
     const events = new QueryBuilder(Event.find({}), query)
         .fields()
@@ -180,14 +183,22 @@ const getAllEvents = async (user: JwtPayload,  query: Record<string, unknown>) =
         .filter()
         .search(EventSearchableFields);
 
+
     const result = await events.modelQuery
         .populate('categoryId', 'categoryName image')
         .populate("createdBy", "name photo");
 
+    //add is ticket booked flag from payment collection
+    const eventIds = await Payment.find({userId:user.id}).distinct("eventId");
+    const bookedEvents = eventIds?.map(event => event.toString());
+
+
+
     // Add `isFavorite` flag
     return result.map((event: Record<string, any>) => ({
         ...event.toObject(), // Convert Mongoose document to plain object
-        isFavorite: favoriteEvents?.includes(event._id.toString()) // Check if event is in user's favorite list
+        isFavorite: favoriteEvents?.includes(event._id.toString()), // Check if event is in user's favorite list
+        isTicketBooked: bookedEvents?.includes(event._id.toString())
     }));
 };
 
@@ -294,7 +305,7 @@ const updateAllEventsTrendingStatus = async () => {
     // Bulk update 
     await Event.bulkWrite(bulkOperations);
 
-    console.log("Trending status updated for all events");
+
 };
 
 

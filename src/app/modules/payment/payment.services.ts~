@@ -16,7 +16,8 @@ import { emailTemplate } from "../../../shared/emailTemplate";
 import { emailHelper } from "../../../helpers/emailHelper";
 import NotificationModel from "../notifications/notification.model";
 import { formattedTime } from "../../../util/formattedTime";
-import { JwtPayload } from 'jsonwebtoken';
+import jwt, { JwtPayload, Secret } from 'jsonwebtoken';
+import { jwtHelper } from '../../../helpers/jwtHelper';
 const stripe = new Stripe(config.stripe_secret_key as string);
 
 
@@ -26,11 +27,12 @@ const createPaymentIntent = async (auth:JwtPayload,payload: IPaymentIntent) => {
     // check already have any ticket for same event also same user
     const existSameTicket = await TicketModel.find({
         createdBy: auth.id,
-        eventId: eventId
+        eventId: eventId,
+        status: "confirmed",
     });
 
 
-    if (existSameTicket.length) {
+    if (existSameTicket.length >0) {
         throw new ApiError(StatusCodes.BAD_REQUEST, "Already you have a ticket.")
     }
 
@@ -70,13 +72,12 @@ const createPaymentIntent = async (auth:JwtPayload,payload: IPaymentIntent) => {
         success_url: 'http://localhost:3000/success',
         cancel_url: 'http://localhost:3000/cancel',
         metadata: {
-            amount: Number(isEvent.ticketPrice),
             userId: auth.id,
             eventId: eventId,
-            email: user.email,
         },
     });
-     await Payment.create([{ userId: auth.id, eventId: eventId, amount: Number(isEvent.ticketPrice), transactionId:'', paymentStatus: PAYMENT_STATUS.PENDING, paymentMethod: "Card" }]);
+    await Payment.create([{ userId: auth.id, eventId: eventId, amount: Number(isEvent.ticketPrice), transactionId:Date.now().toString(), paymentStatus: PAYMENT_STATUS.PENDING, paymentMethod: "Card" }]);
+
     return { url: session.url };
 
 

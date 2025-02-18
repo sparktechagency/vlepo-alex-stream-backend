@@ -21,7 +21,6 @@ export interface IEvent extends Document {
   status: EVENTS_STATUS;
   participants: any;
   upcomingEvents: number;
-  isTicketBooked: boolean;
   pastEvents: number;
   createdAt?: Date;
   updatedAt?: Date;

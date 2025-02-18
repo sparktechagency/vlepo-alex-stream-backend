@@ -23,6 +23,7 @@ const eventSchema = new Schema<IEvent>(
       enum: Object.values(EVENTS_TYPE),
       required: true,
     },
+    participants: [{ type: Schema.Types.ObjectId, ref: "User" }],
     ticketPrice: { type: Number, min: 0, required: true },
     totalSeat: { type: Number, min: 1, required: false },
     views: { type: Number, default: 0, min: 0 },

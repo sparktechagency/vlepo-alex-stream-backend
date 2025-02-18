@@ -65,8 +65,11 @@ const getSingleEventByEventId = async (user: JwtPayload, id: string) => {
         event.isFavorite = isFavorite;
         const isFollowing = event.isFollowing;
 
+    //add is ticket booked flag from payment collection
+    const eventIds = await Payment.find({userId:user.id}).distinct("eventId");
+    const bookedEvents = eventIds?.map(event => event.toString());
 
-        return {...event.toObject(), isFavorite, isFollowing};
+        return {...event.toObject(), isFavorite, isFollowing, isTicketBooked:bookedEvents.includes(id)};
 
     
 }
@@ -90,19 +93,17 @@ const getSingleSlfEventAnalysisByEventId = async (id: string, timeframe = "6mont
         throw new ApiError(StatusCodes.BAD_REQUEST, "Invalid timeframe.");
     }
 
+    // ✅ Fetch event and populate participants directly
+    const event = await Event.findOne({ _id: id })
+      .select("eventName image soldTicket totalSale startTime endTime participants")
+      .populate("participants", "name photo") // ✅ Populate participants
+      .lean();
 
-    const event = await Event.findOne({
-        _id: id
-    })
-        .select("eventName image soldTicket totalSale startTime endTime")
-        .lean();
+    if (!event) {
+        throw new ApiError(StatusCodes.NOT_FOUND, "Event not found");
+    }
 
-    const participants = await AttendanceModel.find({
-        eventId: id,
-        createdAt: { $gte: filterDate }
-    })
-        .populate("userId", "name photo ");
-
+    // ✅ Aggregate Payment Data
     const payment = await Payment.aggregate([
         {
             $match: {
@@ -119,12 +120,7 @@ const getSingleSlfEventAnalysisByEventId = async (id: string, timeframe = "6mont
         }
     ]);
 
-
-    if (event) {
-        event.participants = participants;
-    }
-
-    return { event, analysis: payment[0] };
+    return { event, analysis: payment[0] || {} };
 };
 
 
@@ -171,7 +167,7 @@ const getAllEvents = async (user: JwtPayload,  query: Record<string, unknown>) =
     }
 
     const favoriteEvents = isExistUser?.favoriteEvents?.map(event => event.toString()); // Convert to string for comparison
-    console.log("Incoming query:", query);
+
 
     const events = new QueryBuilder(Event.find({}), query)
         .fields()
@@ -179,17 +175,23 @@ const getAllEvents = async (user: JwtPayload,  query: Record<string, unknown>) =
         .sort()
         .filter()
         .search(EventSearchableFields);
-    console.log("Final Mongo Query:", events.modelQuery.getFilter());
-    console.log("Sorting Applied:", events.query.sortBy, events.query.sortOrder);
+
 
     const result = await events.modelQuery
         .populate('categoryId', 'categoryName image')
         .populate("createdBy", "name photo");
 
+    //add is ticket booked flag from payment collection
+    const eventIds = await Payment.find({userId:user.id}).distinct("eventId");
+    const bookedEvents = eventIds?.map(event => event.toString());
+
+
+
     // Add `isFavorite` flag
     return result.map((event: Record<string, any>) => ({
         ...event.toObject(), // Convert Mongoose document to plain object
-        isFavorite: favoriteEvents?.includes(event._id.toString()) // Check if event is in user's favorite list
+        isFavorite: favoriteEvents?.includes(event._id.toString()), // Check if event is in user's favorite list
+        isTicketBooked: bookedEvents?.includes(event._id.toString())
     }));
 };
 
@@ -296,7 +298,7 @@ const updateAllEventsTrendingStatus = async () => {
     // Bulk update 
     await Event.bulkWrite(bulkOperations);
 
-    console.log("Trending status updated for all events");
+
 };
 
 
