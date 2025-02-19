@@ -38,9 +38,8 @@ const verifyPayment = catchAsync(async (req, res) => {
 })
 
 const getTransactionHistory = catchAsync(async (req, res) => {
-    const { id } = req.user;
 
-    const result = await paymentServices.getTransactionHistory(id);
+    const result = await paymentServices.getTransactionHistory(req.user);
 
     sendResponse(res, {
         success: true,  

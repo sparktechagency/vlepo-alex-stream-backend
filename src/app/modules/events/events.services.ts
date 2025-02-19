@@ -95,7 +95,7 @@ const getSingleSlfEventAnalysisByEventId = async (id: string, timeframe = "6mont
 
     // ✅ Fetch event and populate participants directly
     const event = await Event.findOne({ _id: id })
-      .select("eventName image soldTicket totalSale startTime endTime participants")
+      .select("eventName image soldTicket totalSale startTime endTime participants ")
       .populate("participants", "name photo") // ✅ Populate participants
       .lean();
 
@@ -115,10 +115,12 @@ const getSingleSlfEventAnalysisByEventId = async (id: string, timeframe = "6mont
             $group: {
                 _id: "$eventId",
                 totalAmount: { $sum: "$amount" },
-                ticketSold: { $count: {} }
+                ticketSold: { $count: {} },
+                transactionIds: { $push: "$transactionId" } // Collect all transaction IDs
             }
         }
     ]);
+
 
     return { event, analysis: payment[0] || {} };
 };
