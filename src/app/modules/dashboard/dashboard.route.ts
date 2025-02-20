@@ -2,6 +2,7 @@ import express from 'express';
 import { DashboardController } from './dashboard.controller';
 import { USER_ROLE } from '../user/user.constants';
 import auth from '../../middlewares/auth';
+import { UserController } from '../user/user.controller';
 const router = express.Router();
 
 router.get('/total-viewer-count-with-growth-rate',
@@ -26,12 +27,12 @@ router.get('/event-stat/:year',
 )
 
 router.get('/all-events',
-  // auth(USER_ROLE.SUPER_ADMIN),
+  auth(USER_ROLE.SUPER_ADMIN),
   DashboardController.getAllEvents
 )
 
 router.get('/all-purchases',
-  // auth(USER_ROLE.SUPER_ADMIN),
+  auth(USER_ROLE.SUPER_ADMIN),
   DashboardController.getAllPurchaseHistory
 )
 
@@ -40,5 +41,12 @@ router.get('/all-users',
   DashboardController.getAllUsers
 )
 
+
+//restrict or unrestrict user
+router.patch(
+  '/restrict/:id',
+  auth(USER_ROLE.SUPER_ADMIN),
+  UserController.restrictOrUnrestrictUser,
+);
 
 export const DashboardRoutes = router;

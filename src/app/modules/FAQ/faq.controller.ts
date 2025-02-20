@@ -3,6 +3,7 @@ import catchAsync from "../../../shared/catchAsync";
 import sendResponse from "../../../shared/sendResponse";
 import { StatusCodes } from "http-status-codes";
 import { FaqServices } from "./faq.services";
+import { Types } from 'mongoose';
 
 
 const createFAQ = catchAsync(async (req: Request, res: Response) => {
@@ -62,6 +63,16 @@ const getTermsAndCondition = catchAsync(async (req: Request, res: Response) => {
     });
 })
 
+const deleteFaQ = catchAsync(async (req: Request, res: Response) => {
+
+    const result = await FaqServices.deleteFaQ(new Types.ObjectId(req.params.id));
+    sendResponse(res, {
+        success: true,
+        statusCode: StatusCodes.OK,
+        message: 'Retrieved terms and condition!',
+        data: result,
+    });
+})
 
 
 export const FaqController = {
@@ -70,4 +81,5 @@ export const FaqController = {
     updateSingleCategory,
     createOrUpdateTermsAndCondition,
     getTermsAndCondition,
+    deleteFaQ
 }

@@ -12,11 +12,7 @@ const faqSchema = new Schema<IFaq>({
     required: true,
     minlength: 10,
   },
-  isPublished: {
-    type: Boolean,
-    required: true,
-    default: true,
-  }
+
 });
 
 export const Faq = mongoose.model<IFaq>("Faq", faqSchema);

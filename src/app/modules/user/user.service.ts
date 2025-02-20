@@ -434,6 +434,34 @@ const getUserByUserId = async (userId: Types.ObjectId) => {
 }
 
 
+const restrictOrUnrestrictUser = async (id: Types.ObjectId) => {
+
+  const user = await User.findById(id);
+  if (!user) {
+    throw new ApiError(StatusCodes.BAD_REQUEST, 'User not found');
+  }
+  if (user.status === USER_STATUS.BLOCKED) {
+    await User.findByIdAndUpdate(
+      id,
+      { $set: { status: USER_STATUS.ACTIVE } },
+      {
+        new: true,
+      },
+    )
+    return `${user?.name} is un-restricted`;
+  }
+  const result = await User.findByIdAndUpdate(
+    id,
+    { $set: { status: USER_STATUS.BLOCKED } },
+    {
+      new: true,
+    },
+  );
+
+
+  return `${result?.name} is restricted`;
+};
+
 export const UserService = {
   createUserToDB,
   // verifyRegisterEmail,
@@ -448,5 +476,6 @@ export const UserService = {
   favoritesEvent,
   getUserFavoriteEvents,
   getCreatorTotalSalesAndRecentEvents,
-  getUserByUserId
+  getUserByUserId,
+  restrictOrUnrestrictUser
 };
