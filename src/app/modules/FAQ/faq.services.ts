@@ -2,6 +2,7 @@ import { StatusCodes } from "http-status-codes";
 import ApiError from "../../../errors/ApiError";
 import { Faq, TermsAndCondition } from "./faq.model"
 import { IFaq } from "./faq.interface";
+import { Types } from 'mongoose';
 
 const createFAQintoDB = async (payload: IFaq) => {
     const result = await Faq.create(payload);
@@ -14,7 +15,7 @@ const createFAQintoDB = async (payload: IFaq) => {
 }
 
 const getAllFaqFromDB = async () => {
-    const FAQS = await Faq.find({ isPublished: true });
+    const FAQS = await Faq.find();
     return FAQS;
 }
 
@@ -27,6 +28,11 @@ const updateFaq = async (id: string, payload: Partial<IFaq>) => {
     return result;
 }
 
+
+const deleteFaQ = async (id:Types.ObjectId) =>{
+    const result = await Faq.findByIdAndDelete(id);
+    return result
+}
 
 const createOrUpdateTermsAndCondition = async (payload: Partial<IFaq>) => {
     const exist = await TermsAndCondition.findOne({});
@@ -50,4 +56,5 @@ export const FaqServices = {
     updateFaq,
     createOrUpdateTermsAndCondition,
     getTermsAndCondition,
+    deleteFaQ
 }

@@ -16,19 +16,22 @@ import { emailTemplate } from "../../../shared/emailTemplate";
 import { emailHelper } from "../../../helpers/emailHelper";
 import NotificationModel from "../notifications/notification.model";
 import { formattedTime } from "../../../util/formattedTime";
+import { JwtPayload } from 'jsonwebtoken';
 const stripe = new Stripe(config.stripe_secret_key as string);
 
 
-const createPaymentIntent = async (payload: IPaymentIntent) => {
-    const { amount, eventId, userId } = payload;
+const createPaymentIntent = async (auth:JwtPayload,payload: IPaymentIntent) => {
+    const {  eventId } = payload;
 
     // check already have any ticket for same event also same user
     const existSameTicket = await TicketModel.find({
-        createdBy: userId,
-        eventId: eventId
+        createdBy: auth.id,
+        eventId: eventId,
+        status: "confirmed",
     });
 
-    if (existSameTicket.length) {
+
+    if (existSameTicket.length >0) {
         throw new ApiError(StatusCodes.BAD_REQUEST, "Already you have a ticket.")
     }
 
@@ -42,23 +45,40 @@ const createPaymentIntent = async (payload: IPaymentIntent) => {
         throw new ApiError(StatusCodes.BAD_REQUEST, "No upcoming event found!");
     }
 
-    const user = await User.isUserPermission(userId);
+    const user = await User.isUserPermission(auth.id);
+
     if (user.role !== USER_ROLE.USER) {
         throw new ApiError(StatusCodes.NOT_FOUND, "Only user can booked ticket.")
     }
 
 
-    const paymentIntent = await stripe.paymentIntents.create({
-        amount: amount * 100, // সেন্টে রূপান্তর
-        currency: "usd",
-        payment_method_types: ['card'],
-        metadata: { userId, eventId },
-    });
 
-    return {
-        clientSecret: paymentIntent.client_secret,
-        paymentIntentId: paymentIntent.id
-    };
+    const session = await stripe.checkout.sessions.create({
+        payment_method_types: ['card'],
+        line_items: [
+            {
+                price_data: {
+                    currency: 'usd',
+                    product_data: {
+                        name: 'Ticket',
+                    },
+                    unit_amount: Number(isEvent.ticketPrice) * 100,
+                },
+                quantity: 1,
+            },
+        ],
+        mode: 'payment',
+        success_url: 'http://localhost:3000/success',
+        cancel_url: 'http://localhost:3000/cancel',
+        metadata: {
+            userId: auth.id,
+            eventId: eventId,
+        },
+    });
+    await Payment.create([{ userId: auth.id, eventId: eventId, amount: Number(isEvent.ticketPrice), transactionId:Date.now().toString(), paymentStatus: PAYMENT_STATUS.PENDING, paymentMethod: "Card" }]);
+    return { url: session.url };
+
+
 };
 
 
@@ -182,30 +202,69 @@ const verifyPayment = async (paymentIntentId: string, userEmail: string) => {
     }
 };
 
-const getTransactionHistory = async (userId: string) => {
+const getTransactionHistory = async (user: JwtPayload) => {
+    // Step 1: If the user is a creator, get all events created by the creator
+    let payments;
 
-    const payments = await Payment.find({ userId: userId })
-        .select('transactionId amount createdAt')
-        .populate<{ eventId: { title: string } }>({
-            path: 'eventId',
-            select: 'title',
-        }).populate<{ userId: { name: string, profileImage: string } }>({
-            path: 'userId',
-            select: 'name profileImage',
-        })
-        .sort({ createdAt: -1 });
+    if (user.role === USER_ROLE.CREATOR) {
+        // Fetch events created by the creator
+        const events = await Event.find({ createdBy: user.id }).select('_id');
 
-    const result = payments.map(payment => ({
-        transactionId: payment.transactionId,
-        amount: payment.amount,
-        createdAt: payment.createdAt,
-        eventName: payment.eventId.title,
-        userName: payment.userId.name,
-        profileImage: payment.userId.profileImage,
-    }));
+        // Extract the event IDs
+        const eventIds = events.map(event => event._id);
+
+        // Fetch payments for these events
+        payments = await Payment.find({ eventId: { $in: eventIds } })
+          .select('transactionId amount createdAt eventId userId')
+          .populate<{ eventId: { title: string, createdBy: string } }>({
+              path: 'eventId',
+              select: 'title createdBy',
+          })
+          .populate<{ userId: { name: string, photo: string } }>({
+              path: 'userId',
+              select: 'name photo',
+          })
+          .sort({ createdAt: -1 });
+    } else {
+        // For normal users, just fetch payments where the user is the payer
+        payments = await Payment.find({ userId: user.id })
+          .select('transactionId amount createdAt eventId userId')
+          .populate<{ eventId: { title: string, createdBy: string } }>({
+              path: 'eventId',
+              select: 'title createdBy',
+          })
+          .populate<{ userId: { name: string, photo: string } }>({
+              path: 'userId',
+              select: 'name photo',
+          })
+          .sort({ createdAt: -1 });
+    }
+
+    // Step 2: Process and map the payments
+    const result = await Promise.all(
+      payments.map(async payment => {
+          // Check if the user is a creator, if so, fetch creator information for that event
+          const creatorInfo = payment.eventId.createdBy
+            ? await User.findById(payment.eventId.createdBy).select('name photo')
+            : null;
+
+          return {
+              transactionId: payment.transactionId,
+              amount: payment.amount,
+              createdAt: payment.createdAt,
+              eventName: payment.eventId.title,
+              userName: payment.userId.name,
+              profileImage: payment.userId.photo,
+              creatorName: creatorInfo?.name || null, // Only return creator info if it's a creator's event
+              creatorPhoto: creatorInfo?.photo || null,
+          };
+      })
+    );
 
     return result;
 };
+
+
 
 
 export const paymentServices = {

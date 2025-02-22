@@ -1,7 +1,10 @@
 import { TicketModel } from "./tickets.model"
 
 const getSelfTicket = async (userId: string) => {
-    const tickets = await TicketModel.find({ createdBy: userId }).sort("-createdAt");
+    const tickets = await TicketModel.find({ createdBy: userId }).populate({
+        path: "eventId",
+        select: "image eventName ticketPrice soldTicket",
+    }).sort("-createdAt");
 
     return tickets;
 }

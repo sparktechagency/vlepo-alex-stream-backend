@@ -23,6 +23,8 @@ router.patch("/:faqId",
     FaqController.updateSingleCategory
 )
 
+router.delete("/:id",auth(USER_ROLE.SUPER_ADMIN), FaqController.deleteFaQ)
+
 
 
 export const FaqRoutes = router;

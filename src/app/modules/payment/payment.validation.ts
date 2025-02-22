@@ -27,19 +27,19 @@ const isValidObjectId = (value: string) => /^[a-fA-F0-9]{24}$/.test(value);
 
 const paymentIntentSchema = z.object({
   body: z.object({
-    amount: z
-      .number({ required_error: "Amount is required" })
-      .positive("Amount must be a positive number"),
+    // amount: z
+    //   .number({ required_error: "Amount is required" })
+    //   .positive("Amount must be a positive number"),
     eventId: z
       .string({ required_error: "Event ID is required" })
       .refine(isValidObjectId, {
         message: "Event ID must be a valid ObjectId",
       }),
-    userId: z
-      .string({ required_error: "User ID is required" })
-      .refine(isValidObjectId, {
-        message: "User ID must be a valid ObjectId",
-      }),
+    // userId: z
+    //   .string({ required_error: "User ID is required" })
+    //   .refine(isValidObjectId, {
+    //     message: "User ID must be a valid ObjectId",
+    //   }),
   })
 });
 

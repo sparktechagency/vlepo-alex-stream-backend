@@ -1,9 +1,9 @@
-import { Router } from "express"
-import { paymentController } from "./payment.controller";
-import { paymentValidationSchema } from "./payment.validation";
-import validateRequest from "../../middlewares/validateRequest";
-import auth from "../../middlewares/auth";
-import { USER_ROLE } from "../user/user.constants";
+import { Router } from 'express';
+import { paymentController } from './payment.controller';
+import { paymentValidationSchema } from './payment.validation';
+import validateRequest from '../../middlewares/validateRequest';
+import auth from '../../middlewares/auth';
+import { USER_ROLE } from '../user/user.constants';
 
 const router = Router();
 
@@ -22,7 +22,7 @@ router.post("/verify-payment",
 
 
 router.get("/get-transaction-history",
-    auth(USER_ROLE.USER),
+    auth(USER_ROLE.USER, USER_ROLE.CREATOR),
     paymentController.getTransactionHistory
 )
 

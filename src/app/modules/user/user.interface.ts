@@ -39,3 +39,16 @@ export type UserModal = {
   isMatchPassword(password: string, hashPassword: string): boolean;
 } & Model<IUser>;
 
+
+
+export type IUserFilterableFields = {
+  searchTerm?: string;
+  role?: string;
+  status?: string;
+}
+
+export type IUserSearchableFields = {
+  name?: string;
+  email?: string;
+  phone?: string;
+}

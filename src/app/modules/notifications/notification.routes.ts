@@ -27,6 +27,11 @@ router.get("/self-notification",
     NotificationController.getAllNotificationOfReciver
 )
 
+
+router.patch("/mark-read-all-notifications",
+    auth(USER_ROLE.USER, USER_ROLE.CREATOR, USER_ROLE.SUPER_ADMIN),
+    NotificationController.markAllSelfNotificationsAsRead
+)
 router.delete("/",
     auth(USER_ROLE.USER, USER_ROLE.CREATOR, USER_ROLE.SUPER_ADMIN),
     NotificationController.deleteAllMyNotification

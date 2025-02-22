@@ -17,9 +17,6 @@ const faqUpdateValidationSchema = z.object({
             .string()
             .min(10, "Answer must be at least 10 characters long")
             .optional(),
-        isPublished: z
-            .boolean()
-            .optional()
     })
 });
 

@@ -73,10 +73,24 @@ const deleteAllMyNotification = catchAsync(async (req, res) => {
 });
 
 
+const markAllSelfNotificationsAsRead = catchAsync(async (req, res) => {
+    const { id } = req.user;
+    const result = await NotificationServices.markAllSelfNotificationAsRead(id);
+
+    sendResponse(res, {
+        success: true,
+        statusCode: StatusCodes.OK,
+        message: 'Notifications marked as read',
+        data: result,
+    });
+});
+
+
 export const NotificationController = {
     markNotificationAsRead,
     sendNotificationToUser,
     getAllNotificationOfReciver,
     sendNotificationToAll,
     deleteAllMyNotification,
+    markAllSelfNotificationsAsRead
 }

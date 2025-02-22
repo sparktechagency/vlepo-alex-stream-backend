@@ -15,6 +15,8 @@ import { emailHelper } from '../../../helpers/emailHelper';
 import { IVerifyEmail } from '../auth/atuh.interface';
 import { Types } from 'mongoose';
 import { EVENTS_STATUS } from '../events/events.constants';
+import { Payment } from '../payment/payment.model';
+import { PAYMENT_STATUS } from '../payment/payment.constant';
 
 /**
  * create and verify email
@@ -371,38 +373,94 @@ const getUserFavoriteEvents = async (user: JwtPayload) => {
 
 
 const getCreatorTotalSalesAndRecentEvents = async (user: JwtPayload) => {
-  console.log(user)
-  const userDoc = await User.findOne(user.id);
 
-  const totalEarning = await Event.aggregate([
+  const userDoc = await User.findOne({ _id: user.id });
+
+  if (!userDoc) {
+    throw new Error("User not found");
+  }
+
+  // Query Payment collection and join with Event collection to get total earnings for the creator
+  const totalEarning = await Payment.aggregate([
+    {
+      $lookup: {
+        from: "events", // Event collection name in MongoDB
+        localField: "eventId", // Reference field in Payment collection
+        foreignField: "_id", // Field in Event collection
+        as: "event",
+      },
+    },
+    {
+      $unwind: "$event", // Unwind the array from the lookup to access event details
+    },
     {
       $match: {
-        createdBy: user.id,
-        status: { $ne: EVENTS_STATUS.COMPLETED },
-        startDate: { $gt: new Date() },
+        "event.createdBy": new Types.ObjectId(user.id), // Ensure the event is created by the user
+        paymentStatus: PAYMENT_STATUS.PAID, // Only consider paid payments
       },
     },
     {
       $group: {
         _id: null,
-        totalEarning: { $sum: "$totalRevenue" },
+        totalEarning: { $sum: "$amount" }, // Sum the payment amounts
       },
     },
   ]).then((result) => result[0]?.totalEarning || 0);
 
-
+  // Query Event collection for recent events
   const recentEvents = await Event.find({
     createdBy: user.id,
     status: { $nin: [EVENTS_STATUS.COMPLETED, EVENTS_STATUS.CANCELLED] },
     startDate: { $gt: new Date() },
   }).sort({ startDate: -1 });
 
-  if (!userDoc) {
+  return { totalEarning, recentEvents };
+};
+
+
+
+
+const getUserByUserId = async (userId: Types.ObjectId) => {
+  const user = await User.findById(userId,{name: 1, profilePhoto: 1, email: 1, phone: 1, photo: 1});
+  if (!user) {
     throw new Error("User not found");
   }
 
-  return { totalEarning, recentEvents };
+
+  //get user followers
+  const followingCount = await Follow.countDocuments({ followingId: userId });
+
+  return {...user.toObject(), followingCount};
 }
+
+
+const restrictOrUnrestrictUser = async (id: Types.ObjectId) => {
+
+  const user = await User.findById(id);
+  if (!user) {
+    throw new ApiError(StatusCodes.BAD_REQUEST, 'User not found');
+  }
+  if (user.status === USER_STATUS.BLOCKED) {
+    await User.findByIdAndUpdate(
+      id,
+      { $set: { status: USER_STATUS.ACTIVE } },
+      {
+        new: true,
+      },
+    )
+    return `${user?.name} is un-restricted`;
+  }
+  const result = await User.findByIdAndUpdate(
+    id,
+    { $set: { status: USER_STATUS.BLOCKED } },
+    {
+      new: true,
+    },
+  );
+
+
+  return `${result?.name} is restricted`;
+};
 
 export const UserService = {
   createUserToDB,
@@ -417,5 +475,7 @@ export const UserService = {
   bestSellerCreators,
   favoritesEvent,
   getUserFavoriteEvents,
-  getCreatorTotalSalesAndRecentEvents
+  getCreatorTotalSalesAndRecentEvents,
+  getUserByUserId,
+  restrictOrUnrestrictUser
 };

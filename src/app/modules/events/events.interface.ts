@@ -1,6 +1,6 @@
 import { Document,  Types } from "mongoose";
 import { EVENTS_STATUS, EVENTS_TYPE } from "./events.constants";
-import { IUser } from "../user/user.interface";
+
 
 export interface IEvent extends Document {
   [x: string]: any;
@@ -21,6 +21,7 @@ export interface IEvent extends Document {
   status: EVENTS_STATUS;
   participants: any;
   upcomingEvents: number;
+  isTicketBooked: boolean;
   pastEvents: number;
   createdAt?: Date;
   updatedAt?: Date;

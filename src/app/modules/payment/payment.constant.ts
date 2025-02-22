@@ -4,3 +4,14 @@ export const PAYMENT_STATUS = {
     FAILED: 'FAILED',
     REFUNDED: 'REFUNDED',
   } as const;
+
+
+export const paymentFilterableFields = [
+  'searchTerm',
+  'paymentStatus'
+]
+
+export const paymentSearchableFields = [
+  'paymentMethod',
+  'eventName'
+]

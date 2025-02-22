@@ -192,6 +192,34 @@ const getCreatorTotalSalesAndRecentEvents = catchAsync(async (req: Request, res:
   });
 });
 
+const getUserByUserId = catchAsync(async (req: Request, res: Response) => {
+  const { userId } = req.params;
+
+  const result = await UserService.getUserByUserId(new Types.ObjectId(userId));
+
+  sendResponse(res, {
+    success: true,
+    statusCode: StatusCodes.OK,
+    message: 'User retrived successfully!',
+    data: result,
+  });
+});
+
+const restrictOrUnrestrictUser = catchAsync(
+  async (req: Request, res: Response) => {
+    const { id } = req.params;
+    const result = await UserService.restrictOrUnrestrictUser(
+      new Types.ObjectId(id),
+    );
+    sendResponse(res, {
+      success: true,
+      statusCode: StatusCodes.OK,
+      message: 'User status updated successfully',
+      data: result,
+    });
+  },
+);
+
 export const UserController = {
   createUser,
   // verifyRegisterEmail,
@@ -205,5 +233,7 @@ export const UserController = {
   bestSellerCreators,
   userFavoriteCategoryUpdate,
   getUserFavoriteEvents,
-  getCreatorTotalSalesAndRecentEvents
+  getCreatorTotalSalesAndRecentEvents,
+  getUserByUserId,
+  restrictOrUnrestrictUser
 };

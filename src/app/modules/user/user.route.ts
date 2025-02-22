@@ -1,12 +1,13 @@
-import express, { NextFunction, Request, Response } from 'express';
+
 import auth from '../../middlewares/auth';
 import fileUploadHandler from '../../middlewares/fileUploadHandler';
 import validateRequest from '../../middlewares/validateRequest';
 import { UserController } from './user.controller';
 import { UserValidation } from './user.validation';
 import { USER_ROLE } from './user.constants';
-const router = express.Router();
+import express from 'express';
 
+const router = express.Router();
 
 
 router.post(
@@ -20,6 +21,8 @@ router.post(
 //   validateRequest(UserValidation.verifyRegisterEmailZodSchema),
 //   UserController.verifyRegisterEmail
 // );
+
+
 
 
 
@@ -62,6 +65,8 @@ router.patch(
   UserController.updateMyProfile
 );
 
+
+
 router.patch(
   '/update-user-status/:userId',
   auth(USER_ROLE.SUPER_ADMIN),
@@ -96,6 +101,14 @@ router.get(
   auth(USER_ROLE.CREATOR),
   UserController.getCreatorTotalSalesAndRecentEvents
 );
+
+router.get(
+  '/user/:userId',
+  auth(USER_ROLE.SUPER_ADMIN, USER_ROLE.CREATOR, USER_ROLE.USER),
+  UserController.getUserByUserId
+);
+
+
 
 
 export const UserRoutes = router;

@@ -1,19 +1,17 @@
-import { StatusCodes } from "http-status-codes";
-import ApiError from "../../../errors/ApiError";
-import Category from "../categories/categories.model";
-import { IEvent, IEventFilters } from "./events.interface";
-import { Event } from "./events.model"
-import { User } from "../user/user.model";
-import { USER_STATUS } from "../user/user.constants";
-import { QueryBuilder } from "../../builder/QueryBuilder";
-import { EventFilterableFields, EVENTS_STATUS, EventSearchableFields } from "./events.constants";
-import mongoose, { Types } from "mongoose";
-import { AttendanceModel } from "./attendanceSchema";
-import { Payment } from "../payment/payment.model";
-import { JwtPayload } from "jsonwebtoken";
-import { IPaginationOptions } from "../../../types/pagination";
-import { UserEvent } from "../userevents/userevents.model";
-import { Follow } from "../follow/follow.model";
+import { StatusCodes } from 'http-status-codes';
+import ApiError from '../../../errors/ApiError';
+import Category from '../categories/categories.model';
+import { IEvent, IEventFilters } from './events.interface';
+import { Event } from './events.model';
+import { User } from '../user/user.model';
+import { USER_STATUS } from '../user/user.constants';
+import { QueryBuilder } from '../../builder/QueryBuilder';
+import { EVENTS_STATUS, EventSearchableFields } from './events.constants';
+import mongoose, { Types } from 'mongoose';
+import { AttendanceModel } from './attendanceSchema';
+import { Payment } from '../payment/payment.model';
+import { JwtPayload } from 'jsonwebtoken';
+import { Follow } from '../follow/follow.model';
 
 const createEventsIntoDB = async (createdBy: string, payload: IEvent) => {
     const { categoryId, ticketPrice, totalSeat } = payload;
@@ -67,8 +65,11 @@ const getSingleEventByEventId = async (user: JwtPayload, id: string) => {
         event.isFavorite = isFavorite;
         const isFollowing = event.isFollowing;
 
+    //add is ticket booked flag from payment collection
+    const eventIds = await Payment.find({userId:user.id}).distinct("eventId");
+    const bookedEvents = eventIds?.map(event => event.toString());
 
-        return {...event.toObject(), isFavorite, isFollowing};
+        return {...event.toObject(), isFavorite, isFollowing, isTicketBooked:bookedEvents.includes(id)};
 
     
 }
@@ -92,19 +93,17 @@ const getSingleSlfEventAnalysisByEventId = async (id: string, timeframe = "6mont
         throw new ApiError(StatusCodes.BAD_REQUEST, "Invalid timeframe.");
     }
 
+    // ✅ Fetch event and populate participants directly
+    const event = await Event.findOne({ _id: id })
+      .select("eventName image soldTicket totalSale startTime endTime participants ")
+      .populate("participants", "name photo") // ✅ Populate participants
+      .lean();
 
-    const event = await Event.findOne({
-        _id: id
-    })
-        .select("eventName image soldTicket totalSale startTime endTime")
-        .lean();
+    if (!event) {
+        throw new ApiError(StatusCodes.NOT_FOUND, "Event not found");
+    }
 
-    const participants = await AttendanceModel.find({
-        eventId: id,
-        createdAt: { $gte: filterDate }
-    })
-        .populate("userId", "name photo ");
-
+    // ✅ Aggregate Payment Data
     const payment = await Payment.aggregate([
         {
             $match: {
@@ -116,17 +115,14 @@ const getSingleSlfEventAnalysisByEventId = async (id: string, timeframe = "6mont
             $group: {
                 _id: "$eventId",
                 totalAmount: { $sum: "$amount" },
-                ticketSold: { $count: {} }
+                ticketSold: { $count: {} },
+                transactionIds: { $push: "$transactionId" } // Collect all transaction IDs
             }
         }
     ]);
 
 
-    if (event) {
-        event.participants = participants;
-    }
-
-    return { event, analysis: payment[0] };
+    return { event, analysis: payment[0] || {} };
 };
 
 
@@ -165,7 +161,7 @@ const creatorEventOverview = async (creatorId: string) => {
 
 
 // find all the events
-const getAllEvents = async (user: JwtPayload, query: Record<string, unknown>) => {
+const getAllEvents = async (user: JwtPayload,  query: Record<string, unknown>) => {
     const isExistUser = await User.findById(user.id).select("favoriteEvents");
 
     if (!isExistUser) {
@@ -174,6 +170,7 @@ const getAllEvents = async (user: JwtPayload, query: Record<string, unknown>) =>
 
     const favoriteEvents = isExistUser?.favoriteEvents?.map(event => event.toString()); // Convert to string for comparison
 
+
     const events = new QueryBuilder(Event.find({}), query)
         .fields()
         .paginate()
@@ -181,18 +178,26 @@ const getAllEvents = async (user: JwtPayload, query: Record<string, unknown>) =>
         .filter()
         .search(EventSearchableFields);
 
+
     const result = await events.modelQuery
         .populate('categoryId', 'categoryName image')
         .populate("createdBy", "name photo");
 
-    // Add `isFavorite` flag
-    const eventsWithFavoriteFlag = result.map((event: Record<string, any>) => ({
-        ...event.toObject(), // Convert Mongoose document to plain object
-        isFavorite: favoriteEvents?.includes(event._id.toString()) // Check if event is in user's favorite list
-    }));
+    //add is ticket booked flag from payment collection
+    const eventIds = await Payment.find({userId:user.id}).distinct("eventId");
+    const bookedEvents = eventIds?.map(event => event.toString());
 
-    return eventsWithFavoriteFlag;
+
+
+    // Add `isFavorite` flag
+    return result.map((event: Record<string, any>) => ({
+        ...event.toObject(), // Convert Mongoose document to plain object
+        isFavorite: favoriteEvents?.includes(event._id.toString()), // Check if event is in user's favorite list
+        isTicketBooked: bookedEvents?.includes(event._id.toString())
+    }));
 };
+
+
 
 
 
@@ -295,7 +300,7 @@ const updateAllEventsTrendingStatus = async () => {
     // Bulk update 
     await Event.bulkWrite(bulkOperations);
 
-    console.log("Trending status updated for all events");
+
 };
 
 

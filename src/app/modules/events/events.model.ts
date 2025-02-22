@@ -1,4 +1,4 @@
-import mongoose, { Schema, model } from "mongoose";
+import  { Schema, model } from "mongoose";
 import { EVENTS_STATUS, EVENTS_TYPE } from "./events.constants";
 import { IEvent } from "./events.interface";
 
@@ -23,6 +23,7 @@ const eventSchema = new Schema<IEvent>(
       enum: Object.values(EVENTS_TYPE),
       required: true,
     },
+    participants: [{ type: Schema.Types.ObjectId, ref: "User" }],
     ticketPrice: { type: Number, min: 0, required: true },
     totalSeat: { type: Number, min: 1, required: false },
     views: { type: Number, default: 0, min: 0 },

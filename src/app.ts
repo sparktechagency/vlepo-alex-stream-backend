@@ -5,6 +5,7 @@ import globalErrorHandler from './app/middlewares/globalErrorHandler';
 import router from './routes';
 import { Morgan } from './shared/morgen';
 import cookieParser from 'cookie-parser';
+import { paymentController } from './app/modules/payment/payment.controller';
 
 const app = express();
 
@@ -17,6 +18,13 @@ app.use(cookieParser());
 
 //body parser
 app.use(cors());
+
+app.post(
+  '/api/stripe/webhook',
+  express.raw({ type: 'application/json' }),
+  paymentController.webhooks
+);
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -28,7 +36,7 @@ app.use('/api/v1', router);
 
 //live response
 app.get('/', (req: Request, res: Response) => {
-  console.log('Request received at root route');
+
   res.send(
     '<h1 style="text-align:center; color:#A55FEF; font-family:Verdana;">Hey, How can I assist you today!</h1>'
   );

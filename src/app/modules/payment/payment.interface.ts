@@ -17,3 +17,15 @@ export interface IPaymentIntent extends Document {
     eventId: string;
     amount: number;
 }
+
+
+export type IPaymentFilterableFields = {
+    searchTerm?: string,
+    paymentStatus?:string,
+}
+
+
+export type IPaymentSearchableFields ={
+    paymentMethod?:string,
+    eventName?:string
+}

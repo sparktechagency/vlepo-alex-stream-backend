@@ -32,7 +32,7 @@ export class QueryBuilder<T> {
         return this;
       }
 
-    
+
 
     paginate() {
         let limit: number = Number(this.query?.limit || 10);
@@ -50,20 +50,20 @@ export class QueryBuilder<T> {
     }
 
 
-    sort() {
+  sort() {
+    let sortOrder = '-createdAt'; // Default sorting: newest first
 
-        let sortBy = '-createdAt';
-
-        if (this.query?.sortBy) {
-            sortBy = this.query.sortBy as string;
-        }
-
-        this.modelQuery = this.modelQuery.sort(sortBy);
-        return this;
+    if (this.query.sortOrder) {
+      sortOrder = this.query.sortOrder === 'asc' ? 'createdAt' : '-createdAt';
     }
 
+    this.modelQuery = this.modelQuery.sort(sortOrder);
+    return this;
+  }
 
-    fields() {
+
+
+  fields() {
         let fields = ''; // which fields want to be displayed
 
         if (this.query?.fields) {
@@ -74,16 +74,19 @@ export class QueryBuilder<T> {
         return this;
     }
 
-    filter() {
-        // pass exact field name which have in my model, it can be filter depend on this filter
-        const queryObj = { ...this.query };
-        const excludeFields = ['searchTerm', 'page', 'limit', 'sortBy', 'fields'];
+  filter() {
+    const queryObj = { ...this.query };
+    const excludeFields = ['searchTerm', 'page', 'limit', 'sortBy', 'sortOrder', 'fields'];
 
-        excludeFields.forEach((e) => delete queryObj[e]);
+    // Remove all non-filterable fields
+    excludeFields.forEach(field => delete queryObj[field]);
 
-        this.modelQuery = this.modelQuery.find(queryObj as FilterQuery<T>);
-
-        return this;
+    if (Object.keys(queryObj).length) {
+      this.modelQuery = this.modelQuery.find(queryObj as FilterQuery<T>);
     }
+
+    return this;
+  }
+
 
 }
