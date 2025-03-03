@@ -88,6 +88,15 @@ const webhooks = catchAsync(async (req, res) => {
                     }
 
 
+                    const ticket = {
+                        createdBy: userId,
+                        eventId: eventId,
+                        secretCode: existingEvent.ticketSecretCode,
+                        status: 'confirmed'
+                    }
+
+                    console.log(ticket)
+
 
                     // Run both updates in parallel to improve efficiency
                     const [updatedPayment, updateEvent, createdTicket] = await Promise.all([
@@ -102,7 +111,7 @@ const webhooks = catchAsync(async (req, res) => {
                           { $addToSet: { participants: userId } },
                           { new: true }
                         ),
-                         TicketModel.create([{createdBy: userId, eventId: eventId, ticketSecretCode: existingEvent.ticketSecretCode, status: 'confirmed' }])
+                         TicketModel.create([ticket])
                     ]);
 
                     console.log(createdTicket)
