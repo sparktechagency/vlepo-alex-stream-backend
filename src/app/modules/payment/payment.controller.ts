@@ -82,7 +82,7 @@ const webhooks = catchAsync(async (req, res) => {
                         throw new ApiError(StatusCodes.BAD_REQUEST, 'Missing userId or eventId in metadata');
                     }
 
-                    const existingEvent = await Event.findById(eventId);
+                    const existingEvent = await Event.findById(eventId).select('ticketSecretCode');
                     if (!existingEvent) {
                         throw new ApiError(StatusCodes.NOT_FOUND, 'Event not found');
                     }
