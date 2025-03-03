@@ -8,6 +8,7 @@ export interface IEvent extends Document {
   eventName: string;
   image: string;
   description: string;
+  ticketSecretCode?: string;
   categoryId: Types.ObjectId;
   eventType: EVENTS_TYPE;
   ticketPrice: number;

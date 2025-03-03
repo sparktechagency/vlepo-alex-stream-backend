@@ -114,13 +114,22 @@ const verifyPayment = async (paymentIntentId: string, userEmail: string) => {
             throw new ApiError(StatusCodes.BAD_REQUEST, 'Failed to create payment');
         }
 
-        const secretCode = Math.floor(100000 + Math.random() * 900000).toString();
+        // const secretCode = Math.floor(100000 + Math.random() * 900000).toString();
+        let secretCode = "";
+        const existingTicket = await TicketModel.findOne({ eventId });
+        if(!existingTicket){
+        secretCode = Math.floor(100000 + Math.random() * 900000).toString();
+        }
+
+        secretCode = existingTicket?.secretCode as string;
+
         const newTicket = await TicketModel.create([{
             createdBy: userId,
             eventId: eventId,
-            secretCode,
+            secretCode: secretCode,
+    
         }], { session });
-
+        
         if (!newTicket.length) {
             throw new ApiError(StatusCodes.BAD_REQUEST, 'Failed to create ticket');
         }

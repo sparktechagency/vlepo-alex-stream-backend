@@ -82,33 +82,38 @@ const webhooks = catchAsync(async (req, res) => {
                         throw new ApiError(StatusCodes.BAD_REQUEST, 'Missing userId or eventId in metadata');
                     }
 
+                    const existingEvent = await Event.findById(eventId);
+                    if (!existingEvent) {
+                        throw new ApiError(StatusCodes.NOT_FOUND, 'Event not found');
+                    }
+
                     // Run both updates in parallel to improve efficiency
-                    const [updatedPayment, updatedTicket, updateEvent, createdTicket] = await Promise.all([
+                    const [updatedPayment, updateEvent, createdTicket] = await Promise.all([
                         Payment.findOneAndUpdate(
                           { userId, eventId },
                           { $set: { paymentStatus: PAYMENT_STATUS.PAID, transactionId } },
                           { new: true }
                         ),
-                        TicketModel.findOneAndUpdate(
-                          { createdBy: userId, eventId },
-                          { $set: { status: 'confirmed' } },
-                          { new: true }
-                        ),
+                        // TicketModel.findOneAndUpdate(
+                        //   { createdBy: userId, eventId },
+                        //   { $set: { status: 'confirmed', ticketSecretCode: ticketSecret } },
+                        //   { new: true }
+                        // ),
                         await Event.findByIdAndUpdate(
                           eventId,
                           { $addToSet: { participants: userId } }, // ✅ Use `$addToSet` to prevent duplicates
                           { new: true }
                         ),
-                        await TicketModel.create([{createdBy: userId, eventId: eventId, secretCode: ticketSecret }])
+                        await TicketModel.create([{createdBy: userId, eventId: eventId, ticketSecretCode: existingEvent.ticketSecretCode }])
                     ]);
 
                     // Check if updates were successful
                     if (!updatedPayment) {
                         throw new ApiError(StatusCodes.BAD_REQUEST, 'Failed to update payment status');
                     }
-                    if (!updatedTicket) {
-                        throw new ApiError(StatusCodes.BAD_REQUEST, 'Failed to update ticket status');
-                    }
+                    // if (!updatedTicket) {
+                    //     throw new ApiError(StatusCodes.BAD_REQUEST, 'Failed to update ticket status');
+                    // }
                     if(!createdTicket){
                         throw new ApiError(StatusCodes.BAD_REQUEST, 'Failed to create ticket');
                     }
