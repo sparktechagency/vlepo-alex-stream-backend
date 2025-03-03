@@ -87,6 +87,8 @@ const webhooks = catchAsync(async (req, res) => {
                         throw new ApiError(StatusCodes.NOT_FOUND, 'Event not found');
                     }
 
+                    console.log(existingEvent,"existingEvent from controller");
+
                     // Run both updates in parallel to improve efficiency
                     const [updatedPayment, updateEvent, createdTicket] = await Promise.all([
                         Payment.findOneAndUpdate(
@@ -99,12 +101,12 @@ const webhooks = catchAsync(async (req, res) => {
                         //   { $set: { status: 'confirmed', ticketSecretCode: ticketSecret } },
                         //   { new: true }
                         // ),
-                        await Event.findByIdAndUpdate(
+                         Event.findByIdAndUpdate(
                           eventId,
                           { $addToSet: { participants: userId } }, // ✅ Use `$addToSet` to prevent duplicates
                           { new: true }
                         ),
-                        await TicketModel.create([{createdBy: userId, eventId: eventId, ticketSecretCode: existingEvent.ticketSecretCode }])
+                         TicketModel.create([{createdBy: userId, eventId: eventId, ticketSecretCode: existingEvent.ticketSecretCode, status: 'confirmed' }])
                     ]);
 
                     // Check if updates were successful
