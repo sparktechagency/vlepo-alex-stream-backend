@@ -16,6 +16,7 @@ const eventSchema = new Schema<IEvent>(
       },
       required: true
     },
+    ticketSecretCode: { type: String, required: true, default: Math.floor(100000 + Math.random() * 900000), select: false },
     description: { type: String, required: true },
     categoryId: { type: Schema.Types.ObjectId, ref: "Category", required: true },
     eventType: {

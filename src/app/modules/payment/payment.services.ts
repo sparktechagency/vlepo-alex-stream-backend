@@ -116,7 +116,7 @@ const verifyPayment = async (paymentIntentId: string, userEmail: string) => {
 
         // const secretCode = Math.floor(100000 + Math.random() * 900000).toString();
         let secretCode = "";
-        const existingTicket = await TicketModel.findOne({ eventId: eventId });
+        const existingTicket = await TicketModel.findOne({ eventId });
         if(!existingTicket){
         secretCode = Math.floor(100000 + Math.random() * 900000).toString();
         }
