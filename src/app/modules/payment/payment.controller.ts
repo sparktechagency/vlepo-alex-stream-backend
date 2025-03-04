@@ -11,6 +11,7 @@ import { sendDataWithSocket } from '../../../helpers/socketHelper';
 import { PAYMENT_STATUS } from './payment.constant';
 import { TicketModel } from '../ticket/tickets.model';
 import { Event } from '../events/events.model';
+import { User } from "../user/user.model";
 const createPaymentIntent = catchAsync(async (req, res) => {
     const result = await paymentServices.createPaymentIntent(req.user,req.body);
 
@@ -99,11 +100,16 @@ const webhooks = catchAsync(async (req, res) => {
 
 
                     // Run both updates in parallel to improve efficiency
-                    const [updatedPayment, updateEvent, createdTicket] = await Promise.all([
+                    const [updatedPayment,updatedUser, updateEvent, createdTicket] = await Promise.all([
                         Payment.findOneAndUpdate(
                           { userId, eventId },
                           { $set: { paymentStatus: PAYMENT_STATUS.PAID, transactionId } },
                           { new: true }
+                        ),
+                        User.findByIdAndUpdate(
+                            userId,
+                            { $addToSet: { favoriteEvents: eventId } },
+                            { new: true }
                         ),
 
                          Event.findByIdAndUpdate(
@@ -114,7 +120,9 @@ const webhooks = catchAsync(async (req, res) => {
                          TicketModel.create([ticket])
                     ]);
 
-                    console.log(createdTicket)
+                    if(!updatedUser){
+                        throw new ApiError(StatusCodes.BAD_REQUEST, 'Failed to update user');
+                    }
                     // Check if updates were successful
                     if (!updatedPayment) {
                         throw new ApiError(StatusCodes.BAD_REQUEST, 'Failed to update payment status');
