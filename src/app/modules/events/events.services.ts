@@ -12,6 +12,7 @@ import { AttendanceModel } from './attendanceSchema';
 import { Payment } from '../payment/payment.model';
 import { JwtPayload } from 'jsonwebtoken';
 import { Follow } from '../follow/follow.model';
+import { PAYMENT_STATUS } from '../payment/payment.constant';
 
 const createEventsIntoDB = async (createdBy: string, payload: IEvent) => {
     const { categoryId, ticketPrice, totalSeat } = payload;
@@ -66,7 +67,7 @@ const getSingleEventByEventId = async (user: JwtPayload, id: string) => {
         const isFollowing = event.isFollowing;
 
     //add is ticket booked flag from payment collection
-    const eventIds = await Payment.find({userId:user.id}).distinct("eventId");
+    const eventIds = await Payment.find({userId:user.id, status:PAYMENT_STATUS.PAID}).distinct("eventId");
     const bookedEvents = eventIds?.map(event => event.toString());
 
         return {...event.toObject(), isFavorite, isFollowing, isTicketBooked:bookedEvents.includes(id)};
