@@ -41,10 +41,7 @@ const loginUserFromDB = async (payload: TLoginUser) => {
   }
 
   //check match password
-  if (
-    password &&
-    !(await User.isMatchPassword(password, isExistUser.password))
-  ) {
+  if (!await bcrypt.compare(password, isExistUser.password)) {
     throw new ApiError(StatusCodes.BAD_REQUEST, 'Password is incorrect!');
   }
 
