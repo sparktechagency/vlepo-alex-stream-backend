@@ -12,6 +12,7 @@ import { TicketRoutes } from '../app/modules/ticket/tickets.routes';
 import { NotificationRoutes } from '../app/modules/notifications/notification.routes';
 import { TermsAndConditionRoutes } from '../app/modules/FAQ/terms-and-condition.route';
 import { DashboardRoutes } from '../app/modules/dashboard/dashboard.route';
+import { PublicRoutes } from '../app/modules/public/public.route';
 const router = express.Router();
 
 const apiRoutes = [
@@ -44,29 +45,33 @@ const apiRoutes = [
     route: RecentSearchRoutes,
   },
   {
-    path: "/faqs",
-    route: FaqRoutes
+    path: '/public',
+    route: PublicRoutes,
   },
   {
-    path: "/payments",
-    route: PaymentRoutes
+    path: '/faqs',
+    route: FaqRoutes,
   },
   {
-    path: "/tickets",
-    route: TicketRoutes
+    path: '/payments',
+    route: PaymentRoutes,
   },
   {
-    path: "/notifications",
-    route: NotificationRoutes
+    path: '/tickets',
+    route: TicketRoutes,
   },
   {
-    path: "/terms-and-condition",
-    route: TermsAndConditionRoutes
+    path: '/notifications',
+    route: NotificationRoutes,
   },
   {
-    path:'/dashboard',
-    route: DashboardRoutes
-  }
+    path: '/terms-and-condition',
+    route: TermsAndConditionRoutes,
+  },
+  {
+    path: '/dashboard',
+    route: DashboardRoutes,
+  },
 ];
 
 apiRoutes.forEach(route => router.use(route.path, route.route));
