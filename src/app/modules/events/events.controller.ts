@@ -122,6 +122,8 @@ const creatorEventOverview = catchAsync(async (req: Request, res: Response) => {
 const updateAllEventsTrendingStatus = async () => {
     try {
         await eventServices.updateAllEventsTrendingStatus();
+        await eventServices.markEventAsCompleted();
+
     } catch (error) {
         console.error("Error in scheduled task:", error);
     }
@@ -169,5 +171,5 @@ export const eventController = {
     creatorEventOverview,
     getMyFavouriteEvents,
     updateEvent,
-    getFollowingUserEvents
+    getFollowingUserEvents,
 }    

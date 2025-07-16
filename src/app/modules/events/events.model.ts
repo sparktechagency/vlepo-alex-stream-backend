@@ -21,7 +21,7 @@ const eventSchema = new Schema<IEvent>(
     categoryId: { type: Schema.Types.ObjectId, ref: "Category", required: true },
     eventType: {
       type: String,
-      enum: Object.values(EVENTS_TYPE),
+      enum: [EVENTS_TYPE.VIRTUAL, EVENTS_TYPE.OFFLINE],
       required: true,
     },
     participants: [{ type: Schema.Types.ObjectId, ref: "User" }],
@@ -35,7 +35,7 @@ const eventSchema = new Schema<IEvent>(
     endTime: { type: Date, required: false },
     status: {
       type: String,
-      enum: Object.values(EVENTS_STATUS),
+      enum: [EVENTS_STATUS.UPCOMING, EVENTS_STATUS.LIVE, EVENTS_STATUS.COMPLETED, EVENTS_STATUS.CANCELLED],
       default: EVENTS_STATUS.UPCOMING,
     },
   },
