@@ -8,7 +8,6 @@ import { USER_STATUS } from '../user/user.constants';
 import { QueryBuilder } from '../../builder/QueryBuilder';
 import { EVENTS_STATUS, EventSearchableFields } from './events.constants';
 import mongoose, { Types } from 'mongoose';
-import { AttendanceModel } from './attendanceSchema';
 import { Payment } from '../payment/payment.model';
 import { JwtPayload } from 'jsonwebtoken';
 import { Follow } from '../follow/follow.model';
@@ -338,6 +337,24 @@ const updateAllEventsTrendingStatus = async () => {
   await Event.bulkWrite(bulkOperations);
 };
 
+
+const markEventAsCompleted = async () => {
+
+  const currentTime = new Date();
+  const events = await Event.find({ endTime: { $lte: currentTime } });
+
+  const bulkOperations = events.map((event) => ({
+    updateOne: {
+      filter: { _id: event._id },
+      update: { $set: { status: EVENTS_STATUS.COMPLETED } },
+    },
+  }));
+
+  // Bulk update
+  await Event.bulkWrite(bulkOperations);
+  
+};
+
 const updateEvent = async (id: Types.ObjectId, payload: Partial<IEvent>) => {
   const event = await Event.findByIdAndUpdate(
     id,
@@ -429,4 +446,5 @@ export const eventServices = {
   getMyFavouriteEvents,
   updateEvent,
   getFollowingUserEvents,
+  markEventAsCompleted,
 };

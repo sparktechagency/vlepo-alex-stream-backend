@@ -114,7 +114,7 @@ const webhooks = catchAsync(async (req, res) => {
 
                          Event.findByIdAndUpdate(
                           eventId,
-                          { $addToSet: { participants: userId } },
+                          { $addToSet: { participants: userId, soldTicket: { $inc: 1 }, totalSale: { $inc: existingEvent.ticketPrice } } },
                           { new: true }
                         ),
                          TicketModel.create([ticket])
