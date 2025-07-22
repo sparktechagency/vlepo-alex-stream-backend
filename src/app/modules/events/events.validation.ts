@@ -39,8 +39,7 @@ export const eventCreateValidationSchema = z.object({
       .string({ required_error: 'End time is required' })
       .refine(date => !isNaN(new Date(date).getTime()), {
         message: 'Invalid end time format',
-      })
-      .optional(),
+      }),
 
     totalSeat: z
       .string({ required_error: 'Total seat is required' })
