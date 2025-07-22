@@ -50,7 +50,7 @@ const getSingleEventByEventId = async (user: JwtPayload, id: string) => {
 
   const event = await Event.findById(id)
     .select(
-      'createdBy eventName image description eventType ticketPrice startTime soldTicket totalSale ticketSecretCode status'
+      'createdBy eventName startTime endTime image description eventType ticketPrice startTime soldTicket totalSale ticketSecretCode status'
     )
     .populate('createdBy', 'name photo');
 
