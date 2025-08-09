@@ -7,11 +7,11 @@ export const eventCreateValidationSchema = z.object({
       .string({ required_error: 'Event name is required' })
       .min(3, 'Event name must be at least 3 characters long'),
     image: z
-      .string({ message: 'Image must be a valid' })
-      .regex(/^\/images\/([\w-]+\/)?[\w-]+\.(png|jpeg|jpg)$/i, {
-        message:
-          "Image path must start with '/images/' and end with .png, .jpeg, or .jpg",
-      }),
+      .string({ message: 'Image must be a valid' }),
+      // .regex(/^\/images\/([\w-]+\/)?[\w-]+\.(png|jpeg|jpg)$/i, {
+      //   message:
+      //     "Image path must start with '/images/' and end with .png, .jpeg, or .jpg",
+      // }),
     description: z
       .string({ required_error: 'Description is required' })
       .min(10, 'Description must be at least 10 characters long'),

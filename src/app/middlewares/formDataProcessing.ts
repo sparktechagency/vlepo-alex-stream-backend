@@ -9,6 +9,7 @@ const formDataProcessing = () => {
         }
 
 
+
         // only for image
         let photo;
         if (req.files && "image" in req.files && req.files.image[0]) {

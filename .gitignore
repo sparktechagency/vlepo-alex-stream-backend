@@ -7,3 +7,5 @@ dist
 .vercel
 *~
 *.ts~
+/uploads
+.uploads

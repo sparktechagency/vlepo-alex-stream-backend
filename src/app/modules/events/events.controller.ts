@@ -9,6 +9,7 @@ import { EventFilterableFields } from "./events.constants";
 
 const createEvents = catchAsync(async (req: Request, res: Response) => {
     const { id } = req.user;
+
     const result = await eventServices.createEventsIntoDB(id, req.body);
 
     sendResponse(res, {
