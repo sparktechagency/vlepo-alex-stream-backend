@@ -26,5 +26,9 @@ router.get("/get-transaction-history",
     paymentController.getTransactionHistory
 )
 
+// Webhook endpoint (note: this is also handled in app.ts for raw body parsing)
+router.post("/webhook",
+    paymentController.webhooks
+)
 
 export const PaymentRoutes = router;

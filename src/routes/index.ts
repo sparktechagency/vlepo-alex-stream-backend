@@ -13,6 +13,7 @@ import { NotificationRoutes } from '../app/modules/notifications/notification.ro
 import { TermsAndConditionRoutes } from '../app/modules/FAQ/terms-and-condition.route';
 import { DashboardRoutes } from '../app/modules/dashboard/dashboard.route';
 import { PublicRoutes } from '../app/modules/public/public.route';
+import { PayoutRoutes } from '../app/modules/payout/payout.routes';
 const router = express.Router();
 
 const apiRoutes = [
@@ -71,6 +72,10 @@ const apiRoutes = [
   {
     path: '/dashboard',
     route: DashboardRoutes,
+  },
+  {
+    path: '/payouts',
+    route: PayoutRoutes,
   },
 ];
 

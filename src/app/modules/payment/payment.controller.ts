@@ -12,6 +12,7 @@ import { PAYMENT_STATUS } from './payment.constant';
 import { TicketModel } from '../ticket/tickets.model';
 import { Event } from '../events/events.model';
 import { User } from "../user/user.model";
+import { payoutServices } from '../payout/payout.services';
 const createPaymentIntent = catchAsync(async (req, res) => {
     const result = await paymentServices.createPaymentIntent(req.user,req.body);
 
@@ -181,6 +182,52 @@ const webhooks = catchAsync(async (req, res) => {
 
                 } catch {
                     throw new ApiError(StatusCodes.INTERNAL_SERVER_ERROR, 'Error processing failed payment');
+                }
+                break;
+            }
+
+            // Stripe Connect account events
+            case 'account.updated': {
+                try {
+                    const account = event.data.object as Stripe.Account;
+                    await payoutServices.updateAccountStatus(account.id, account);
+                    logger.info(`Account updated: ${account.id}`);
+                } catch (error: any) {
+                    logger.error(`Error updating account: ${error.message}`);
+                }
+                break;
+            }
+
+            // Payout events
+            case 'payout.paid': {
+                try {
+                    const payout = event.data.object as Stripe.Payout;
+                    await payoutServices.updatePayoutStatus(payout.id, 'paid');
+                    logger.info(`Payout paid: ${payout.id}`);
+                } catch (error: any) {
+                    logger.error(`Error updating payout status: ${error.message}`);
+                }
+                break;
+            }
+
+            case 'payout.failed': {
+                try {
+                    const payout = event.data.object as Stripe.Payout;
+                    await payoutServices.updatePayoutStatus(payout.id, 'failed', payout.failure_message || 'Payout failed');
+                    logger.info(`Payout failed: ${payout.id}`);
+                } catch (error: any) {
+                    logger.error(`Error updating payout status: ${error.message}`);
+                }
+                break;
+            }
+
+            case 'payout.canceled': {
+                try {
+                    const payout = event.data.object as Stripe.Payout;
+                    await payoutServices.updatePayoutStatus(payout.id, 'canceled');
+                    logger.info(`Payout canceled: ${payout.id}`);
+                } catch (error: any) {
+                    logger.error(`Error updating payout status: ${error.message}`);
                 }
                 break;
             }

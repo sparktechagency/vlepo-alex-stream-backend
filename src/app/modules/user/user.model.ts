@@ -51,6 +51,16 @@ const userSchema = new Schema<IUser>(
     },
     isDeleted: { type: Boolean, default: false },
     otpVerification: { type: otpVerificationSchema, required: false, select: false },
+    // Stripe Connect fields
+    stripeConnectAccountId: { type: String, default: null },
+    stripeConnectAccountStatus: {
+      type: String,
+      enum: ['pending', 'active', 'restricted', 'inactive'],
+      default: 'pending'
+    },
+    stripeOnboardingCompleted: { type: Boolean, default: false },
+    payoutsEnabled: { type: Boolean, default: false },
+    chargesEnabled: { type: Boolean, default: false }
   },
   { timestamps: true }
 );

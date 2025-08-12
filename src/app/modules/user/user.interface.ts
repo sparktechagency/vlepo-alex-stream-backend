@@ -30,6 +30,12 @@ export interface IUser extends Document {
   followersCount?: number;
   isFollowed?: boolean;
   eventCount?: number;
+  // Stripe Connect fields
+  stripeConnectAccountId?: string;
+  stripeConnectAccountStatus?: 'pending' | 'active' | 'restricted' | 'inactive';
+  stripeOnboardingCompleted?: boolean;
+  payoutsEnabled?: boolean;
+  chargesEnabled?: boolean;
 };
 
 export type UserModal = {
