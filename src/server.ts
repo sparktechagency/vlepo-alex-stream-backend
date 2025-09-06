@@ -5,6 +5,7 @@ import app from './app';
 import config from './config';
 import { socketHelper } from './helpers/socketHelper';
 import { errorLogger, logger } from './shared/logger'; 
+import { UserService } from './app/modules/user/user.service';
 
 //uncaught exception
 process.on('uncaughtException', error => {
@@ -27,6 +28,9 @@ async function main() {
         colors.yellow(`♻️  Application listening on port:${config.port}`)
       );
     });
+
+    await UserService.createAdmin()
+
 
     //socket
     const io = new Server(server, {

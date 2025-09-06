@@ -17,6 +17,7 @@ import { Types } from 'mongoose';
 import { EVENTS_STATUS } from '../events/events.constants';
 import { Payment } from '../payment/payment.model';
 import { PAYMENT_STATUS } from '../payment/payment.constant';
+import { logger } from '../../../shared/logger';
 
 /**
  * create and verify email
@@ -462,6 +463,33 @@ const restrictOrUnrestrictUser = async (id: Types.ObjectId) => {
   return `${result?.name} is restricted`;
 };
 
+const createAdmin = async (): Promise<Partial<IUser> | null> => {
+  const admin = {
+    email: config.admin.email,
+    name: "ALEX",
+    password: config.admin.password,
+    role: USER_ROLE.SUPER_ADMIN,
+    status: USER_STATUS.ACTIVE,
+    verified: true,
+    
+  }
+
+  const isAdminExist = await User.findOne({
+    email: admin.email,
+    status: { $nin: [USER_STATUS.BLOCKED] },
+  })
+
+  if (isAdminExist) {
+    logger.log('info', 'Admin account already exist, skipping creation.🦥')
+    return isAdminExist
+  }
+  const result = await User.create([admin])
+  if (!result) {
+    throw new ApiError(StatusCodes.BAD_REQUEST, 'Failed to create admin')
+  }
+  return result[0]
+}
+
 export const UserService = {
   createUserToDB,
   // verifyRegisterEmail,
@@ -477,5 +505,6 @@ export const UserService = {
   getUserFavoriteEvents,
   getCreatorTotalSalesAndRecentEvents,
   getUserByUserId,
-  restrictOrUnrestrictUser
+  restrictOrUnrestrictUser,
+  createAdmin
 };
