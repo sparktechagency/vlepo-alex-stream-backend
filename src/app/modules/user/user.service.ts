@@ -476,6 +476,7 @@ const createAdmin = async (): Promise<Partial<IUser> | null> => {
 
   const isAdminExist = await User.findOne({
     email: admin.email,
+    role: USER_ROLE.SUPER_ADMIN,
     status: { $nin: [USER_STATUS.BLOCKED] },
   })
 
