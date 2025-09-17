@@ -10,6 +10,7 @@ import { Event } from '../events/events.model';
 import { IPayoutRequest, IStripeConnectAccount, IConnectedAccountInfo } from './payout.interface';
 import { USER_ROLE } from '../user/user.constants';
 import { PAYMENT_STATUS } from '../payment/payment.constant';
+import { logger } from '../../../shared/logger';
 
 const stripe = new Stripe(config.stripe_secret_key as string);
 
@@ -198,50 +199,111 @@ const requestPayout = async (auth: JwtPayload, payload: IPayoutRequest) => {
     throw new ApiError(StatusCodes.BAD_REQUEST, 'Payouts are not enabled for your account');
   }
 
-  // Check available balance
-  const earnings = await getCreatorEarnings(auth);
-  if (payload.amount > earnings.availableBalance) {
-    throw new ApiError(StatusCodes.BAD_REQUEST, 'Insufficient balance for payout');
-  }
+  // Check available balance from creator earnings
+  // const earnings = await getCreatorEarnings(auth);
+  // if (payload.amount > earnings.availableBalance) {
+  //   throw new ApiError(StatusCodes.BAD_REQUEST, 'Insufficient balance for payout');
+  // }
 
   if (payload.amount < 1) {
     throw new ApiError(StatusCodes.BAD_REQUEST, 'Minimum payout amount is $1');
   }
 
-  try {
-    // Create payout in Stripe
-    const payout = await stripe.payouts.create(
-      {
-        amount: Math.round(payload.amount * 100), // Convert to cents
-        currency: payload.currency || 'usd',
-        description: payload.description || 'Creator earnings payout',
-        method: 'instant' // or 'standard' for slower but free payouts
-      },
-      {
-        stripeAccount: user.stripeConnectAccountId
-      }
-    );
+  // Check admin account balance before transfer
+  const adminBalance = await stripe.balance.retrieve();
+  const availableBalance = adminBalance.available.find(b => b.currency === (payload.currency || 'usd'))?.amount || 0;
+  
+  if (payload.amount * 100 > availableBalance) {
+    throw new ApiError(StatusCodes.BAD_REQUEST, 'Insufficient funds in admin account for transfer');
+  }
 
-    // Save payout record
+  // Calculate application fee (default 10% if not specified)
+  // const applicationFeePercentage = payload.applicationFeePercentage || 0.10;
+  // const applicationFeeAmount = Math.round(payload.amount * applicationFeePercentage * 100); // in cents
+  // const transferAmount = Math.round(payload.amount * 100) - applicationFeeAmount; // Amount after fee
+  const transferAmount = Math.round(payload.amount * 100); // Amount after fee
+
+  try {
+    // Generate idempotency key to prevent duplicate transfers
+    const idempotencyKey = `payout_${auth.id}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+
+    // Check for existing pending payout to prevent duplicates
+    const existingPayout = await Payout.findOne({
+      creatorId: auth.id,
+      status: { $in: ['processing', 'pending'] },
+      amount: payload.amount
+    });
+
+    if (existingPayout) {
+      throw new ApiError(StatusCodes.BAD_REQUEST, 'A payout request with the same amount is already being processed');
+    }
+
+    // Create transfer from admin account to creator's connected account
+    const transfer = await stripe.transfers.create({
+      amount: transferAmount,
+      currency: payload.currency || 'usd',
+      destination: user.stripeConnectAccountId,
+      description: payload.description || 'Creator earnings payout',
+      metadata: {
+        creatorId: auth.id,
+        payoutType: 'creator_earnings',
+        originalAmount: payload.amount.toString(),
+        // applicationFeeAmount: (applicationFeeAmount / 100).toString()
+      }
+    }, {
+      idempotencyKey
+    });
+
+    // Save payout record with processing status
     const payoutRecord = await Payout.create({
       creatorId: auth.id,
       amount: payload.amount,
-      stripePayoutId: payout.id,
-      status: 'pending',
+      stripePayoutId: transfer.id, // Store transfer ID for backward compatibility
+      stripeTransferId: transfer.id,
+      status: 'processing', // Will be updated to 'completed' by webhook
       currency: payload.currency || 'usd',
-      description: payload.description || 'Creator earnings payout'
+      description: payload.description || 'Creator earnings payout',
+      // applicationFeeAmount: applicationFeeAmount / 100, // Store in dollars
+      transferType: 'transfer'
     });
 
     return {
       payoutId: payoutRecord._id,
-      stripePayoutId: payout.id,
+      stripeTransferId: transfer.id,
       amount: payload.amount,
+      transferAmount: transferAmount / 100, // Amount received by creator
+      // applicationFeeAmount: applicationFeeAmount / 100,
       currency: payload.currency || 'usd',
-      status: 'pending',
-      estimatedArrival: payout.arrival_date
+      status: 'processing', // Will be updated to 'completed' by webhook
+      message: 'Transfer initiated successfully. Status will be updated once confirmed by Stripe.'
     };
   } catch (error: any) {
-    throw new ApiError(StatusCodes.INTERNAL_SERVER_ERROR, `Failed to create payout: ${error.message}`);
+    // If transfer creation fails, update any created payout record to failed status
+    try {
+      const failedPayout = await Payout.findOne({
+        creatorId: auth.id,
+        status: 'processing',
+        amount: payload.amount
+      }).sort({ createdAt: -1 });
+      
+      if (failedPayout) {
+        await Payout.findByIdAndUpdate(failedPayout._id, {
+          status: 'failed',
+          failureReason: error.message || 'Transfer creation failed'
+        });
+      }
+    } catch (updateError) {
+      logger.error('Error updating failed payout status:', updateError);
+    }
+    
+    // Handle specific Stripe errors
+    if (error.type === 'StripeCardError' || error.type === 'StripeInvalidRequestError') {
+      throw new ApiError(StatusCodes.BAD_REQUEST, `Transfer failed: ${error.message}`);
+    } else if (error.type === 'StripeConnectionError') {
+      throw new ApiError(StatusCodes.SERVICE_UNAVAILABLE, 'Payment service temporarily unavailable. Please try again.');
+    } else {
+      throw new ApiError(StatusCodes.INTERNAL_SERVER_ERROR, `Failed to create transfer: ${error.message}`);
+    }
   }
 };
 
@@ -283,16 +345,38 @@ const updateAccountStatus = async (accountId: string, accountData: any) => {
 
 // Update payout status (called by webhook)
 const updatePayoutStatus = async (stripePayoutId: string, status: string, failureReason?: string) => {
-  const updateData: any = { status };
-  if (failureReason) {
-    updateData.failureReason = failureReason;
-  }
+  try {
+    const updateData: any = { status };
+    if (failureReason) {
+      updateData.failureReason = failureReason;
+    }
 
-  await Payout.findOneAndUpdate(
-    { stripePayoutId },
-    updateData,
-    { new: true }
-  );
+    await Payout.findOneAndUpdate(
+      { stripePayoutId },
+      updateData,
+      { new: true }
+    );
+  } catch (error) {
+    console.error('Error updating payout status:', error);
+  }
+};
+
+// Update transfer status (for new transfer-based payouts)
+const updateTransferStatus = async (stripeTransferId: string, status: string, failureReason?: string) => {
+  try {
+    const updateData: any = { status };
+    if (failureReason) {
+      updateData.failureReason = failureReason;
+    }
+
+    await Payout.findOneAndUpdate(
+      { stripeTransferId },
+      updateData,
+      { new: true }
+    );
+  } catch (error) {
+    console.error('Error updating transfer status:', error);
+  }
 };
 
 export const payoutServices = {
@@ -303,5 +387,6 @@ export const payoutServices = {
   requestPayout,
   getPayoutHistory,
   updateAccountStatus,
-  updatePayoutStatus
+  updatePayoutStatus,
+  updateTransferStatus
 };

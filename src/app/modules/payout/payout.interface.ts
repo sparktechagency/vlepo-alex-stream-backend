@@ -3,11 +3,14 @@ import { Document, ObjectId } from 'mongoose';
 export interface IPayout extends Document {
   creatorId: ObjectId;
   amount: number;
-  stripePayoutId: string;
-  status: 'pending' | 'paid' | 'failed' | 'canceled';
+  stripePayoutId: string; // For backward compatibility, now stores transfer ID
+  stripeTransferId?: string; // New field for transfer ID
+  status: 'processing' | 'pending' | 'paid' | 'failed' | 'canceled' | 'completed';
   currency: string;
   description?: string;
   failureReason?: string;
+  applicationFeeAmount?: number; // Platform fee amount
+  transferType: 'payout' | 'transfer'; // Type of transaction
   createdAt: Date;
   updatedAt: Date;
 }
@@ -16,6 +19,7 @@ export interface IPayoutRequest {
   amount: number;
   currency?: string;
   description?: string;
+  applicationFeePercentage?: number; // Optional platform fee percentage
 }
 
 export interface IStripeConnectAccount {

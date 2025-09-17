@@ -232,8 +232,75 @@ const webhooks = catchAsync(async (req, res) => {
                 break;
             }
 
+            // Transfer events (for new transfer-based payouts)
+            case 'transfer.created': {
+                try {
+                    const transfer = event.data.object as Stripe.Transfer;
+                    
+                    // Update transfer status to completed when confirmed by Stripe
+                    await payoutServices.updateTransferStatus(transfer.id, 'completed');
+                    logger.info(`Transfer created and marked as completed: ${transfer.id}`);
+                    
+                    // Send notification to creator about successful transfer
+                    if (transfer.metadata?.creatorId) {
+                        // await sendDataWithSocket('payout', transfer.metadata.creatorId, {
+                        //     title: 'Payout successful',
+                        //     message: `Your payout of $${(transfer.amount / 100).toFixed(2)} has been completed and transferred to your account`,
+                        //     type: 'success',
+                        //     transferId: transfer.id
+                        // });
+                    }
+                } catch (error: any) {
+                    logger.error(`Error processing transfer created: ${error.message}`);
+                }
+                break;
+            }
+
+            case 'transfer.updated': {
+                try {
+                    const transfer = event.data.object as Stripe.Transfer;
+                    // Handle any transfer updates if needed
+                    logger.info(`Transfer updated: ${transfer.id}`);
+                } catch (error: any) {
+                    logger.error(`Error processing transfer updated: ${error.message}`);
+                }
+                break;
+            }
+
             default: {
-                logger.warn(`Unhandled event type: ${event.type}`);
+                // Handle transfer failures that might come through other event types
+                if (event.type.includes('transfer') && event.data.object) {
+                    const transfer = event.data.object as any;
+                    
+                    // Check if transfer has failed status or failure information
+                    if (transfer.status === 'failed' || transfer.failure_code || transfer.failure_message) {
+                        try {
+                            await payoutServices.updateTransferStatus(
+                                transfer.id, 
+                                'failed', 
+                                transfer.failure_message || transfer.failure_code || 'Transfer failed'
+                            );
+                            
+                            logger.error(`Transfer failed: ${transfer.id} - ${transfer.failure_message || transfer.failure_code}`);
+                            
+                            // Send notification to creator about failed transfer
+                            if (transfer.metadata?.creatorId) {
+                                await sendDataWithSocket('payout', transfer.metadata.creatorId, {
+                                    title: 'Payout failed',
+                                    message: `Your payout failed: ${transfer.failure_message || transfer.failure_code || 'Unknown error'}. Please try again or contact support.`,
+                                    type: 'error',
+                                    transferId: transfer.id
+                                });
+                            }
+                        } catch (error: any) {
+                            logger.error(`Error processing transfer failure: ${error.message}`);
+                        }
+                    } else {
+                        logger.warn(`Unhandled transfer event type: ${event.type}`);
+                    }
+                } else {
+                    logger.warn(`Unhandled event type: ${event.type}`);
+                }
             }
         }
     }catch (err){

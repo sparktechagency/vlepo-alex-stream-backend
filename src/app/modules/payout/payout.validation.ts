@@ -8,7 +8,7 @@ const requestPayoutSchema = z.object({
       .pipe(z.number().min(1, 'Minimum payout amount is $1').max(10000, 'Maximum payout amount is $10,000')),
     currency: z
       .string()
-      .optional()
+      .optional() 
       .default('usd'),
     description: z
       .string()

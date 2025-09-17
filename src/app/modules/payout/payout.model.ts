@@ -18,9 +18,14 @@ const payoutSchema = new Schema<IPayout>(
       required: true,
       unique: true
     },
+    stripeTransferId: {
+      type: String,
+      unique: true,
+      sparse: true
+    },
     status: {
       type: String,
-      enum: ['pending', 'paid', 'failed', 'canceled'],
+      enum: ['processing', 'pending', 'paid', 'failed', 'canceled', 'completed'],
       default: 'pending'
     },
     currency: {
@@ -35,6 +40,15 @@ const payoutSchema = new Schema<IPayout>(
     failureReason: {
       type: String,
       default: ''
+    },
+    applicationFeeAmount: {
+      type: Number,
+      default: 0
+    },
+    transferType: {
+      type: String,
+      enum: ['payout', 'transfer'],
+      default: 'transfer'
     }
   },
   { timestamps: true }
@@ -43,6 +57,8 @@ const payoutSchema = new Schema<IPayout>(
 // Index for efficient queries
 payoutSchema.index({ creatorId: 1, createdAt: -1 });
 payoutSchema.index({ stripePayoutId: 1 });
+payoutSchema.index({ stripeTransferId: 1 });
 payoutSchema.index({ status: 1 });
+payoutSchema.index({ transferType: 1 });
 
 export const Payout = model<IPayout>('Payout', payoutSchema);
