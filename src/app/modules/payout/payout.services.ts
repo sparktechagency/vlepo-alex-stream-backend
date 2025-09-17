@@ -82,7 +82,13 @@ const getOnboardingLink = async (auth: JwtPayload): Promise<{ onboardingUrl: str
   }
 
   if (user.stripeOnboardingCompleted) {
-    throw new ApiError(StatusCodes.BAD_REQUEST, 'Onboarding already completed');
+    // If onboarding is completed, return Express dashboard login URL
+    try {
+      const loginLink = await stripe.accounts.createLoginLink(user.stripeConnectAccountId);
+      return { onboardingUrl: loginLink.url };
+    } catch (error: any) {
+      throw new ApiError(StatusCodes.INTERNAL_SERVER_ERROR, `Failed to create dashboard login link: ${error.message}`);
+    }
   }
 
   try {
