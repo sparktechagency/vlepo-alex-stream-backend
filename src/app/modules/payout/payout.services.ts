@@ -206,10 +206,10 @@ const requestPayout = async (auth: JwtPayload, payload: IPayoutRequest) => {
   }
 
   // Check available balance from creator earnings
-  // const earnings = await getCreatorEarnings(auth);
-  // if (payload.amount > earnings.availableBalance) {
-  //   throw new ApiError(StatusCodes.BAD_REQUEST, 'Insufficient balance for payout');
-  // }
+  const earnings = await getCreatorEarnings(auth);
+  if (payload.amount > earnings.availableBalance) {
+    throw new ApiError(StatusCodes.BAD_REQUEST, 'Insufficient balance for payout');
+  }
 
   if (payload.amount < 1) {
     throw new ApiError(StatusCodes.BAD_REQUEST, 'Minimum payout amount is $1');
