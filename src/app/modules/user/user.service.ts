@@ -55,10 +55,8 @@ const createUserToDB = async (payload: Partial<IUser>): Promise<null> => {
 
   const registerEmailTem = emailTemplate.registerAccountOtpSend(value);
 
-  emailHelper.sendEmail(registerEmailTem);
 
-  //save to DB
-  await User.findOneAndUpdate(
+   await User.findOneAndUpdate(
     { email: createUser.email },
     {
       $set: {
@@ -67,6 +65,11 @@ const createUserToDB = async (payload: Partial<IUser>): Promise<null> => {
       },
     }
   );
+
+  emailHelper.sendEmail(registerEmailTem);
+
+  //save to DB
+ 
 
   return null;
 };
@@ -208,6 +211,9 @@ const userFavoriteCategoryUpdate = async (id: string, categoryId: string) => {
 
 const deleteCurrentUser = async (userId: string) => {
   await User.findByIdAndUpdate(userId, { isDeleted: true }, { new: true });
+
+  //delete all events created by user
+  await Event.updateMany({ createdBy: userId }, { isActive: false }, { new: true });
 
   return null;
 };

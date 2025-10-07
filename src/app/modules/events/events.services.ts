@@ -199,7 +199,7 @@ const getAllEvents = async (
     event.toString()
   ); // Convert to string for comparison
 
-  const events = new QueryBuilder(Event.find({}), query)
+  const events = new QueryBuilder(Event.find({ isActive: true }), query)
     .fields()
     .paginate()
     .sort()

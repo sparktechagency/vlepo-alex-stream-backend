@@ -33,6 +33,7 @@ const eventSchema = new Schema<IEvent>(
     totalSale: { type: Number, default: 0, min: 0 },
     startTime: { type: Date, required: [true, "Start time will be a date."] },
     endTime: { type: Date, required: true },
+    isActive: { type: Boolean, default: true, select: false },
     status: {
       type: String,
       enum: [EVENTS_STATUS.UPCOMING, EVENTS_STATUS.LIVE, EVENTS_STATUS.COMPLETED, EVENTS_STATUS.CANCELLED],
